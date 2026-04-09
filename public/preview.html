@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Ligrow Tasks – Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Space Grotesk',sans-serif;background:#0f1115;color:#fff;height:100vh;overflow:hidden}
+    #app{display:grid;grid-template-columns:240px 1fr;height:100vh}
+
+    /* ── Sidebar ── */
+    .sidebar{background:#151922;padding:24px 16px;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+    .logo{font-weight:900;font-size:22px;margin-bottom:24px;background:linear-gradient(90deg,#ff6b2b,#ff4500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+    .sidebar-label{font-size:10px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.3);text-transform:uppercase;padding:12px 8px 6px}
+    .client{padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);transition:all .15s;display:flex;align-items:center;gap:8px}
+    .client:hover{background:rgba(255,255,255,.06);color:#fff}
+    .client.active{background:rgba(255,107,43,.12);color:#ff6b2b}
+    .client-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+    /* ── Main ── */
+    .main{display:flex;flex-direction:column;overflow:hidden}
+    .topbar{padding:20px 28px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-shrink:0}
+    .topbar-left h2{font-size:20px;font-weight:700;margin-bottom:10px}
+    .tabs{display:flex;gap:4px}
+    .tab{padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+    .tab:hover{color:#fff;border-color:rgba(255,255,255,.25)}
+    .tab.active{background:rgba(255,107,43,.15);border-color:rgba(255,107,43,.4);color:#ff6b2b}
+    .button{padding:9px 16px;border-radius:8px;background:linear-gradient(90deg,#ff6b2b,#ff4500);border:0;color:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;white-space:nowrap}
+    .button:hover{opacity:.9}
+
+    /* ── Content area ── */
+    .content{flex:1;overflow-y:auto;padding:20px 28px 28px}
+
+    /* ── Kanban ── */
+    .columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+    .card{background:#151922;padding:18px;border-radius:14px;border:1px solid rgba(255,255,255,.06)}
+    .card h3{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .card h3 .count{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);border-radius:20px;padding:1px 8px;font-size:11px}
+    .task{padding:12px 14px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);cursor:default}
+    .task-name{font-size:13px;font-weight:500;margin-bottom:6px;line-height:1.4}
+    .task-meta{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+    .task-owner{font-size:11px;color:rgba(255,255,255,.35)}
+    .badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+    .badge-alta{background:rgba(255,59,59,.15);color:#ff5f5f}
+    .badge-media{background:rgba(255,176,32,.12);color:#ffb020}
+    .badge-baja{background:rgba(0,200,83,.1);color:#00c853}
+    .priority-alta{border-left:3px solid #ff5f5f}
+    .priority-media{border-left:3px solid #ffb020}
+    .priority-baja{border-left:3px solid #00c853}
+    .task-code{font-size:10px;color:rgba(255,255,255,.25);font-weight:600;margin-bottom:2px}
+
+    /* ── Table ── */
+    .grid-table{width:100%;border-collapse:collapse;font-size:13px}
+    .grid-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);border-bottom:1px solid rgba(255,255,255,.07)}
+    .grid-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.8)}
+    .grid-table tr:hover td{background:rgba(255,255,255,.02)}
+    .status-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+    .status-en-curso{background:rgba(59,130,246,.15);color:#60a5fa}
+    .status-listo{background:rgba(0,200,83,.1);color:#00c853}
+    .status-detenido{background:rgba(255,59,59,.12);color:#ff5f5f}
+
+    /* ── Gantt ── */
+    .gantt-wrap{overflow-x:auto}
+    .gantt-header{display:flex;gap:0;margin-bottom:0}
+    .gantt-header-name{width:200px;flex-shrink:0;font-size:11px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.3);padding:8px 14px}
+    .gantt-header-months{flex:1;display:grid;grid-template-columns:repeat(12,1fr);gap:0}
+    .gantt-header-month{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-align:center;padding:8px 4px;text-transform:uppercase}
+    .gantt-row{display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.04)}
+    .gantt-name{width:200px;flex-shrink:0;font-size:13px;color:rgba(255,255,255,.75);padding:10px 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gantt-track{flex:1;display:grid;grid-template-columns:repeat(12,1fr);gap:0;height:36px;align-items:center}
+    .gantt-cell{height:36px;position:relative;border-right:1px solid rgba(255,255,255,.03)}
+    .gantt-fill{height:20px;border-radius:4px;background:linear-gradient(90deg,#ff6b2b55,#ff450088);border:1px solid rgba(255,107,43,.4)}
+
+    /* ── Templates ── */
+    .template-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .template-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 16px}
+    .template-name{font-size:14px;font-weight:600;margin-bottom:6px}
+    .template-meta{display:flex;gap:12px;font-size:12px;color:rgba(255,255,255,.4)}
+
+    /* ── Months ── */
+    .month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+    .month-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px}
+    .month-title{font-size:16px;font-weight:700;margin-bottom:4px}
+    .month-status{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;margin-bottom:12px}
+    .month-open{background:rgba(0,200,83,.1);color:#00c853}
+    .month-closed{background:rgba(255,59,59,.1);color:#ff5f5f}
+    .month-stats{font-size:12px;color:rgba(255,255,255,.4)}
+    .mini-btn{padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:inherit;font-size:11px;font-weight:600}
+    .mini-btn:hover{border-color:rgba(255,255,255,.25);color:#fff}
+    .month-actions{display:flex;gap:6px;margin-top:10px}
+
+    /* ── Section header ── */
+    .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .section-head h3{font-size:14px;font-weight:700}
+
+    /* ── Empty state ── */
+    .empty{color:rgba(255,255,255,.3);font-size:13px;padding:20px 0}
+
+    /* ── Preview banner ── */
+    .preview-banner{background:rgba(255,107,43,.1);border:1px solid rgba(255,107,43,.25);border-radius:8px;padding:8px 14px;font-size:12px;color:rgba(255,107,43,.9);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ── Mock data ──────────────────────────────────────────────────────────────
+const CLIENTS=[
+  {clientId:'c1',clientName:'Acme Corp',code:'ACM',color:'#ff6b2b'},
+  {clientId:'c2',clientName:'TechStart',code:'TCH',color:'#6b8aff'},
+  {clientId:'c3',clientName:'Globex Media',code:'GLB',color:'#00c8a0'},
+]
+
+const TASKS={
+  c1:[
+    {taskCode:'ACM-001',taskName:'Auditoría SEO completa',owner:'Jesús',status:'En curso',priority:'Alta',dueDate:'2026-04-15',startDate:'2026-04-01',endDate:'2026-04-15',type:'puntual'},
+    {taskCode:'ACM-002',taskName:'Campaña Google Ads Abril',owner:'Blanca',status:'En curso',priority:'Alta',dueDate:'2026-04-30',startDate:'2026-04-01',endDate:'2026-04-30',type:'mensual'},
+    {taskCode:'ACM-003',taskName:'Informe mensual de resultados',owner:'Alejandro',status:'En curso',priority:'Media',dueDate:'2026-04-28',startDate:'2026-04-20',endDate:'2026-04-30',type:'mensual'},
+    {taskCode:'ACM-004',taskName:'Revisión de contenido web',owner:'Jesús',status:'Detenido',priority:'Media',dueDate:'2026-04-10',startDate:'2026-03-15',endDate:'2026-04-10',type:'puntual'},
+    {taskCode:'ACM-005',taskName:'Setup Analytics 4',owner:'Blanca',status:'Detenido',priority:'Baja',dueDate:'2026-04-20',startDate:'2026-04-01',endDate:'2026-04-20',type:'puntual'},
+    {taskCode:'ACM-006',taskName:'Newsletter Marzo',owner:'Alejandro',status:'Listo',priority:'Media',dueDate:'2026-03-31',startDate:'2026-03-25',endDate:'2026-03-31',type:'mensual'},
+    {taskCode:'ACM-007',taskName:'Briefing estrategia Q2',owner:'Jesús',status:'Listo',priority:'Alta',dueDate:'2026-03-28',startDate:'2026-03-20',endDate:'2026-03-28',type:'puntual'},
+    {taskCode:'ACM-008',taskName:'Gestión RRSS Marzo',owner:'Blanca',status:'Listo',priority:'Baja',dueDate:'2026-03-31',startDate:'2026-03-01',endDate:'2026-03-31',type:'mensual'},
+  ],
+  c2:[
+    {taskCode:'TCH-001',taskName:'Landing page producto',owner:'Jesús',status:'En curso',priority:'Alta',dueDate:'2026-04-20',startDate:'2026-04-05',endDate:'2026-04-20',type:'puntual'},
+    {taskCode:'TCH-002',taskName:'Estrategia contenidos Mayo',owner:'Blanca',status:'En curso',priority:'Media',dueDate:'2026-04-25',startDate:'2026-04-10',endDate:'2026-04-25',type:'puntual'},
+    {taskCode:'TCH-003',taskName:'Campaña lanzamiento',owner:'Alejandro',status:'Detenido',priority:'Alta',dueDate:'2026-04-30',startDate:'2026-04-15',endDate:'2026-04-30',type:'puntual'},
+    {taskCode:'TCH-004',taskName:'Email onboarding secuencia',owner:'Jesús',status:'Listo',priority:'Media',dueDate:'2026-03-30',startDate:'2026-03-20',endDate:'2026-03-30',type:'puntual'},
+  ],
+  c3:[
+    {taskCode:'GLB-001',taskName:'Plan editorial Mayo',owner:'Blanca',status:'En curso',priority:'Media',dueDate:'2026-04-22',startDate:'2026-04-08',endDate:'2026-04-22',type:'mensual'},
+    {taskCode:'GLB-002',taskName:'Podcast producción Ep.12',owner:'Alejandro',status:'Listo',priority:'Alta',dueDate:'2026-03-31',startDate:'2026-03-15',endDate:'2026-03-31',type:'puntual'},
+  ],
+}
+
+const TEMPLATES={
+  c1:[
+    {templateName:'Campaña Google Ads',owner:'Blanca',priority:'Alta',dueDay:5},
+    {templateName:'Informe mensual',owner:'Alejandro',priority:'Media',dueDay:28},
+    {templateName:'Gestión RRSS',owner:'Blanca',priority:'Baja',dueDay:1},
+    {templateName:'Newsletter',owner:'Alejandro',priority:'Media',dueDay:25},
+  ],
+  c2:[
+    {templateName:'Reporte métricas',owner:'Alejandro',priority:'Media',dueDay:28},
+    {templateName:'Publicaciones RRSS',owner:'Blanca',priority:'Baja',dueDay:1},
+  ],
+  c3:[
+    {templateName:'Plan editorial',owner:'Blanca',priority:'Media',dueDay:22},
+    {templateName:'Newsletter semanal',owner:'Alejandro',priority:'Media',dueDay:5},
+  ],
+}
+
+const MONTHS={
+  c1:[
+    {taskMonth:'2026-04',monthStatus:'abierto',taskCount:8},
+    {taskMonth:'2026-03',monthStatus:'cerrado',taskCount:7},
+    {taskMonth:'2026-02',monthStatus:'cerrado',taskCount:6},
+  ],
+  c2:[
+    {taskMonth:'2026-04',monthStatus:'abierto',taskCount:4},
+    {taskMonth:'2026-03',monthStatus:'cerrado',taskCount:5},
+  ],
+  c3:[
+    {taskMonth:'2026-04',monthStatus:'abierto',taskCount:2},
+  ],
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+let state={activeClient:CLIENTS[0],view:'kanban'}
+
+// ── Gantt helpers ──────────────────────────────────────────────────────────
+const MONTHS_LABELS=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC']
+function dateToCol(dateStr){
+  const d=new Date(dateStr)
+  return d.getMonth() // 0-11
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render(){
+  const c=state.activeClient
+  const tasks=TASKS[c.clientId]||[]
+  const templates=TEMPLATES[c.clientId]||[]
+  const months=MONTHS[c.clientId]||[]
+
+  const views=['kanban','table','gantt','templates','months']
+  const labels={kanban:'Kanban',table:'Tabla',gantt:'Gantt',templates:'Plantillas',months:'Meses'}
+
+  document.getElementById('app').innerHTML=`
+    <div class="sidebar">
+      <div class="logo">Ligrow</div>
+      <div class="sidebar-label">Clientes</div>
+      ${CLIENTS.map(cl=>`
+        <div class="client ${cl.clientId===c.clientId?'active':''}" onclick="selectClient('${cl.clientId}')">
+          <div class="client-dot" style="background:${cl.color}"></div>
+          ${cl.clientName}
+        </div>
+      `).join('')}
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h2>${c.clientName}</h2>
+          <div class="tabs">
+            ${views.map(v=>`<button class="tab ${state.view===v?'active':''}" onclick="setView('${v}')">${labels[v]}</button>`).join('')}
+          </div>
+        </div>
+        <button class="button">+ Nueva tarea</button>
+      </div>
+      <div class="content">
+        <div class="preview-banner">
+          ◉ Vista previa — datos de ejemplo, sin backend
+        </div>
+        ${renderView(tasks,templates,months)}
+      </div>
+    </div>
+  `
+}
+
+function renderView(tasks,templates,months){
+  if(state.view==='table')    return renderTable(tasks)
+  if(state.view==='gantt')    return renderGantt(tasks)
+  if(state.view==='templates')return renderTemplates(templates)
+  if(state.view==='months')   return renderMonths(months)
+  return renderKanban(tasks)
+}
+
+// ── Kanban ─────────────────────────────────────────────────────────────────
+function renderKanban(tasks){
+  const statuses=['En curso','Detenido','Listo']
+  return `<div class="columns">${statuses.map(s=>{
+    const t=tasks.filter(x=>x.status===s)
+    return `<div class="card">
+      <h3>${s} <span class="count">${t.length}</span></h3>
+      ${t.map(taskCard).join('')||'<div class="empty">Sin tareas</div>'}
+    </div>`
+  }).join('')}</div>`
+}
+
+function taskCard(t){
+  return `<div class="task priority-${t.priority.toLowerCase()}">
+    <div class="task-code">${t.taskCode}</div>
+    <div class="task-name">${t.taskName}</div>
+    <div class="task-meta">
+      <span class="task-owner">${t.owner}</span>
+      <span class="badge badge-${t.priority.toLowerCase()}">${t.priority}</span>
+    </div>
+  </div>`
+}
+
+// ── Table ──────────────────────────────────────────────────────────────────
+function renderTable(tasks){
+  const statusClass={
+    'En curso':'status-en-curso',
+    'Listo':'status-listo',
+    'Detenido':'status-detenido',
+  }
+  return `<div class="card">
+    <table class="grid-table">
+      <thead>
+        <tr>
+          <th>Código</th><th>Tarea</th><th>Responsable</th>
+          <th>Estado</th><th>Prioridad</th><th>Vence</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tasks.map(t=>`<tr>
+          <td style="color:rgba(255,255,255,.3);font-size:11px">${t.taskCode}</td>
+          <td>${t.taskName}</td>
+          <td>${t.owner}</td>
+          <td><span class="status-chip ${statusClass[t.status]||''}">${t.status}</span></td>
+          <td><span class="badge badge-${t.priority.toLowerCase()}">${t.priority}</span></td>
+          <td style="color:rgba(255,255,255,.4)">${t.dueDate||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`
+}
+
+// ── Gantt ──────────────────────────────────────────────────────────────────
+function renderGantt(tasks){
+  const tasksWithDates=tasks.filter(t=>t.startDate&&t.endDate)
+  if(!tasksWithDates.length)return `<div class="card"><h3>Gantt</h3><p class="empty">No hay tareas con fecha de inicio y fin.</p></div>`
+
+  const cells=col=>col===dateToCol('2026-04-01')?'rgba(255,107,43,.05)':'transparent'
+
+  return `<div class="card">
+    <div class="gantt-wrap">
+      <div class="gantt-header">
+        <div class="gantt-header-name">Tarea</div>
+        <div class="gantt-header-months">
+          ${MONTHS_LABELS.map(m=>`<div class="gantt-header-month">${m}</div>`).join('')}
+        </div>
+      </div>
+      ${tasksWithDates.map(t=>{
+        const start=dateToCol(t.startDate)
+        const end=dateToCol(t.endDate)
+        return `<div class="gantt-row">
+          <div class="gantt-name" title="${t.taskName}">${t.taskName}</div>
+          <div class="gantt-track">
+            ${Array.from({length:12},(_,i)=>{
+              const inRange=i>=start&&i<=end
+              return `<div class="gantt-cell" style="background:${cells(i)}">
+                ${inRange?`<div class="gantt-fill" style="${i===start?'margin-left:4px':''}${i===end?'margin-right:4px':''}"></div>`:''}
+              </div>`
+            }).join('')}
+          </div>
+        </div>`
+      }).join('')}
+    </div>
+  </div>`
+}
+
+// ── Templates ─────────────────────────────────────────────────────────────
+function renderTemplates(templates){
+  return `<div class="card">
+    <div class="section-head">
+      <h3>Plantillas mensuales</h3>
+      <button class="button">+ Nueva plantilla</button>
+    </div>
+    <div class="template-grid">
+      ${templates.map(t=>`
+        <div class="template-card priority-${t.priority.toLowerCase()}">
+          <div class="template-name">${t.templateName}</div>
+          <div class="template-meta">
+            <span>${t.owner}</span>
+            <span>Vence día ${t.dueDay}</span>
+            <span class="badge badge-${t.priority.toLowerCase()}">${t.priority}</span>
+          </div>
+        </div>
+      `).join('')||'<div class="empty">No hay plantillas.</div>'}
+    </div>
+  </div>`
+}
+
+// ── Months ────────────────────────────────────────────────────────────────
+function renderMonths(months){
+  const monthName=m=>{
+    const [y,mo]=m.split('-')
+    const names=['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+    return `${names[parseInt(mo,10)-1]} ${y}`
+  }
+  return `<div class="card">
+    <div class="section-head">
+      <h3>Ciclos mensuales</h3>
+      <button class="button">Generar mes</button>
+    </div>
+    <div class="month-grid">
+      ${months.map(m=>`
+        <div class="month-card">
+          <div class="month-title">${monthName(m.taskMonth)}</div>
+          <span class="month-status ${m.monthStatus==='abierto'?'month-open':'month-closed'}">
+            ${m.monthStatus==='abierto'?'Abierto':'Cerrado'}
+          </span>
+          <div class="month-stats">${m.taskCount} tareas generadas</div>
+          <div class="month-actions">
+            ${m.monthStatus==='abierto'
+              ?'<button class="mini-btn">Cerrar mes</button>'
+              :'<button class="mini-btn">Reabrir</button>'}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`
+}
+
+// ── Events ────────────────────────────────────────────────────────────────
+function selectClient(id){state.activeClient=CLIENTS.find(c=>c.clientId===id);render()}
+function setView(v){state.view=v;render()}
+
+render()
+</script>
+</body>
+</html>
