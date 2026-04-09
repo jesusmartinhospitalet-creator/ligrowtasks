@@ -1,0 +1,85 @@
+body{
+font-family:'Space Grotesk',sans-serif;
+margin:0;
+background:#0f1115;
+color:#fff
+}
+
+#app{
+display:grid;
+grid-template-columns:260px 1fr;
+height:100vh
+}
+
+.sidebar{
+background:#151922;
+padding:20px;
+border-right:1px solid rgba(255,255,255,.05)
+}
+
+.logo{
+font-weight:800;
+font-size:20px;
+margin-bottom:30px;
+background:linear-gradient(90deg,#ff6b2b,#ff4500);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent
+}
+
+.client{
+padding:10px;
+border-radius:8px;
+margin-bottom:6px;
+cursor:pointer;
+background:rgba(255,255,255,.03)
+}
+
+.client:hover{
+background:rgba(255,255,255,.06)
+}
+
+.main{
+padding:30px;
+overflow:auto
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+margin-bottom:20px
+}
+
+.button{
+padding:10px 14px;
+border-radius:8px;
+background:linear-gradient(90deg,#ff6b2b,#ff4500);
+border:0;
+color:white;
+cursor:pointer
+}
+
+.card{
+background:#151922;
+padding:20px;
+border-radius:14px;
+margin-bottom:20px;
+border:1px solid rgba(255,255,255,.05)
+}
+
+.columns{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:20px
+}
+
+.task{
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
+background:rgba(255,255,255,.03);
+border:1px solid rgba(255,255,255,.05)
+}
+
+.priority-alta{border-left:4px solid #ff3b3b}
+.priority-media{border-left:4px solid #ffb020}
+.priority-baja{border-left:4px solid #00c853}
