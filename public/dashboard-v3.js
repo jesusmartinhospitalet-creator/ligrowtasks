@@ -1,71 +1,674 @@
-const app=document.getElementById('app')
+/* ── State ─────────────────────────────────────── */
+const S = {
+  clients: [],
+  tasks: [],
+  templates: [],
+  months: [],
+  activeClient: null,
+  view: 'kanban',
+  loading: false,
+  modal: null,
+};
 
-let state={
-clients:[],
-tasks:[],
-templates:[],
-months:[],
-activeClient:null,
-view:'kanban'
-}
+const OWNERS     = ['Jesús', 'Blanca', 'Alejandro'];
+const STATUSES   = ['En curso', 'Detenido', 'Listo'];
+const PRIORITIES = ['Alta', 'Media', 'Baja'];
+const VIEWS      = ['kanban', 'table', 'gantt', 'templates', 'months'];
+const VIEW_LABELS = { kanban:'Kanban', table:'Tabla', gantt:'Gantt', templates:'Plantillas', months:'Meses' };
 
-async function api(url,options={}){
-const res=await fetch('/api'+url,{headers:{'Content-Type':'application/json'},...options})
-return res.json()
-}
+const app = document.getElementById('app');
 
-async function loadClients(){state.clients=await api('/clients');render()}
-async function loadClientData(clientId){
-state.tasks=await api('/tasks/client/'+clientId)
-state.templates=await api('/templates/'+clientId)
-state.months=await api('/months/'+clientId)
-render()
-}
-function setView(view){state.view=view;render()}
-function selectClient(id){state.activeClient=state.clients.find(c=>c.clientId===id);loadClientData(id)}
-
-function render(){
-app.innerHTML=`
-<div class="sidebar">
-<div class="logo">Ligrow</div>
-${state.clients.map(c=>`<div class="client" onclick="selectClient('${c.clientId}')">${c.clientName}</div>`).join('')}
-</div>
-<div class="main">
-<div class="header">
-<div>
-<h2>${state.activeClient?.clientName||'Selecciona cliente'}</h2>
-<div class="tabs">
-${['kanban','table','gantt','templates','months'].map(v=>`<button class="tab ${state.view===v?'active':''}" onclick="setView('${v}')">${label(v)}</button>`).join('')}
-</div>
-</div>
-<div><button class="button" onclick="newTask()">Nueva tarea</button></div>
-</div>
-${renderView()}
-</div>`
+/* ── API ───────────────────────────────────────── */
+async function api(url, opts = {}) {
+  const res = await fetch('/api' + url, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  return res.json();
 }
 
-function label(v){return({kanban:'Kanban',table:'Tabla',gantt:'Gantt',templates:'Plantillas',months:'Meses'})[v]||v}
-function renderView(){
-if(!state.activeClient)return '<div class="card">Selecciona un cliente para comenzar.</div>'
-if(state.view==='templates')return renderTemplates()
-if(state.view==='months')return renderMonths()
-if(state.view==='table')return renderTable()
-if(state.view==='gantt')return renderGantt()
-return renderKanban()
+/* ── Toast ─────────────────────────────────────── */
+let toastEl = document.createElement('div');
+toastEl.id = 'toast-container';
+document.body.appendChild(toastEl);
+
+function toast(msg, type = 'ok') {
+  const icons = { ok: '✓', err: '✕', info: 'ℹ' };
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span class="toast-icon">${icons[type] || '•'}</span><span>${msg}</span>`;
+  toastEl.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 220); }, 3200);
 }
-function renderKanban(){return `<div class="columns"><div class="card"><h3>En curso</h3>${renderTasks('En curso')}</div><div class="card"><h3>Detenido</h3>${renderTasks('Detenido')}</div><div class="card"><h3>Listo</h3>${renderTasks('Listo')}</div></div>`}
-function renderTasks(status){return state.tasks.filter(t=>t.status===status).map(t=>`<div class="task priority-${String(t.priority||'media').toLowerCase()}">${t.taskName}</div>`).join('')}
-function renderTemplates(){return `<div class="card"><div class="section-head"><h3>Plantillas mensuales</h3><button class="button" onclick="newTemplate()">Nueva plantilla</button></div>${state.templates.map(t=>`<div class="task priority-${String(t.priority||'media').toLowerCase()}"><strong>${t.templateName}</strong><br><small>${t.owner} · vence día ${t.dueDay||'-'}</small></div>`).join('')||'<p>No hay plantillas todavía.</p>'}</div>`}
-function renderMonths(){return `<div class="card"><div class="section-head"><h3>Meses generados</h3><div style="display:flex;gap:10px"><button class="button" onclick="generateMonth()">Generar mes</button></div></div>${state.months.map(m=>`<div class="task"><strong>${m.taskMonth}</strong><br><small>Estado: ${m.monthStatus}</small><div style="margin-top:8px;display:flex;gap:8px"><button class="mini-btn" onclick="closeMonth('${m.taskMonth}')">Cerrar</button><button class="mini-btn" onclick="reopenMonth('${m.taskMonth}')">Reabrir</button></div></div>`).join('')||'<p>No hay meses generados todavía.</p>'}</div>`}
-function renderTable(){return `<div class="card"><h3>Tabla de tareas</h3><table class="grid-table"><thead><tr><th>Tarea</th><th>Responsable</th><th>Estado</th><th>Prioridad</th><th>Vence</th></tr></thead><tbody>${state.tasks.map(t=>`<tr><td>${t.taskName}</td><td>${t.owner||'-'}</td><td>${t.status||'-'}</td><td>${t.priority||'-'}</td><td>${t.dueDate||'-'}</td></tr>`).join('')}</tbody></table></div>`}
-function renderGantt(){
-const tasks=state.tasks.filter(t=>t.startDate&&t.endDate)
-if(!tasks.length)return '<div class="card"><h3>Gantt</h3><p>No hay tareas con fecha de inicio y fin.</p></div>'
-return `<div class="card"><h3>Gantt</h3><div class="gantt-list">${tasks.map(t=>`<div class="gantt-row"><div class="gantt-name">${t.taskName}</div><div class="gantt-bar-wrap"><div class="gantt-bar">${t.startDate} → ${t.endDate}</div></div></div>`).join('')}</div></div>`
+
+/* ── Modal ─────────────────────────────────────── */
+function openModal(type, data = {}) {
+  S.modal = { type, data };
+  renderModal();
 }
-async function newTask(){if(!state.activeClient)return;const name=prompt('Nombre tarea');if(!name)return;await api('/tasks',{method:'POST',body:JSON.stringify({clientId:state.activeClient.clientId,taskName:name})});loadClientData(state.activeClient.clientId)}
-async function newTemplate(){if(!state.activeClient)return;const templateName=prompt('Nombre de la plantilla');if(!templateName)return;await api('/templates',{method:'POST',body:JSON.stringify({clientId:state.activeClient.clientId,templateName,owner:'Jesús',priority:'Media',statusDefault:'En curso',dueDay:5,isActive:true})});loadClientData(state.activeClient.clientId)}
-async function generateMonth(){if(!state.activeClient)return;const taskMonth=prompt('Mes a generar (YYYY-MM)','2026-05');if(!taskMonth)return;await api('/months/generate',{method:'POST',body:JSON.stringify({clientId:state.activeClient.clientId,taskMonth})});loadClientData(state.activeClient.clientId)}
-async function closeMonth(taskMonth){if(!state.activeClient)return;await api('/months/close',{method:'POST',body:JSON.stringify({clientId:state.activeClient.clientId,taskMonth})});loadClientData(state.activeClient.clientId)}
-async function reopenMonth(taskMonth){if(!state.activeClient)return;await api('/months/reopen',{method:'POST',body:JSON.stringify({clientId:state.activeClient.clientId,taskMonth})});loadClientData(state.activeClient.clientId)}
-loadClients()
+function closeModal() {
+  S.modal = null;
+  const el = document.getElementById('modal-overlay');
+  if (el) el.remove();
+}
+
+function renderModal() {
+  const old = document.getElementById('modal-overlay');
+  if (old) old.remove();
+  if (!S.modal) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-overlay';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = buildModal(S.modal.type, S.modal.data);
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', escListener);
+
+  const form = overlay.querySelector('form');
+  if (form) form.addEventListener('submit', handleFormSubmit);
+
+  const typeSelect = overlay.querySelector('[name="taskType"]');
+  if (typeSelect) toggleMonthField(typeSelect);
+}
+
+function escListener(e) {
+  if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escListener); }
+}
+
+function buildModal(type, data) {
+  if (type === 'task')     return modalTask(data);
+  if (type === 'client')   return modalClient(data);
+  if (type === 'template') return modalTemplate(data);
+  if (type === 'confirm')  return modalConfirm(data);
+  return '';
+}
+
+/* ── Modal: Task ───────────────────────────────── */
+function modalTask(d = {}) {
+  const isEdit = !!d.taskId;
+  const opt = (arr, val) => arr.map(o => `<option${o === val ? ' selected' : ''}>${o}</option>`).join('');
+  const val = k => d[k] ? ` value="${esc(d[k])}"` : '';
+  return `
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">${isEdit ? 'Editar tarea' : 'Nueva tarea'}</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="task-form" data-type="task">
+        <input type="hidden" name="taskId" value="${d.taskId || ''}">
+        <input type="hidden" name="clientId" value="${S.activeClient?.clientId || ''}">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label class="form-label">Nombre de la tarea *</label>
+            <input class="form-input" name="taskName" required placeholder="¿Qué hay que hacer?"${val('taskName')}>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Responsable</label>
+            <select class="form-input" name="owner">${opt(OWNERS, d.owner || OWNERS[0])}</select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Estado</label>
+            <select class="form-input" name="status">${opt(STATUSES, d.status || 'En curso')}</select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Prioridad</label>
+            <select class="form-input" name="priority">${opt(PRIORITIES, d.priority || 'Media')}</select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Tipo</label>
+            <select class="form-input" name="taskType" onchange="toggleMonthField(this)">
+              <option value="puntual"${d.taskType !== 'mensual' ? ' selected' : ''}>Puntual</option>
+              <option value="mensual"${d.taskType === 'mensual' ? ' selected' : ''}>Mensual</option>
+            </select>
+          </div>
+          <div class="form-field" id="field-taskMonth" style="display:none">
+            <label class="form-label">Mes (YYYY-MM)</label>
+            <input class="form-input" name="taskMonth" type="month"${val('taskMonth')}>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Fecha de vencimiento</label>
+            <input class="form-input" name="dueDate" type="date"${val('dueDate')}>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Fecha de inicio</label>
+            <input class="form-input" name="startDate" type="date"${val('startDate')}>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Fecha de fin</label>
+            <input class="form-input" name="endDate" type="date"${val('endDate')}>
+          </div>
+          <div class="form-field full">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-input" name="description" rows="3" placeholder="Detalles opcionales…">${esc(d.description || '')}</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          ${isEdit ? `<button type="button" class="btn-danger btn-sm" onclick="confirmDelete('task','${d.taskId}')">Eliminar</button>` : ''}
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>`;
+}
+
+function toggleMonthField(sel) {
+  const f = document.getElementById('field-taskMonth');
+  if (f) f.style.display = sel.value === 'mensual' ? 'flex' : 'none';
+}
+
+/* ── Modal: Client ─────────────────────────────── */
+function modalClient(d = {}) {
+  const isEdit = !!d.clientId;
+  const val = k => d[k] ? ` value="${esc(d[k])}"` : '';
+  return `
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">${isEdit ? 'Editar cliente' : 'Nuevo cliente'}</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="client-form" data-type="client">
+        <input type="hidden" name="clientId" value="${d.clientId || ''}">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label class="form-label">Nombre del cliente *</label>
+            <input class="form-input" name="clientName" required placeholder="Nombre de la marca o empresa"${val('clientName')}>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Código (auto si vacío)</label>
+            <input class="form-input" name="clientCode" placeholder="BRAND" maxlength="6"${val('clientCode')}>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Fecha de inicio</label>
+            <input class="form-input" name="kickoffDate" type="date"${val('kickoffDate')}>
+          </div>
+          <div class="form-field full">
+            <label class="form-label">Concepto / Servicio</label>
+            <input class="form-input" name="concept" placeholder="ej: SEO + Diseño web"${val('concept')}>
+          </div>
+          <div class="form-field full">
+            <label class="form-label">Resumen</label>
+            <textarea class="form-input" name="summary" rows="3" placeholder="Descripción breve del proyecto…">${esc(d.summary || '')}</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          ${isEdit ? `<button type="button" class="btn-danger btn-sm" onclick="confirmDelete('client','${d.clientId}')">Eliminar</button>` : ''}
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>`;
+}
+
+/* ── Modal: Template ───────────────────────────── */
+function modalTemplate(d = {}) {
+  const isEdit = !!d.templateId;
+  const opt = (arr, val) => arr.map(o => `<option${o === val ? ' selected' : ''}>${o}</option>`).join('');
+  const v = k => d[k] ? ` value="${esc(d[k])}"` : '';
+  return `
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">${isEdit ? 'Editar plantilla' : 'Nueva plantilla'}</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="template-form" data-type="template">
+        <input type="hidden" name="templateId" value="${d.templateId || ''}">
+        <input type="hidden" name="clientId" value="${S.activeClient?.clientId || ''}">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label class="form-label">Nombre de la plantilla *</label>
+            <input class="form-input" name="templateName" required placeholder="ej: Informe mensual de resultados"${v('templateName')}>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Responsable</label>
+            <select class="form-input" name="owner">${opt(OWNERS, d.owner || OWNERS[0])}</select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Prioridad</label>
+            <select class="form-input" name="priority">${opt(PRIORITIES, d.priority || 'Media')}</select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Estado por defecto</label>
+            <select class="form-input" name="statusDefault">${opt(STATUSES, d.statusDefault || 'En curso')}</select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Día de vencimiento (1–31)</label>
+            <input class="form-input" name="dueDay" type="number" min="1" max="31" placeholder="5"${v('dueDay')}>
+          </div>
+          <div class="form-field full">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-input" name="description" rows="2" placeholder="Detalles de la tarea mensual…">${esc(d.description || '')}</textarea>
+          </div>
+          <div class="form-field full" style="flex-direction:row;align-items:center;gap:10px;">
+            <input type="checkbox" name="isActive" id="chk-active" style="width:16px;height:16px;accent-color:var(--orange);"${d.isActive !== false ? ' checked' : ''}>
+            <label for="chk-active" class="form-label" style="margin:0;cursor:pointer;">Plantilla activa</label>
+          </div>
+        </div>
+        <div class="form-actions">
+          ${isEdit ? `<button type="button" class="btn-danger btn-sm" onclick="confirmDelete('template','${d.templateId}')">Eliminar</button>` : ''}
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>`;
+}
+
+/* ── Modal: Confirm ────────────────────────────── */
+function modalConfirm(d = {}) {
+  return `
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">Confirmar eliminación</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-icon">🗑️</div>
+      <p class="confirm-msg">${d.msg || '¿Eliminar este elemento?'}</p>
+      <p class="confirm-sub">Esta acción no se puede deshacer.</p>
+      <div class="form-actions" style="justify-content:center;">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-danger" onclick="(${d.onConfirm})()">Eliminar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function confirmDelete(type, id) {
+  const msgs = { task: 'Se eliminará la tarea y sus comentarios.', client: 'Se eliminará el cliente y TODAS sus tareas, plantillas y meses.', template: 'Se eliminará la plantilla.' };
+  const actions = {
+    task:     `async function(){ closeModal(); const r=await api('/tasks/${id}',{method:'DELETE'}); if(r.ok){toast('Tarea eliminada'); await loadClientData(S.activeClient.clientId); render();} else toast(r.error||'Error','err'); }`,
+    client:   `async function(){ closeModal(); const r=await api('/clients/${id}',{method:'DELETE'}); if(r.ok){toast('Cliente eliminado'); S.activeClient=null; await loadClients(); render();} else toast(r.error||'Error','err'); }`,
+    template: `async function(){ closeModal(); const r=await api('/templates/${id}',{method:'DELETE'}); if(r.ok){toast('Plantilla eliminada'); await loadClientData(S.activeClient.clientId); render();} else toast(r.error||'Error','err'); }`,
+  };
+  openModal('confirm', { msg: msgs[type], onConfirm: actions[type] });
+}
+
+/* ── Form submit handler ───────────────────────── */
+async function handleFormSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const type = form.dataset.type;
+  const data = Object.fromEntries(new FormData(form));
+
+  if (type === 'task') {
+    if (!data.taskId) delete data.taskId;
+    if (data.taskType !== 'mensual') { data.taskMonth = ''; data.monthStatus = ''; }
+    const r = await api('/tasks', { method: 'POST', body: JSON.stringify(data) });
+    if (r.error) { toast(r.error, 'err'); return; }
+    toast(data.taskId ? 'Tarea actualizada' : 'Tarea creada');
+    closeModal();
+    await loadClientData(S.activeClient.clientId);
+    render();
+  }
+
+  if (type === 'client') {
+    const isEdit = !!data.clientId;
+    const url = isEdit ? `/clients/${data.clientId}` : '/clients';
+    const method = isEdit ? 'PUT' : 'POST';
+    if (!isEdit) delete data.clientId;
+    const r = await api(url, { method, body: JSON.stringify(data) });
+    if (r.error) { toast(r.error, 'err'); return; }
+    toast(isEdit ? 'Cliente actualizado' : 'Cliente creado');
+    closeModal();
+    await loadClients();
+    if (!isEdit) { S.activeClient = S.clients.find(c => c.clientId === r.clientId) || null; }
+    if (S.activeClient) await loadClientData(S.activeClient.clientId);
+    render();
+  }
+
+  if (type === 'template') {
+    data.isActive = form.querySelector('[name="isActive"]').checked;
+    if (!data.templateId) delete data.templateId;
+    const r = await api('/templates', { method: 'POST', body: JSON.stringify(data) });
+    if (r.error) { toast(r.error, 'err'); return; }
+    toast(data.templateId ? 'Plantilla actualizada' : 'Plantilla creada');
+    closeModal();
+    await loadClientData(S.activeClient.clientId);
+    render();
+  }
+}
+
+/* ── Data loading ──────────────────────────────── */
+async function loadClients() {
+  const r = await api('/clients');
+  S.clients = Array.isArray(r) ? r : [];
+  if (S.activeClient) {
+    S.activeClient = S.clients.find(c => c.clientId === S.activeClient.clientId) || null;
+  }
+}
+
+async function loadClientData(clientId) {
+  const [tasks, templates, months] = await Promise.all([
+    api('/tasks/client/' + clientId),
+    api('/templates/' + clientId),
+    api('/months/' + clientId),
+  ]);
+  S.tasks     = Array.isArray(tasks)     ? tasks     : [];
+  S.templates = Array.isArray(templates) ? templates : [];
+  S.months    = Array.isArray(months)    ? months    : [];
+}
+
+async function selectClient(id) {
+  S.activeClient = S.clients.find(c => c.clientId === id) || null;
+  S.view = 'kanban';
+  S.loading = true;
+  render();
+  await loadClientData(id);
+  S.loading = false;
+  render();
+}
+
+function setView(v) { S.view = v; render(); }
+
+/* ── Render ────────────────────────────────────── */
+function render() {
+  app.innerHTML = renderSidebar() + renderMain();
+}
+
+/* ── Sidebar ───────────────────────────────────── */
+function renderSidebar() {
+  const items = S.clients.map(c => {
+    const active = S.activeClient?.clientId === c.clientId;
+    const initials = (c.clientName || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    return `
+    <div class="client-item${active ? ' active' : ''}" onclick="selectClient('${c.clientId}')">
+      <div class="client-avatar">${initials}</div>
+      <span class="client-name">${esc(c.clientName)}</span>
+      <div class="client-actions" onclick="event.stopPropagation()">
+        <button class="client-action-btn" onclick="openModal('client',${JSON.stringify(c).replace(/"/g,'&quot;')})" title="Editar">✎</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">LIGROW</div>
+      <div class="sidebar-logo-sub">Tasks</div>
+    </div>
+    <div class="sidebar-section">Clientes</div>
+    <div class="sidebar-clients">
+      ${S.clients.length ? items : '<div style="padding:12px 10px;font-size:12px;color:var(--text4);">Sin clientes todavía</div>'}
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-new-client" onclick="openModal('client')">＋ Nuevo cliente</button>
+    </div>
+  </div>`;
+}
+
+/* ── Main ──────────────────────────────────────── */
+function renderMain() {
+  if (!S.activeClient) {
+    return `
+    <div class="main">
+      <div class="empty-state" style="height:100%;justify-content:center;">
+        <div class="empty-state-icon">←</div>
+        <h3>Selecciona un cliente</h3>
+        <p>Elige un cliente en el panel izquierdo o crea uno nuevo para empezar.</p>
+      </div>
+    </div>`;
+  }
+
+  const tabs = VIEWS.map(v => `<button class="tab${S.view === v ? ' active' : ''}" onclick="setView('${v}')">${VIEW_LABELS[v]}</button>`).join('');
+
+  return `
+  <div class="main">
+    <div class="main-header">
+      <div class="main-header-top">
+        <div>
+          <div class="main-title">${esc(S.activeClient.clientName)}</div>
+          ${S.activeClient.concept ? `<div class="main-subtitle">${esc(S.activeClient.concept)}</div>` : ''}
+        </div>
+        <div class="main-actions">
+          <button class="btn-secondary btn-sm" onclick="openModal('client',${JSON.stringify(S.activeClient).replace(/"/g,'&quot;')})">✎ Editar</button>
+          ${S.view === 'kanban' || S.view === 'table' ? `<button class="btn-primary" onclick="openModal('task')">＋ Nueva tarea</button>` : ''}
+          ${S.view === 'templates' ? `<button class="btn-primary" onclick="openModal('template')">＋ Nueva plantilla</button>` : ''}
+          ${S.view === 'months'    ? `<button class="btn-primary" onclick="promptGenerateMonth()">＋ Generar mes</button>` : ''}
+        </div>
+      </div>
+      <div class="tabs">${tabs}</div>
+    </div>
+    <div class="main-content">
+      ${S.loading ? '<div class="loading"><div class="spinner"></div>Cargando…</div>' : renderView()}
+    </div>
+  </div>`;
+}
+
+function renderView() {
+  if (S.view === 'kanban')    return renderKanban();
+  if (S.view === 'table')     return renderTable();
+  if (S.view === 'gantt')     return renderGantt();
+  if (S.view === 'templates') return renderTemplates();
+  if (S.view === 'months')    return renderMonths();
+  return '';
+}
+
+/* ── Kanban ────────────────────────────────────── */
+function renderKanban() {
+  return `<div class="kanban">
+    ${STATUSES.map(s => renderKanbanCol(s)).join('')}
+  </div>`;
+}
+
+function renderKanbanCol(status) {
+  const tasks = S.tasks.filter(t => t.status === status);
+  const colClass = { 'En curso': 'col-curso', 'Detenido': 'col-detenido', 'Listo': 'col-listo' }[status] || '';
+  return `
+  <div class="kanban-col ${colClass}">
+    <div class="kanban-col-header">
+      <div class="kanban-col-title">
+        <div class="kanban-col-dot"></div>
+        ${status}
+      </div>
+      <span class="kanban-count">${tasks.length}</span>
+    </div>
+    <div class="kanban-cards">
+      ${tasks.length ? tasks.map(t => renderTaskCard(t)).join('') : `<div style="padding:16px 6px;font-size:12px;color:var(--text4);text-align:center;">Sin tareas</div>`}
+    </div>
+    <button class="kanban-add-btn" onclick="openModal('task',{status:'${status}'})">＋ Añadir tarea</button>
+  </div>`;
+}
+
+function renderTaskCard(t) {
+  const pri = (t.priority || 'media').toLowerCase();
+  const ownerClass = ownerCls(t.owner);
+  const due = t.dueDate ? new Date(t.dueDate) : null;
+  const overdue = due && due < new Date() && t.status !== 'Listo';
+  const dueStr = due ? due.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '';
+  const initials = ownerInitials(t.owner);
+  return `
+  <div class="task-card pri-${pri}" onclick='openModal("task",${JSON.stringify(t)})'>
+    <div class="task-card-name">${esc(t.taskName)}</div>
+    <div class="task-card-meta">
+      <span class="task-card-code">${esc(t.taskCode || '')}</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        ${dueStr ? `<span class="task-card-dates${overdue ? ' overdue' : ''}">📅 ${dueStr}</span>` : ''}
+        <span class="owner-dot ${ownerClass}" title="${esc(t.owner || '')}">${initials}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Table ─────────────────────────────────────── */
+function renderTable() {
+  if (!S.tasks.length) return emptyState('Sin tareas', 'Crea la primera tarea con el botón "Nueva tarea".');
+  return `
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Tarea</th>
+          <th>Responsable</th>
+          <th>Estado</th>
+          <th>Prioridad</th>
+          <th>Vencimiento</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${S.tasks.map(t => {
+          const due = t.dueDate ? new Date(t.dueDate) : null;
+          const overdue = due && due < new Date() && t.status !== 'Listo';
+          const dueStr = due ? due.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'2-digit' }) : '—';
+          return `
+          <tr onclick='openModal("task",${JSON.stringify(t)})'>
+            <td style="color:var(--text3);font-size:12px;">${esc(t.taskCode || '—')}</td>
+            <td class="task-name-cell">${esc(t.taskName)}</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><span class="owner-dot ${ownerCls(t.owner)}">${ownerInitials(t.owner)}</span><span style="color:var(--text2)">${esc(t.owner || '—')}</span></div></td>
+            <td><span class="badge ${statusBadge(t.status)}">${t.status || '—'}</span></td>
+            <td><span class="badge ${priBadge(t.priority)}">${t.priority || '—'}</span></td>
+            <td class="${overdue ? 'due-date-overdue' : ''}">${dueStr}</td>
+            <td style="color:var(--text3);font-size:12px;text-transform:capitalize;">${t.taskType || '—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+/* ── Gantt ─────────────────────────────────────── */
+function renderGantt() {
+  const tasks = S.tasks.filter(t => t.startDate && t.endDate);
+  if (!tasks.length) return emptyState('Sin datos de Gantt', 'Añade fechas de inicio y fin a las tareas para verlas aquí.');
+  return `
+  <div class="gantt-wrap">
+    <div class="gantt-header">Diagrama de Gantt — ${esc(S.activeClient.clientName)}</div>
+    ${tasks.map(t => {
+      const s = new Date(t.startDate), e = new Date(t.endDate);
+      const fmt = d => d.toLocaleDateString('es-ES', { day:'2-digit', month:'short' });
+      return `
+      <div class="gantt-row">
+        <div class="gantt-row-name" title="${esc(t.taskName)}">${esc(t.taskName)}</div>
+        <div class="gantt-bar-cell">
+          <div class="gantt-bar">${fmt(s)} → ${fmt(e)}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ── Templates ─────────────────────────────────── */
+function renderTemplates() {
+  if (!S.templates.length) return emptyState('Sin plantillas', 'Crea plantillas mensuales para generar tareas recurrentes automáticamente.');
+  return `
+  <div class="templates-grid">
+    ${S.templates.map(t => `
+    <div class="template-card${t.isActive === false ? ' template-inactive' : ''}">
+      <div class="template-card-header">
+        <div class="template-card-name">${esc(t.templateName)}</div>
+        <div class="template-card-actions">
+          <button class="btn-icon" onclick='openModal("template",${JSON.stringify(t)})' title="Editar">✎</button>
+        </div>
+      </div>
+      ${t.description ? `<div style="font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:8px;">${esc(t.description)}</div>` : ''}
+      <div class="template-card-meta">
+        <span class="badge ${priBadge(t.priority)}">${t.priority || '—'}</span>
+        <span class="badge ${statusBadge(t.statusDefault)}">${t.statusDefault || '—'}</span>
+        <span class="owner-dot ${ownerCls(t.owner)}" title="${esc(t.owner || '')}">${ownerInitials(t.owner)}</span>
+        ${t.dueDay ? `<span class="badge-tag badge" style="font-size:10px;">Día ${t.dueDay}</span>` : ''}
+        ${t.isActive === false ? `<span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text4);">Inactiva</span>` : ''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+/* ── Months ────────────────────────────────────── */
+function renderMonths() {
+  if (!S.months.length) return emptyState('Sin meses generados', 'Genera el mes actual para crear las tareas mensuales de las plantillas activas.');
+  return `
+  <div class="months-grid">
+    ${S.months.map(m => {
+      const isOpen = m.monthStatus === 'abierto';
+      return `
+      <div class="month-card">
+        <div class="month-card-title">${esc(m.taskMonth)}</div>
+        <div class="month-card-status">
+          <span class="badge ${isOpen ? 'badge-curso' : 'badge-listo'}">${isOpen ? 'Abierto' : 'Cerrado'}</span>
+        </div>
+        <div class="month-card-actions">
+          ${isOpen
+            ? `<button class="btn-secondary btn-sm" onclick="doCloseMonth('${m.taskMonth}')">Cerrar mes</button>`
+            : `<button class="btn-secondary btn-sm" onclick="doReopenMonth('${m.taskMonth}')">Reabrir mes</button>`}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ── Month actions ─────────────────────────────── */
+async function promptGenerateMonth() {
+  const now = new Date();
+  const def = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  openModal('confirm', {
+    msg: `<b>Generar mes</b><br>Se crearán tareas para todas las plantillas activas.`,
+    onConfirm: `async function(){
+      closeModal();
+      const taskMonth = prompt('Mes a generar (YYYY-MM)', '${def}');
+      if(!taskMonth) return;
+      const r = await api('/months/generate', {method:'POST', body:JSON.stringify({clientId:S.activeClient.clientId, taskMonth})});
+      if(r.error){ toast(r.error,'err'); return; }
+      toast('Mes ' + taskMonth + ' generado');
+      await loadClientData(S.activeClient.clientId);
+      render();
+    }`,
+  });
+}
+
+async function doCloseMonth(taskMonth) {
+  const r = await api('/months/close', { method: 'POST', body: JSON.stringify({ clientId: S.activeClient.clientId, taskMonth }) });
+  if (r.error) { toast(r.error, 'err'); return; }
+  toast('Mes ' + taskMonth + ' cerrado');
+  await loadClientData(S.activeClient.clientId);
+  render();
+}
+
+async function doReopenMonth(taskMonth) {
+  const r = await api('/months/reopen', { method: 'POST', body: JSON.stringify({ clientId: S.activeClient.clientId, taskMonth }) });
+  if (r.error) { toast(r.error, 'err'); return; }
+  toast('Mes ' + taskMonth + ' reabierto');
+  await loadClientData(S.activeClient.clientId);
+  render();
+}
+
+/* ── Helpers ───────────────────────────────────── */
+function emptyState(title, msg) {
+  return `<div class="empty-state"><div class="empty-state-icon">📭</div><h3>${title}</h3><p>${msg}</p></div>`;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function statusBadge(s) {
+  return { 'En curso': 'badge-curso', 'Listo': 'badge-listo', 'Detenido': 'badge-detenido' }[s] || '';
+}
+
+function priBadge(p) {
+  return { 'Alta': 'badge-alta', 'Media': 'badge-media', 'Baja': 'badge-baja' }[p] || '';
+}
+
+function ownerCls(o) {
+  return { 'Jesús': 'owner-jesus', 'Blanca': 'owner-blanca', 'Alejandro': 'owner-alejandro' }[o] || 'owner-default';
+}
+
+function ownerInitials(o) {
+  if (!o) return '?';
+  return o.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
+
+/* ── Init ──────────────────────────────────────── */
+(async () => {
+  S.loading = true;
+  render();
+  await loadClients();
+  S.loading = false;
+  render();
+})();
