@@ -1,8 +1,16 @@
 const { Pool } = require('pg');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-});
+// Reuse pool across Lambda warm instances; prevent multiple pools on hot reloads
+if (!global._pgPool) {
+  global._pgPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 2,
+  });
+  // Without this listener an idle-client error crashes the process
+  global._pgPool.on('error', (err) => {
+    console.error('pg pool error:', err.message);
+  });
+}
 
-module.exports = pool;
+module.exports = global._pgPool;
