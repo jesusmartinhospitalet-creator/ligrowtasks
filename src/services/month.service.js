@@ -10,18 +10,18 @@ function normalizeMonthKey(monthKey) {
 }
 
 async function listClientMonths(clientId) {
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT
-      id AS monthId,
-      client_id AS clientId,
-      task_month AS taskMonth,
-      month_status AS monthStatus,
-      generated_at AS generatedAt,
-      closed_at AS closedAt,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      id AS "monthId",
+      client_id AS "clientId",
+      task_month AS "taskMonth",
+      month_status AS "monthStatus",
+      generated_at AS "generatedAt",
+      closed_at AS "closedAt",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
      FROM client_months
-     WHERE client_id = ?
+     WHERE client_id = $1
      ORDER BY task_month DESC`,
     [clientId]
   );
@@ -31,18 +31,18 @@ async function listClientMonths(clientId) {
 
 async function getClientMonth(clientId, taskMonth) {
   const mk = normalizeMonthKey(taskMonth);
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT
-      id AS monthId,
-      client_id AS clientId,
-      task_month AS taskMonth,
-      month_status AS monthStatus,
-      generated_at AS generatedAt,
-      closed_at AS closedAt,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      id AS "monthId",
+      client_id AS "clientId",
+      task_month AS "taskMonth",
+      month_status AS "monthStatus",
+      generated_at AS "generatedAt",
+      closed_at AS "closedAt",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
      FROM client_months
-     WHERE client_id = ? AND task_month = ?
+     WHERE client_id = $1 AND task_month = $2
      LIMIT 1`,
     [clientId, mk]
   );
@@ -61,20 +61,11 @@ async function createClientMonthIfMissing(clientId, taskMonth, monthStatus = 'ab
   await pool.query(
     `INSERT INTO client_months (
       id, client_id, task_month, month_status, generated_at, closed_at, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
     [monthId, clientId, mk, monthStatus, now, null, now, now]
   );
 
-  return {
-    monthId,
-    clientId,
-    taskMonth: mk,
-    monthStatus,
-    generatedAt: now,
-    closedAt: null,
-    createdAt: now,
-    updatedAt: now
-  };
+  return { monthId, clientId, taskMonth: mk, monthStatus, generatedAt: now, closedAt: null, createdAt: now, updatedAt: now };
 }
 
 async function closeClientMonth(clientId, taskMonth) {
@@ -85,25 +76,19 @@ async function closeClientMonth(clientId, taskMonth) {
 
   await pool.query(
     `UPDATE client_months
-     SET month_status = 'cerrado', closed_at = ?, updated_at = ?
-     WHERE client_id = ? AND task_month = ?`,
+     SET month_status = 'cerrado', closed_at = $1, updated_at = $2
+     WHERE client_id = $3 AND task_month = $4`,
     [now, now, clientId, mk]
   );
 
   await pool.query(
     `UPDATE tasks
-     SET month_status = 'cerrado', updated_at = ?
-     WHERE client_id = ? AND task_type = 'mensual' AND task_month = ?`,
+     SET month_status = 'cerrado', updated_at = $1
+     WHERE client_id = $2 AND task_type = 'mensual' AND task_month = $3`,
     [now, clientId, mk]
   );
 
-  return {
-    ok: true,
-    clientId,
-    taskMonth: mk,
-    monthStatus: 'cerrado',
-    closedAt: now
-  };
+  return { ok: true, clientId, taskMonth: mk, monthStatus: 'cerrado', closedAt: now };
 }
 
 async function reopenClientMonth(clientId, taskMonth) {
@@ -114,31 +99,19 @@ async function reopenClientMonth(clientId, taskMonth) {
 
   await pool.query(
     `UPDATE client_months
-     SET month_status = 'abierto', closed_at = NULL, updated_at = ?
-     WHERE client_id = ? AND task_month = ?`,
+     SET month_status = 'abierto', closed_at = NULL, updated_at = $1
+     WHERE client_id = $2 AND task_month = $3`,
     [now, clientId, mk]
   );
 
   await pool.query(
     `UPDATE tasks
-     SET month_status = 'abierto', updated_at = ?
-     WHERE client_id = ? AND task_type = 'mensual' AND task_month = ?`,
+     SET month_status = 'abierto', updated_at = $1
+     WHERE client_id = $2 AND task_type = 'mensual' AND task_month = $3`,
     [now, clientId, mk]
   );
 
-  return {
-    ok: true,
-    clientId,
-    taskMonth: mk,
-    monthStatus: 'abierto'
-  };
+  return { ok: true, clientId, taskMonth: mk, monthStatus: 'abierto' };
 }
 
-module.exports = {
-  normalizeMonthKey,
-  listClientMonths,
-  getClientMonth,
-  createClientMonthIfMissing,
-  closeClientMonth,
-  reopenClientMonth
-};
+module.exports = { normalizeMonthKey, listClientMonths, getClientMonth, createClientMonthIfMissing, closeClientMonth, reopenClientMonth };
