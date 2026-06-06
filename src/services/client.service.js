@@ -4,7 +4,7 @@ const pool = require('../config/database');
 function normalizeClientCode(code = '', clientName = '') {
   const source = String(code || clientName || '')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '');
 
@@ -12,17 +12,17 @@ function normalizeClientCode(code = '', clientName = '') {
 }
 
 async function listClients() {
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT
-      id AS clientId,
-      name AS clientName,
-      code AS clientCode,
+      id AS "clientId",
+      name AS "clientName",
+      code AS "clientCode",
       concept,
       summary,
-      kickoff_date AS kickoffDate,
-      ext_json AS extJson,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      kickoff_date AS "kickoffDate",
+      ext_json AS "extJson",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
      FROM clients
      ORDER BY name ASC`
   );
@@ -48,21 +48,11 @@ async function createClient(payload) {
   await pool.query(
     `INSERT INTO clients (
       id, name, code, concept, summary, kickoff_date, ext_json, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
     [clientId, clientName, clientCode, concept, summary, kickoffDate, extJson, now, now]
   );
 
-  return {
-    clientId,
-    clientName,
-    clientCode,
-    concept,
-    summary,
-    kickoffDate,
-    extJson,
-    createdAt: now,
-    updatedAt: now
-  };
+  return { clientId, clientName, clientCode, concept, summary, kickoffDate, extJson, createdAt: now, updatedAt: now };
 }
 
 async function updateClient(clientId, payload) {
@@ -79,46 +69,32 @@ async function updateClient(clientId, payload) {
   const kickoffDate = payload.kickoffDate || null;
   const extJson = payload.extJson || '{}';
 
-  const [result] = await pool.query(
+  const result = await pool.query(
     `UPDATE clients
-     SET name = ?, code = ?, concept = ?, summary = ?, kickoff_date = ?, ext_json = ?, updated_at = ?
-     WHERE id = ?`,
+     SET name = $1, code = $2, concept = $3, summary = $4, kickoff_date = $5, ext_json = $6, updated_at = $7
+     WHERE id = $8`,
     [clientName, clientCode, concept, summary, kickoffDate, extJson, now, clientId]
   );
 
-  if (!result.affectedRows) {
+  if (!result.rowCount) {
     throw new Error('Cliente no encontrado.');
   }
 
-  return {
-    clientId,
-    clientName,
-    clientCode,
-    concept,
-    summary,
-    kickoffDate,
-    extJson,
-    updatedAt: now
-  };
+  return { clientId, clientName, clientCode, concept, summary, kickoffDate, extJson, updatedAt: now };
 }
 
 async function deleteClient(clientId) {
-  await pool.query('DELETE FROM comments WHERE task_id IN (SELECT id FROM tasks WHERE client_id = ?)', [clientId]);
-  await pool.query('DELETE FROM tasks WHERE client_id = ?', [clientId]);
-  await pool.query('DELETE FROM templates WHERE client_id = ?', [clientId]);
-  await pool.query('DELETE FROM client_months WHERE client_id = ?', [clientId]);
-  const [result] = await pool.query('DELETE FROM clients WHERE id = ?', [clientId]);
+  await pool.query('DELETE FROM comments WHERE task_id IN (SELECT id FROM tasks WHERE client_id = $1)', [clientId]);
+  await pool.query('DELETE FROM tasks WHERE client_id = $1', [clientId]);
+  await pool.query('DELETE FROM templates WHERE client_id = $1', [clientId]);
+  await pool.query('DELETE FROM client_months WHERE client_id = $1', [clientId]);
+  const result = await pool.query('DELETE FROM clients WHERE id = $1', [clientId]);
 
-  if (!result.affectedRows) {
+  if (!result.rowCount) {
     throw new Error('Cliente no encontrado.');
   }
 
   return { ok: true };
 }
 
-module.exports = {
-  listClients,
-  createClient,
-  updateClient,
-  deleteClient
-};
+module.exports = { listClients, createClient, updateClient, deleteClient };

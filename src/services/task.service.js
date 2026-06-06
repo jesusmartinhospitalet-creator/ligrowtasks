@@ -31,15 +31,15 @@ function normalizeTask(task = {}) {
 }
 
 async function getClientCode(clientId) {
-  const [rows] = await pool.query('SELECT code, name FROM clients WHERE id = ? LIMIT 1', [clientId]);
+  const { rows } = await pool.query('SELECT code, name FROM clients WHERE id = $1 LIMIT 1', [clientId]);
   if (!rows.length) return 'CLI';
   return rows[0].code || 'CLI';
 }
 
 async function nextTaskCode(clientId) {
   const prefix = await getClientCode(clientId);
-  const [rows] = await pool.query(
-    'SELECT task_code FROM tasks WHERE client_id = ? ORDER BY created_at DESC',
+  const { rows } = await pool.query(
+    'SELECT task_code FROM tasks WHERE client_id = $1 ORDER BY created_at DESC',
     [clientId]
   );
 
@@ -54,67 +54,61 @@ async function nextTaskCode(clientId) {
 }
 
 async function listAllTasks() {
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT
-      id AS taskId,
-      task_code AS taskCode,
-      client_id AS clientId,
-      task_name AS taskName,
+      id AS "taskId",
+      task_code AS "taskCode",
+      client_id AS "clientId",
+      task_name AS "taskName",
       owner,
       status,
       priority,
-      task_type AS taskType,
-      task_month AS taskMonth,
-      month_status AS monthStatus,
-      template_id AS templateId,
-      due_date AS dueDate,
-      start_date AS startDate,
-      end_date AS endDate,
+      task_type AS "taskType",
+      task_month AS "taskMonth",
+      month_status AS "monthStatus",
+      template_id AS "templateId",
+      due_date AS "dueDate",
+      start_date AS "startDate",
+      end_date AS "endDate",
       description,
-      attachments_json AS attachmentsJson,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      attachments_json AS "attachmentsJson",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
      FROM tasks
-     ORDER BY due_date IS NULL, due_date ASC, created_at DESC`
+     ORDER BY due_date ASC NULLS LAST, created_at DESC`
   );
 
-  return rows.map((row) => ({
-    ...row,
-    attachments: JSON.parse(row.attachmentsJson || '[]')
-  }));
+  return rows.map((row) => ({ ...row, attachments: JSON.parse(row.attachmentsJson || '[]') }));
 }
 
 async function listTasksByClient(clientId) {
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT
-      id AS taskId,
-      task_code AS taskCode,
-      client_id AS clientId,
-      task_name AS taskName,
+      id AS "taskId",
+      task_code AS "taskCode",
+      client_id AS "clientId",
+      task_name AS "taskName",
       owner,
       status,
       priority,
-      task_type AS taskType,
-      task_month AS taskMonth,
-      month_status AS monthStatus,
-      template_id AS templateId,
-      due_date AS dueDate,
-      start_date AS startDate,
-      end_date AS endDate,
+      task_type AS "taskType",
+      task_month AS "taskMonth",
+      month_status AS "monthStatus",
+      template_id AS "templateId",
+      due_date AS "dueDate",
+      start_date AS "startDate",
+      end_date AS "endDate",
       description,
-      attachments_json AS attachmentsJson,
-      created_at AS createdAt,
-      updated_at AS updatedAt
+      attachments_json AS "attachmentsJson",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
      FROM tasks
-     WHERE client_id = ?
-     ORDER BY due_date IS NULL, due_date ASC, created_at DESC`,
+     WHERE client_id = $1
+     ORDER BY due_date ASC NULLS LAST, created_at DESC`,
     [clientId]
   );
 
-  return rows.map((row) => ({
-    ...row,
-    attachments: JSON.parse(row.attachmentsJson || '[]')
-  }));
+  return rows.map((row) => ({ ...row, attachments: JSON.parse(row.attachmentsJson || '[]') }));
 }
 
 async function upsertTask(payload) {
@@ -135,95 +129,44 @@ async function upsertTask(payload) {
         task_type, task_month, month_status, template_id,
         due_date, start_date, end_date, description, attachments_json,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
       [
-        taskId,
-        taskCode,
-        task.clientId,
-        task.taskName,
-        task.owner,
-        task.status,
-        task.priority,
-        task.taskType,
-        task.taskMonth || null,
-        task.monthStatus || null,
-        task.templateId || null,
-        task.dueDate,
-        task.startDate,
-        task.endDate,
-        task.description,
-        task.attachmentsJson,
-        now,
-        now
+        taskId, taskCode, task.clientId, task.taskName, task.owner, task.status, task.priority,
+        task.taskType, task.taskMonth || null, task.monthStatus || null, task.templateId || null,
+        task.dueDate, task.startDate, task.endDate, task.description, task.attachmentsJson,
+        now, now
       ]
     );
 
-    return {
-      ...task,
-      taskId,
-      taskCode,
-      createdAt: now,
-      updatedAt: now,
-      attachments: JSON.parse(task.attachmentsJson || '[]')
-    };
+    return { ...task, taskId, taskCode, createdAt: now, updatedAt: now, attachments: JSON.parse(task.attachmentsJson || '[]') };
   }
 
-  const [result] = await pool.query(
+  const result = await pool.query(
     `UPDATE tasks
-     SET client_id = ?, task_name = ?, owner = ?, status = ?, priority = ?,
-         task_type = ?, task_month = ?, month_status = ?, template_id = ?,
-         due_date = ?, start_date = ?, end_date = ?, description = ?, attachments_json = ?, updated_at = ?
-     WHERE id = ?`,
+     SET client_id=$1, task_name=$2, owner=$3, status=$4, priority=$5,
+         task_type=$6, task_month=$7, month_status=$8, template_id=$9,
+         due_date=$10, start_date=$11, end_date=$12, description=$13, attachments_json=$14, updated_at=$15
+     WHERE id=$16`,
     [
-      task.clientId,
-      task.taskName,
-      task.owner,
-      task.status,
-      task.priority,
-      task.taskType,
-      task.taskMonth || null,
-      task.monthStatus || null,
-      task.templateId || null,
-      task.dueDate,
-      task.startDate,
-      task.endDate,
-      task.description,
-      task.attachmentsJson,
-      now,
-      task.taskId
+      task.clientId, task.taskName, task.owner, task.status, task.priority,
+      task.taskType, task.taskMonth || null, task.monthStatus || null, task.templateId || null,
+      task.dueDate, task.startDate, task.endDate, task.description, task.attachmentsJson,
+      now, task.taskId
     ]
   );
 
-  if (!result.affectedRows) {
-    throw new Error('Tarea no encontrada.');
-  }
+  if (!result.rowCount) throw new Error('Tarea no encontrada.');
 
-  return {
-    ...task,
-    updatedAt: now,
-    attachments: JSON.parse(task.attachmentsJson || '[]')
-  };
+  return { ...task, updatedAt: now, attachments: JSON.parse(task.attachmentsJson || '[]') };
 }
 
 async function deleteTask(taskId) {
-  await pool.query('DELETE FROM comments WHERE task_id = ?', [taskId]);
-  const [result] = await pool.query('DELETE FROM tasks WHERE id = ?', [taskId]);
+  await pool.query('DELETE FROM comments WHERE task_id = $1', [taskId]);
+  const result = await pool.query('DELETE FROM tasks WHERE id = $1', [taskId]);
 
-  if (!result.affectedRows) {
-    throw new Error('Tarea no encontrada.');
-  }
+  if (!result.rowCount) throw new Error('Tarea no encontrada.');
 
   return { ok: true };
 }
 
-module.exports = {
-  OWNERS,
-  STATUSES,
-  PRIORITIES,
-  TASK_TYPES,
-  MONTH_STATUSES,
-  listAllTasks,
-  listTasksByClient,
-  upsertTask,
-  deleteTask
-};
+module.exports = { OWNERS, STATUSES, PRIORITIES, TASK_TYPES, MONTH_STATUSES, listAllTasks, listTasksByClient, upsertTask, deleteTask };
