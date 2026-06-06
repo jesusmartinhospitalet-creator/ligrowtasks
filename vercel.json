@@ -2,18 +2,18 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": "public/**",
-        "externalModules": ["pg-native"]
-      }
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/server.js"
-    }
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/styles.css", "dest": "/public/styles.css" },
+    { "src": "/dashboard-v3.js", "dest": "/public/dashboard-v3.js" },
+    { "src": "/(.*)", "dest": "/public/index.html" }
   ]
 }
