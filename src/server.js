@@ -3,6 +3,7 @@ const path = require('path');
 
 process.on('uncaughtException', (err) => console.error('uncaughtException', err));
 process.on('unhandledRejection', (r) => console.error('unhandledRejection', r));
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -16,14 +17,11 @@ const monthRoutes = require('./routes/months.routes');
 const app = express();
 
 app.use(cors());
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-  })
-);
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files (local dev; in production Vercel CDN handles this)
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/api/health', (req, res) => {
@@ -36,16 +34,15 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/months', monthRoutes);
 
-app.get('/', (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3000;
+// Always export app for Lambda / require() usage
+module.exports = app;
 
-if (process.env.VERCEL) {
-  module.exports = app;
-} else {
-  app.listen(PORT, () => {
-    console.log(`Ligrow Tasks API running on port ${PORT}`);
-  });
+// Only start HTTP server when run directly (local dev)
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Ligrow Tasks API running on port ${PORT}`));
 }
