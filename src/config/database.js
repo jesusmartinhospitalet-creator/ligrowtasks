@@ -6,8 +6,8 @@ if (!global._pgPool) {
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
     max: 2,
-    connectionTimeoutMillis: 8000,
-    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 10000,
   });
   // Without this listener an idle-client error crashes the process
   global._pgPool.on('error', (err) => {
