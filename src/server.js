@@ -1,5 +1,8 @@
 require('dotenv').config();
 const path = require('path');
+
+process.on('uncaughtException', (err) => console.error('uncaughtException', err));
+process.on('unhandledRejection', (r) => console.error('unhandledRejection', r));
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
