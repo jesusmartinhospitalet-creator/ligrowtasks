@@ -1,13 +1,14 @@
 /* ── State ─────────────────────────────────────── */
 const S = {
-  clients: [],
-  tasks: [],
-  templates: [],
-  months: [],
+  clients:     [],
+  tasks:       [],
+  templates:   [],
+  months:      [],
+  allTasks:    [],
   activeClient: null,
-  view: 'kanban',
-  loading: false,
-  modal: null,
+  view:        'home',
+  loading:     false,
+  modal:       null,
 };
 
 const OWNERS     = ['Jesús', 'Blanca', 'Alejandro'];
@@ -305,6 +306,7 @@ async function handleFormSubmit(e) {
     toast(data.taskId ? 'Tarea actualizada' : 'Tarea creada');
     closeModal();
     await loadClientData(S.activeClient.clientId);
+    await refreshAllTasks();
     render();
   }
 
@@ -355,6 +357,11 @@ async function loadClientData(clientId) {
   S.months    = Array.isArray(months)    ? months    : [];
 }
 
+async function refreshAllTasks() {
+  const r = await api('/tasks');
+  S.allTasks = Array.isArray(r) ? r : [];
+}
+
 async function selectClient(id) {
   S.activeClient = S.clients.find(c => c.clientId === id) || null;
   S.view = 'kanban';
@@ -367,13 +374,39 @@ async function selectClient(id) {
 
 function setView(v) { S.view = v; render(); }
 
+/* ── Inicio / Home ─────────────────────────────── */
+async function goHome() {
+  S.activeClient = null;
+  S.view = 'home';
+  S.loading = true;
+  render();
+  await Promise.all([loadClients(), refreshAllTasks()]);
+  S.loading = false;
+  render();
+}
+
+function togglePin(taskId) {
+  const pins = new Set(JSON.parse(localStorage.getItem('lg-pins') || '[]'));
+  if (pins.has(taskId)) pins.delete(taskId); else pins.add(taskId);
+  localStorage.setItem('lg-pins', JSON.stringify([...pins]));
+  render();
+}
+
 /* ── Render ────────────────────────────────────── */
 function render() {
-  app.innerHTML = renderSidebar() + renderMain();
+  if (S.view === 'home') {
+    app.innerHTML = renderSidebar() + renderHome();
+  } else {
+    app.innerHTML = renderSidebar() + renderMain();
+  }
 }
 
 /* ── Sidebar ───────────────────────────────────── */
 function renderSidebar() {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const overdueCount = S.allTasks.filter(t => t.status !== 'Listo' && t.dueDate && new Date(t.dueDate) < today).length;
+  const isHome = S.view === 'home';
+
   const items = S.clients.map(c => {
     const active = S.activeClient?.clientId === c.clientId;
     const initials = (c.clientName || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -393,6 +426,11 @@ function renderSidebar() {
       <div class="sidebar-logo-text">LIGROW</div>
       <div class="sidebar-logo-sub">Tasks</div>
     </div>
+    <div class="sidebar-home-btn${isHome ? ' active' : ''}" onclick="goHome()">
+      <span class="sidebar-home-icon">⌂</span>
+      <span>Inicio</span>
+      ${overdueCount ? `<span class="sidebar-badge">${overdueCount}</span>` : ''}
+    </div>
     <div class="sidebar-section">Clientes</div>
     <div class="sidebar-clients">
       ${S.clients.length ? items : '<div style="padding:12px 10px;font-size:12px;color:var(--text4);">Sin clientes todavía</div>'}
@@ -403,7 +441,172 @@ function renderSidebar() {
   </div>`;
 }
 
-/* ── Main ──────────────────────────────────────── */
+/* ── Home view ─────────────────────────────────── */
+function renderHome() {
+  if (S.loading) {
+    return `<div class="main"><div class="loading"><div class="spinner"></div>Cargando…</div></div>`;
+  }
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const in7   = new Date(today); in7.setDate(today.getDate() + 7);
+  const in14  = new Date(today); in14.setDate(today.getDate() + 14);
+
+  const active  = S.allTasks.filter(t => t.status !== 'Listo');
+  const overdue = active.filter(t => t.dueDate && new Date(t.dueDate) < today)
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  const thisWeek = active.filter(t => t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) <= in7)
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  const nextWeek = active.filter(t => t.dueDate && new Date(t.dueDate) > in7 && new Date(t.dueDate) <= in14)
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+  const pins   = new Set(JSON.parse(localStorage.getItem('lg-pins') || '[]'));
+  const pinned = S.allTasks.filter(t => pins.has(t.taskId) && t.status !== 'Listo')
+    .sort((a, b) => (a.dueDate || '9') < (b.dueDate || '9') ? -1 : 1);
+
+  const clientName = id => (S.clients.find(c => c.clientId === id) || {}).clientName || '—';
+  const clientCode = id => (S.clients.find(c => c.clientId === id) || {}).clientCode || id.slice(0, 4).toUpperCase();
+
+  const hour  = new Date().getHours();
+  const greet = hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+  const dateStr = today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  function fmtDate(d) {
+    return new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+  }
+
+  function taskRow(t) {
+    const isPinned = pins.has(t.taskId);
+    const isOver   = t.dueDate && new Date(t.dueDate) < today;
+    const dueTxt   = t.dueDate ? fmtDate(t.dueDate) : '—';
+    return `
+    <div class="home-task-row" onclick="selectClient('${t.clientId}')">
+      <div class="home-task-date${isOver ? ' overdue' : ''}">${dueTxt}</div>
+      <div class="home-task-name">${esc(t.taskName)}</div>
+      <span class="home-tag">${esc(clientCode(t.clientId))}</span>
+      <span class="owner-dot ${ownerCls(t.owner)}" title="${esc(t.owner || '')}">${ownerInitials(t.owner)}</span>
+      <span class="badge ${priBadge(t.priority)}">${t.priority || '—'}</span>
+      <button class="pin-btn${isPinned ? ' pinned' : ''}" title="${isPinned ? 'Desanclar' : 'Anclar como compromiso'}"
+        onclick="event.stopPropagation();togglePin('${t.taskId}')">${isPinned ? '★' : '☆'}</button>
+    </div>`;
+  }
+
+  return `
+  <div class="main">
+    <div class="main-header">
+      <div class="main-header-top">
+        <div>
+          <div class="main-title">${greet}</div>
+          <div class="main-subtitle" style="text-transform:capitalize;">${dateStr}</div>
+        </div>
+        <div class="main-actions">
+          <button class="btn-secondary btn-sm" onclick="goHome()">↺ Actualizar</button>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="home-wrap">
+
+        <!-- Stats -->
+        <div class="home-stats">
+          <div class="home-stat${overdue.length ? ' home-stat-alert' : ''}">
+            <div class="home-stat-num">${overdue.length}</div>
+            <div class="home-stat-label">Vencidas</div>
+          </div>
+          <div class="home-stat home-stat-warn">
+            <div class="home-stat-num">${thisWeek.length}</div>
+            <div class="home-stat-label">Esta semana</div>
+          </div>
+          <div class="home-stat">
+            <div class="home-stat-num">${active.length}</div>
+            <div class="home-stat-label">En activo</div>
+          </div>
+          <div class="home-stat">
+            <div class="home-stat-num">${S.clients.length}</div>
+            <div class="home-stat-label">Clientes</div>
+          </div>
+        </div>
+
+        <!-- Compromisos de la semana (tareas ancladas) -->
+        ${pinned.length ? `
+        <div class="home-section">
+          <div class="home-section-title">
+            <span>⭐ Compromisos de la semana</span>
+            <span class="home-section-hint">Haz clic en ☆ de cualquier tarea para anclarla aquí</span>
+          </div>
+          <div class="home-task-list">${pinned.map(t => taskRow(t)).join('')}</div>
+        </div>` : `
+        <div class="home-section home-section-empty-pins">
+          <div class="home-section-title">
+            <span>☆ Compromisos de la semana</span>
+            <span class="home-section-hint">Marca tareas con ☆ para fijar las prioridades del equipo</span>
+          </div>
+        </div>`}
+
+        <!-- Vencidas -->
+        ${overdue.length ? `
+        <div class="home-section">
+          <div class="home-section-title home-section-alert">⚠ Vencidas · ${overdue.length}</div>
+          <div class="home-task-list">${overdue.map(t => taskRow(t)).join('')}</div>
+        </div>` : ''}
+
+        <!-- Esta semana -->
+        <div class="home-section">
+          <div class="home-section-title">Esta semana · ${thisWeek.length} tarea${thisWeek.length !== 1 ? 's' : ''} pendiente${thisWeek.length !== 1 ? 's' : ''}</div>
+          ${thisWeek.length
+            ? `<div class="home-task-list">${thisWeek.map(t => taskRow(t)).join('')}</div>`
+            : '<div class="home-empty">Sin tareas que venzan esta semana 🎉</div>'}
+        </div>
+
+        <!-- Próxima semana -->
+        ${nextWeek.length ? `
+        <div class="home-section">
+          <div class="home-section-title home-section-dim">Próxima semana · ${nextWeek.length}</div>
+          <div class="home-task-list">${nextWeek.map(t => taskRow(t)).join('')}</div>
+        </div>` : ''}
+
+        <!-- Resumen por cliente -->
+        <div class="home-section">
+          <div class="home-section-title">Resumen por cliente</div>
+          <div class="home-clients-grid">
+            ${S.clients.map(c => {
+              const cActive  = active.filter(t => t.clientId === c.clientId);
+              const cOverdue = cActive.filter(t => t.dueDate && new Date(t.dueDate) < today);
+              const cWeek    = cActive.filter(t => t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) <= in7);
+              const ini = (c.clientName || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+              return `
+              <div class="home-client-card" onclick="selectClient('${c.clientId}')">
+                <div class="home-client-header">
+                  <div class="client-avatar" style="flex-shrink:0;">${ini}</div>
+                  <div style="min-width:0;">
+                    <div class="home-client-name">${esc(c.clientName)}</div>
+                    <div style="font-size:11px;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.concept || '')}</div>
+                  </div>
+                </div>
+                <div class="home-client-stats">
+                  <div class="home-client-stat">
+                    <div class="home-client-num">${cActive.length}</div>
+                    <div class="home-client-label">Activas</div>
+                  </div>
+                  <div class="home-client-stat">
+                    <div class="home-client-num${cWeek.length ? ' home-num-warn' : ''}">${cWeek.length}</div>
+                    <div class="home-client-label">Esta semana</div>
+                  </div>
+                  <div class="home-client-stat">
+                    <div class="home-client-num${cOverdue.length ? ' home-num-alert' : ''}">${cOverdue.length}</div>
+                    <div class="home-client-label">Vencidas</div>
+                  </div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Main (client view) ────────────────────────── */
 function renderMain() {
   if (!S.activeClient) {
     return `
@@ -411,7 +614,7 @@ function renderMain() {
       <div class="empty-state" style="height:100%;justify-content:center;">
         <div class="empty-state-icon">←</div>
         <h3>Selecciona un cliente</h3>
-        <p>Elige un cliente en el panel izquierdo o crea uno nuevo para empezar.</p>
+        <p>Elige un cliente en el panel izquierdo o vuelve al Inicio.</p>
       </div>
     </div>`;
   }
@@ -480,7 +683,8 @@ function renderTaskCard(t) {
   const pri = (t.priority || 'media').toLowerCase();
   const ownerClass = ownerCls(t.owner);
   const due = t.dueDate ? new Date(t.dueDate) : null;
-  const overdue = due && due < new Date() && t.status !== 'Listo';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const overdue = due && due < today && t.status !== 'Listo';
   const dueStr = due ? due.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '';
   const initials = ownerInitials(t.owner);
   return `
@@ -516,7 +720,8 @@ function renderTable() {
       <tbody>
         ${S.tasks.map(t => {
           const due = t.dueDate ? new Date(t.dueDate) : null;
-          const overdue = due && due < new Date() && t.status !== 'Listo';
+          const today = new Date(); today.setHours(0,0,0,0);
+          const overdue = due && due < today && t.status !== 'Listo';
           const dueStr = due ? due.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'2-digit' }) : '—';
           return `
           <tr onclick='openModal("task",${JSON.stringify(t)})'>
@@ -617,6 +822,7 @@ async function promptGenerateMonth() {
       if(r.error){ toast(r.error,'err'); return; }
       toast('Mes ' + taskMonth + ' generado');
       await loadClientData(S.activeClient.clientId);
+      await refreshAllTasks();
       render();
     }`,
   });
@@ -666,9 +872,11 @@ function ownerInitials(o) {
 
 /* ── Init ──────────────────────────────────────── */
 (async () => {
+  S.view = 'home';
   S.loading = true;
   render();
-  await loadClients();
+  const [, allTasksR] = await Promise.all([loadClients(), api('/tasks')]);
+  S.allTasks = Array.isArray(allTasksR) ? allTasksR : [];
   S.loading = false;
   render();
 })();
