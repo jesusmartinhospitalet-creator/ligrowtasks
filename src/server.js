@@ -30,6 +30,29 @@ app.get('/api/health', (req, res) => {
   res.json({ app: 'Ligrow Tasks API', status: 'running', db: !!process.env.DATABASE_URL });
 });
 
+// Temporary one-shot seed endpoint — protected by token; remove after first use
+app.get('/api/seed', async (req, res) => {
+  const SEED_TOKEN = process.env.SEED_TOKEN || 'ligrow-seed-2026';
+  if (req.query.token !== SEED_TOKEN) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  const fs = require('fs');
+  const pool = require('./config/database');
+  const sqlPath = path.join(__dirname, '..', 'database', 'seed.sql');
+  let sql;
+  try {
+    sql = fs.readFileSync(sqlPath, 'utf8');
+  } catch (e) {
+    return res.status(500).json({ error: 'seed.sql not found', detail: e.message });
+  }
+  try {
+    await pool.query(sql);
+    return res.json({ ok: true, message: '✓ Seed completado: 3 clientes, 9 plantillas, 6 meses y 27 tareas insertados' });
+  } catch (e) {
+    return res.status(500).json({ error: 'Seed failed', detail: e.message });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/tasks', taskRoutes);
