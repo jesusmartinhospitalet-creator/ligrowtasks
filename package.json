@@ -2,10 +2,9 @@
   "name": "ligrowtasks",
   "version": "0.1.0",
   "private": true,
-  "main": "api/index.js",
   "description": "Ligrow Tasks · Migración desde Google Apps Script a Node.js",
   "scripts": {
-    "build": "mkdir -p public && cp index.html app-v3.js dashboard-v3.js ligrow-hub-v3.js styles.css public/",
+    "build": "node scripts/bundle-static.js",
     "dev": "node src/server.js",
     "start": "node src/server.js"
   },
