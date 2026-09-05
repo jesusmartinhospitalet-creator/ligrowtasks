@@ -215,7 +215,8 @@ async function getTaskStats() {
     else if (r.status === 'En curso') inProgress++;
     else if (r.status === 'Detenido') stopped++;
 
-    if (r.status !== 'Listo' && r.due_date && r.due_date.toISOString().substring(0, 10) < nowStr) {
+    const dueDateStr = r.due_date ? (typeof r.due_date.toISOString === 'function' ? r.due_date.toISOString().substring(0, 10) : String(r.due_date).substring(0, 10)) : '';
+    if (r.status !== 'Listo' && dueDateStr && dueDateStr < nowStr) {
       overdue++;
     }
 
