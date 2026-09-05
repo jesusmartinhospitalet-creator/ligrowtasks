@@ -75,7 +75,18 @@ const SEED_TASKS = [
 ];
 
 /* ── API ───────────────────────────────────────── */
+const IS_PREVIEW = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
+
 async function api(url, opts = {}) {
+  if (IS_PREVIEW && (!opts.method || opts.method === 'GET')) {
+    if (url.startsWith('/clients')) return SEED_CLIENTS;
+    if (url.startsWith('/tasks')) return SEED_TASKS;
+    if (url.startsWith('/comments')) return [];
+    if (url.startsWith('/templates')) return [];
+    if (url.startsWith('/months')) return [];
+    return [];
+  }
+
   try {
     const res = await fetch('/api' + url, {
       headers: { 'Content-Type': 'application/json' },
