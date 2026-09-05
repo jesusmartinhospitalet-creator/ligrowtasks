@@ -1,5 +1,5 @@
 // In-memory fallback database when DATABASE_URL is missing or PostgreSQL is unreachable
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 
 const memoryStore = {
   clients: [
