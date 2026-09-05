@@ -12,6 +12,15 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/stats', async (req, res) => {
+  try {
+    const stats = await service.getTaskStats();
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/client/:clientId', async (req, res) => {
   try {
     const tasks = await service.listTasksByClient(req.params.clientId);

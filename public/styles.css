@@ -1039,3 +1039,66 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 }
 .home-num-warn  { color: var(--pri-media); }
 .home-num-alert { color: var(--pri-alta); }
+
+/* ── Calendar View ────────────────────────────── */
+.calendar-view { display: flex; flex-direction: column; gap: 16px; height: 100%; overflow-y: auto; padding-bottom: 24px; }
+.calendar-header { display: flex; align-items: center; justify-content: space-between; background: var(--card); padding: 14px 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+.calendar-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+.calendar-controls { display: flex; align-items: center; gap: 10px; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.calendar-day-header { text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); padding: 8px 0; }
+.calendar-cell { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); min-height: 100px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.calendar-cell.today { border-color: var(--orange); background: rgba(255,107,43,0.05); }
+.calendar-cell.other-month { opacity: 0.35; }
+.calendar-date-num { font-size: 12px; font-weight: 800; color: var(--text3); }
+.calendar-cell.today .calendar-date-num { color: var(--orange); }
+.calendar-task-chip { background: rgba(255,255,255,0.08); border-left: 3px solid var(--orange); border-radius: 4px; padding: 3px 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: transform .1s; }
+.calendar-task-chip:hover { transform: translateY(-1px); background: rgba(255,255,255,0.14); }
+.calendar-task-chip.listo { border-left-color: var(--status-listo); opacity: 0.7; text-decoration: line-through; }
+
+/* ── Analytics & Stats View ────────────────────── */
+.analytics-view { display: flex; flex-direction: column; gap: 20px; padding-bottom: 24px; overflow-y: auto; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+.stat-val { font-size: 32px; font-weight: 900; letter-spacing: -0.03em; }
+.stat-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); }
+
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chart-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.chart-title { font-size: 14px; font-weight: 800; }
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-item { display: flex; flex-direction: column; gap: 4px; }
+.bar-info { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; }
+.bar-track { height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--grad); border-radius: 5px; transition: width .4s ease; }
+
+/* ── Subtasks & Tags ───────────────────────────── */
+.subtasks-progress { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--text3); margin-top: 6px; }
+.progress-bar-sm { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+.progress-fill-sm { height: 100%; background: var(--orange); transition: width .3s; }
+
+.task-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.tag-badge { font-size: 10px; font-weight: 700; background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); padding: 2px 6px; border-radius: 4px; }
+
+.subtask-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.subtask-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.subtask-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--orange); cursor: pointer; }
+.subtask-item.completed span { text-decoration: line-through; opacity: 0.5; }
+
+/* ── Comments Thread ───────────────────────────── */
+.comments-section { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
+.comments-title { font-size: 13px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; color: var(--text3); }
+.comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; }
+.comment-bubble { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; }
+.comment-author { font-weight: 700; color: var(--orange); margin-bottom: 3px; display: flex; justify-content: space-between; }
+.comment-date { font-size: 10px; font-weight: 400; color: var(--text4); }
+.comment-form { display: flex; gap: 8px; }
+.comment-input { flex: 1; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px; }
+
+/* ── Search & Filter Bar ────────────────────────── */
+.search-box { display: flex; align-items: center; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 4px 12px; gap: 8px; width: 260px; }
+.search-box input { background: transparent; border: none; color: var(--text); font-size: 13px; width: 100%; }
+.workspace-tabs { display: flex; background: var(--bg2); padding: 3px; border-radius: var(--radius-pill); border: 1px solid var(--border); }
+.workspace-tab { padding: 4px 12px; font-size: 11px; font-weight: 700; border-radius: var(--radius-pill); cursor: pointer; color: var(--text3); transition: all .15s; }
+.workspace-tab.active { background: var(--orange); color: #fff; }
+

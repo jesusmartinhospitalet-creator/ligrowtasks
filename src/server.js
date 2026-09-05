@@ -13,6 +13,7 @@ const clientRoutes = require('./routes/clients.routes');
 const taskRoutes = require('./routes/tasks.routes');
 const templateRoutes = require('./routes/templates.routes');
 const monthRoutes = require('./routes/months.routes');
+const commentRoutes = require('./routes/comments.routes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/months', monthRoutes);
+app.use('/api/comments', commentRoutes);
 
 app.get('*', (req, res, next) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'), (err) => {

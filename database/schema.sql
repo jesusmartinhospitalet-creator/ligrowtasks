@@ -5,6 +5,10 @@ CREATE TABLE IF NOT EXISTS clients (
   concept TEXT,
   summary TEXT,
   kickoff_date DATE,
+  category VARCHAR(50) DEFAULT 'personal',
+  status VARCHAR(50) DEFAULT 'activo',
+  color_accent VARCHAR(20) DEFAULT '#6366f1',
+  progress_pct INT DEFAULT 0,
   ext_json JSONB,
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ
@@ -26,6 +30,9 @@ CREATE TABLE IF NOT EXISTS tasks (
   start_date DATE,
   end_date DATE,
   description TEXT,
+  subtasks_json JSONB DEFAULT '[]'::jsonb,
+  tags_json JSONB DEFAULT '[]'::jsonb,
+  category VARCHAR(50) DEFAULT 'personal',
   attachments_json JSONB,
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ
@@ -63,3 +70,4 @@ CREATE TABLE IF NOT EXISTS comments (
   text TEXT,
   created_at TIMESTAMPTZ
 );
+
