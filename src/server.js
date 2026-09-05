@@ -45,6 +45,11 @@ app.use('/api/*', (req, res) => {
 });
 
 app.get('*', (req, res) => {
+  const indexPath = path.join(publicDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(fs.readFileSync(indexPath, 'utf-8'));
+  }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(`<!doctype html>
 <html lang="es">
@@ -55,11 +60,11 @@ app.get('*', (req, res) => {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=3.2" />
 </head>
 <body>
   <div id="app"></div>
-  <script src="/dashboard-v3.js"></script>
+  <script src="/app-v3.js?v=20.0"></script>
 </body>
 </html>`);
 });
