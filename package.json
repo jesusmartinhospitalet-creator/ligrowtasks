@@ -4,7 +4,7 @@
   "private": true,
   "description": "Ligrow Tasks · Migración desde Google Apps Script a Node.js",
   "scripts": {
-    "build": "echo 'Static build ready'",
+    "build": "mkdir -p public && cp index.html app-v3.js dashboard-v3.js ligrow-hub-v3.js styles.css public/",
     "dev": "node src/server.js",
     "start": "node src/server.js"
   },
