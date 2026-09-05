@@ -20,7 +20,7 @@ const S = {
   months:          [],
   allTasks:        SEED_TASKS,
   activeClient:    null,
-  view:            'home', // 'home' | 'projects' | 'calendar' | 'kanban' | 'table' | 'gantt' | 'templates' | 'months'
+  view:            'home', // 'home' | 'projects' | 'project' | 'calendar' | 'kanban' | 'table' | 'gantt' | 'templates' | 'months'
   workspace:       'all',  // 'all' | 'personal' | 'cliente'
   searchQuery:     '',
   selectedTag:     '',
@@ -28,16 +28,19 @@ const S = {
   modal:           null,
   comments:        {},     // { [taskId]: [...] }
   calendarDate:    new Date(),
+  expandedTaskId:  null,
+  projectFilters:  { status: '', priority: '' },
 };
 
 const OWNERS        = ['Jesús', 'Blanca', 'Alejandro'];
 const STATUSES      = ['En curso', 'Detenido', 'Listo'];
 const PRIORITIES    = ['Alta', 'Media', 'Baja'];
-const VIEWS_CLIENT  = ['kanban', 'table', 'gantt', 'templates', 'months'];
+const VIEWS_CLIENT  = ['project', 'kanban', 'table', 'gantt', 'templates', 'months'];
 const VIEWS_GLOBAL  = ['home', 'projects', 'calendar', 'kanban', 'table'];
 const VIEW_LABELS   = {
   home: 'Dashboard',
   projects: 'Proyectos',
+  project: 'Resumen',
   calendar: 'Calendario',
   kanban: 'Kanban',
   table: 'Tabla',
@@ -637,7 +640,10 @@ function selectClient(clientId) {
   const c = S.clients.find(x => x.clientId === clientId);
   if (!c) return;
   S.activeClient = c;
-  S.view = 'kanban';
+  S.view = 'project';
+  S.expandedTaskId = null;
+  S.tasks = S.allTasks.filter(task => task.clientId === clientId);
+  render();
   loadClientTasks(clientId);
 }
 
@@ -681,11 +687,13 @@ async function loadClientTasks(clientId) {
       api('/templates/client/' + clientId),
       api('/months/client/' + clientId),
     ]);
-    S.tasks     = tasks;
+    S.tasks     = (Array.isArray(tasks) ? tasks : []).filter(task => task.clientId === clientId);
     S.templates = templates;
     S.months    = months;
   } catch (err) {
     toast('Error cargando datos del cliente: ' + err.message, 'err');
+  } finally {
+    render();
   }
 }
 
@@ -809,6 +817,7 @@ function renderContent() {
 function renderActiveView() {
   if (S.view === 'home')      return renderHome();
   if (S.view === 'projects')  return renderProjects();
+  if (S.view === 'project')   return renderProjectWorkspace();
   if (S.view === 'calendar')  return renderCalendar();
   if (S.view === 'kanban')    return renderKanban();
   if (S.view === 'table')     return renderTable();
@@ -819,7 +828,7 @@ function renderActiveView() {
 }
 
 /* ── Home / Dashboard View (Limpio y Minimalista) ─────────── */
-function renderHome() {
+function renderLegacyHome() {
   const tasks = getFilteredTasks();
   const todayStr = new Date().toISOString().substring(0, 10);
   const in7Str   = new Date(Date.now() + 7*84600000).toISOString().substring(0, 10);
@@ -901,7 +910,7 @@ function renderHomeTaskRow(t, isAlert = false) {
 }
 
 /* ── Projects View (Project Hub con Semáforo) ──── */
-function renderProjects() {
+function renderProjectFolders() {
   const filtered = S.clients.filter(c => {
     if (S.workspace === 'personal') return c.category === 'personal';
     if (S.workspace === 'cliente') return c.category === 'cliente';
@@ -953,6 +962,178 @@ function renderProjects() {
       </div>`;
     }).join('')}
   </div>`;
+}
+
+function renderHome() {
+  return `
+  <div class="projects-home">
+    <div class="projects-home-intro">
+      <div>
+        <div class="eyebrow">Espacio de trabajo</div>
+        <h2>Carpetas de proyectos</h2>
+        <p>Entra en una carpeta para consultar el contexto, los recursos y todas las tareas operativas.</p>
+      </div>
+      <button class="btn-primary" onclick="openModal('client')">＋ Nuevo proyecto</button>
+    </div>
+    ${renderProjectFolders()}
+  </div>`;
+}
+
+function renderProjects() {
+  return `<div class="projects-home compact"><div class="projects-home-intro"><div><div class="eyebrow">Organización</div><h2>Todos los proyectos</h2></div></div>${renderProjectFolders()}</div>`;
+}
+
+function taskCount(task, completed = false) {
+  const items = task.subtasks || [];
+  return completed ? items.filter(item => item.completed).length : items.length;
+}
+
+function formatTaskDate(value) {
+  if (!value) return 'Sin fecha';
+  const [year, month, day] = String(value).slice(0, 10).split('-');
+  return year && month && day ? `${day}/${month}/${year}` : value;
+}
+
+function getProjectTasks() {
+  const status = S.projectFilters.status;
+  const priority = S.projectFilters.priority;
+  const source = S.activeClient
+    ? S.allTasks.filter(task => task.clientId === S.activeClient.clientId)
+    : getFilteredTasks();
+  return source.filter(task =>
+    (!status || task.status === status) && (!priority || task.priority === priority)
+  );
+}
+
+function setProjectFilter(field, value) {
+  S.projectFilters[field] = value;
+  render();
+}
+
+function toggleProjectTask(taskId) {
+  S.expandedTaskId = S.expandedTaskId === taskId ? null : taskId;
+  render();
+}
+
+function findTask(taskId) {
+  return S.allTasks.find(task => task.taskId === taskId || task.id === taskId) || S.tasks.find(task => task.taskId === taskId || task.id === taskId);
+}
+
+async function persistInlineTask(task) {
+  try {
+    await api('/tasks', { method: 'POST', body: JSON.stringify(task) });
+  } catch (error) {
+    toast(error.message || 'No se ha podido guardar la tarea', 'err');
+  }
+}
+
+async function updateInlineTask(taskId, field, value) {
+  const task = findTask(taskId);
+  if (!task) return;
+  task[field] = value;
+  await persistInlineTask(task);
+  render();
+}
+
+async function toggleInlineSubtask(taskId, subtaskId) {
+  const task = findTask(taskId);
+  const item = task?.subtasks?.find(subtask => subtask.id === subtaskId);
+  if (!item) return;
+  item.completed = !item.completed;
+  await persistInlineTask(task);
+  render();
+}
+
+async function addInlineSubtask(event, taskId) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const input = form.querySelector('input');
+  const task = findTask(taskId);
+  if (!task || !input?.value.trim()) return;
+  task.subtasks = [...(task.subtasks || []), { id: `sub-${Date.now()}`, text: input.value.trim(), completed: false }];
+  await persistInlineTask(task);
+  render();
+}
+
+async function addInlineAttachment(event, taskId) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const [title, url] = form.querySelectorAll('input');
+  const task = findTask(taskId);
+  if (!task || !url?.value.trim()) return;
+  task.attachments = [...(task.attachments || []), { title: title.value.trim() || url.value.trim(), url: url.value.trim() }];
+  await persistInlineTask(task);
+  render();
+}
+
+function renderProjectWorkspace() {
+  const client = S.activeClient;
+  if (!client) return renderHome();
+
+  const allTasks = S.allTasks.filter(task => task.clientId === client.clientId);
+  const tasks = getProjectTasks();
+  const today = new Date().toISOString().slice(0, 10);
+  const open = allTasks.filter(task => task.status !== 'Listo');
+  const overdue = open.filter(task => task.dueDate && task.dueDate < today);
+  const inProgress = open.filter(task => task.status === 'En curso');
+  const resources = allTasks.flatMap(task => (task.attachments || []).map(file => ({ ...file, taskName: task.taskName })));
+  const health = getProjectHealth(client.clientId);
+
+  return `
+  <div class="project-workspace">
+    <section class="project-hero">
+      <div>
+        <div class="eyebrow">Carpeta de proyecto</div>
+        <div class="project-heading"><span class="project-folder-icon">▣</span><h2>${esc(client.clientName)}</h2></div>
+        <p>${esc(client.summary || client.concept || 'Centraliza las tareas, documentación y seguimiento del proyecto.')}</p>
+      </div>
+      <div class="project-hero-side"><span class="health-badge ${health.code}">${health.label}</span><span class="project-code">${esc(client.clientCode || 'PROY')}</span></div>
+    </section>
+
+    <div class="project-overview-grid">
+      <section class="project-panel resource-panel">
+        <div class="panel-heading"><span>▧</span><h3>Documentos y recursos</h3><button class="text-action" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Añadir</button></div>
+        ${resources.length ? `<div class="resource-list">${resources.slice(0, 4).map(resource => `<a class="resource-item" href="${esc(resource.url || '#')}" target="_blank" onclick="event.stopPropagation()"><span>↗</span><span>${esc(resource.title || resource.name || resource.url || 'Recurso')}</span><small>${esc(resource.taskName)}</small></a>`).join('')}</div>` : '<div class="panel-empty">Todavía no hay recursos vinculados.</div>'}
+      </section>
+      <section class="project-panel reminders-panel">
+        <div class="panel-heading"><span>◷</span><h3>Recordatorios y pendientes</h3><button class="text-action" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Nueva</button></div>
+        <div class="reminder-list">${open.length ? open.slice(0, 4).map(task => `<button class="reminder-item" onclick="toggleProjectTask('${task.taskId || task.id}')"><span class="priority-dot ${(task.priority || 'Media').toLowerCase()}"></span><strong>${esc(task.taskName)}</strong><small>${formatTaskDate(task.dueDate)}</small></button>`).join('') : '<div class="panel-empty">No hay pendientes abiertos.</div>'}</div>
+      </section>
+    </div>
+
+    <section class="project-tasks-section">
+      <div class="tasks-section-heading"><div><div class="eyebrow">Seguimiento</div><h3>Tareas del proyecto</h3><p>${open.length} abiertas de ${allTasks.length} tareas totales</p></div><div class="task-view-actions"><button class="btn-primary" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Nueva tarea</button><button class="btn-secondary btn-sm" onclick="setView('kanban')">Kanban</button></div></div>
+      <div class="project-metrics"><div><strong>${open.length}</strong><span>Abiertas</span></div><div><strong>${inProgress.length}</strong><span>En curso</span></div><div><strong>${overdue.length}</strong><span>Vencidas</span></div><div><strong>${allTasks.filter(task => task.status === 'Listo').length}</strong><span>Completadas</span></div><div><strong>${allTasks.length}</strong><span>Total</span></div></div>
+      <div class="project-filter-bar"><div class="inline-search">⌕<input placeholder="Buscar tareas…" value="${esc(S.searchQuery)}" oninput="S.searchQuery=this.value;render()"></div><select onchange="setProjectFilter('status',this.value)"><option value="">Estado: todos</option>${STATUSES.map(status => `<option value="${status}"${S.projectFilters.status === status ? ' selected' : ''}>${status}</option>`).join('')}</select><select onchange="setProjectFilter('priority',this.value)"><option value="">Prioridad: todas</option>${PRIORITIES.map(priority => `<option value="${priority}"${S.projectFilters.priority === priority ? ' selected' : ''}>${priority}</option>`).join('')}</select></div>
+      <div class="project-task-list">${tasks.length ? tasks.map(renderProjectTask).join('') : '<div class="panel-empty">No hay tareas que coincidan con los filtros.</div>'}</div>
+    </section>
+  </div>`;
+}
+
+function renderProjectTask(task) {
+  const taskId = task.taskId || task.id;
+  const isExpanded = S.expandedTaskId === taskId;
+  const subtasks = task.subtasks || [];
+  const attachments = task.attachments || [];
+  return `
+  <article class="project-task ${isExpanded ? 'expanded' : ''}">
+    <div class="project-task-row">
+      <button class="task-expand" aria-label="Desplegar tarea" onclick="toggleProjectTask('${taskId}')">${isExpanded ? '⌃' : '⌄'}</button>
+      <span class="project-task-code">${esc(task.taskCode || 'TSK')}</span>
+      <button class="project-task-name" onclick="toggleProjectTask('${taskId}')">${esc(task.taskName)}</button>
+      <span class="project-task-date">${formatTaskDate(task.dueDate)}</span>
+      <select class="task-inline-select" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','priority',this.value)">${PRIORITIES.map(priority => `<option${task.priority === priority ? ' selected' : ''}>${priority}</option>`).join('')}</select>
+      <select class="task-inline-select" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','status',this.value)">${STATUSES.map(status => `<option${task.status === status ? ' selected' : ''}>${status}</option>`).join('')}</select>
+      <div class="task-elements"><span>☑ Checklist ${taskCount(task, true)}/${taskCount(task)}</span><span>↗ Enlaces ${attachments.length}</span><span>▧ Archivos ${attachments.length}</span></div>
+      <button class="task-edit" onclick="openModal('task',${JSON.stringify(task).replace(/"/g,'&quot;')})" title="Editar tarea">✎</button>
+    </div>
+    ${isExpanded ? `<div class="project-task-detail">
+      <div class="task-detail-card"><h4>Descripción</h4><textarea placeholder="Explica el objetivo y los detalles de esta tarea." onchange="updateInlineTask('${taskId}','description',this.value)">${esc(task.description || '')}</textarea><label>Fecha de vencimiento<input type="date" value="${esc(task.dueDate || '')}" onchange="updateInlineTask('${taskId}','dueDate',this.value)"></label></div>
+      <div class="task-detail-card"><h4>Checklist</h4><div class="inline-checklist">${subtasks.length ? subtasks.map(item => `<label><input type="checkbox"${item.completed ? ' checked' : ''} onchange="toggleInlineSubtask('${taskId}','${item.id}')"><span>${esc(item.text || item.title || '')}</span></label>`).join('') : '<p>Sin elementos todavía.</p>'}</div><form class="inline-add" onsubmit="addInlineSubtask(event,'${taskId}')"><input placeholder="Añadir elemento…"><button type="submit">＋</button></form></div>
+      <div class="task-detail-card"><h4>Archivos</h4>${attachments.length ? `<div class="inline-resource-list">${attachments.map(file => `<a href="${esc(file.url || '#')}" target="_blank">▧ ${esc(file.title || file.name || file.url)}</a>`).join('')}</div>` : '<p>Sin archivos vinculados.</p>'}<form class="inline-link-form" onsubmit="addInlineAttachment(event,'${taskId}')"><input placeholder="Nombre del archivo"><input placeholder="https://…"><button type="submit">＋</button></form></div>
+      <div class="task-detail-card"><h4>Enlaces</h4>${attachments.length ? `<div class="inline-resource-list">${attachments.map(file => `<a href="${esc(file.url || '#')}" target="_blank">↗ ${esc(file.title || file.name || file.url)}</a>`).join('')}</div>` : '<p>Sin enlaces vinculados.</p>'}<button class="detail-edit-button" onclick="openModal('task',${JSON.stringify(task).replace(/"/g,'&quot;')})">Gestionar tarea completa</button></div>
+    </div>` : ''}
+  </article>`;
 }
 
 /* ── Calendar View ─────────────────────────────── */
