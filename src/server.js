@@ -3,7 +3,6 @@ const path = require('path');
 
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
 
 const authRoutes = require('./routes/auth.routes');
 const clientRoutes = require('./routes/clients.routes');
@@ -17,7 +16,6 @@ const app = express();
 console.log('[boot] DATABASE_URL present:', !!process.env.DATABASE_URL);
 
 app.use(cors());
-app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
