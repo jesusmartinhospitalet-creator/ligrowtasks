@@ -1,13 +1,5 @@
 {
   "framework": null,
-  "buildCommand": "node scripts/bundle-static.js",
-  "installCommand": "npm install",
   "outputDirectory": "public",
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "cleanUrls": true
 }
