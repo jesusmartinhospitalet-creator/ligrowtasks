@@ -32,8 +32,6 @@ const VIEW_LABELS   = {
   months: 'Meses'
 };
 
-const app = document.getElementById('app');
-
 /* ── Helpers ───────────────────────────────────── */
 function esc(str = '') {
   return String(str)
@@ -1165,4 +1163,9 @@ function renderMonths() {
 }
 
 /* ── Init App ──────────────────────────────────── */
-loadAll();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadAll);
+} else {
+  loadAll();
+}
+
