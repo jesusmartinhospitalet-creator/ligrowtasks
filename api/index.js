@@ -1,4 +1,5 @@
 'use strict';
+
 const express = require('express');
 const app = express();
 
@@ -27,4 +28,6 @@ app.get('*', (req, res) => {
 </html>`);
 });
 
-module.exports = app;
+module.exports = (req, res) => {
+  return app(req, res);
+};
