@@ -1,8 +1,8 @@
 /* ── Seed Fallback Data ────────────────────────── */
 const SEED_CLIENTS = [
-  { clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', clientCode: 'PICNEG', concept: 'Marketing Hub V2', summary: 'Gestión integral de campaña nieve y activaciones digitales', kickoffDate: '2026-09-01', category: 'cliente', status: 'activo', colorAccent: '#f97316', progressPct: 65, tasksCount: 4 },
-  { clientId: 'cli-02', clientName: 'Ligrow Hub - Infraestructura', clientCode: 'LIGROW', concept: 'Sistemas Internos', summary: 'Refactorización a Node.js Express y despliegue Vercel', kickoffDate: '2026-08-15', category: 'personal', status: 'activo', colorAccent: '#3b82f6', progressPct: 80, tasksCount: 3 },
-  { clientId: 'cli-03', clientName: 'Andorra Ecommerce - Rediseño', clientCode: 'ANDOEE', concept: 'Rediseño UX/UI Store', summary: 'Optimización de embudo de venta y migración a Shopify Plus', kickoffDate: '2026-09-10', category: 'cliente', status: 'activo', colorAccent: '#10b981', progressPct: 40, tasksCount: 2 }
+  { clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', clientCode: 'PICNEG', concept: 'Marketing Hub V2', summary: 'Gestión integral de campaña nieve y activaciones digitales', kickoffDate: '2026-09-01', category: 'cliente', status: 'activo', colorAccent: '#f97316', trafficLight: 'green', progressPct: 65, tasksCount: 4 },
+  { clientId: 'cli-02', clientName: 'Ligrow Hub - Infraestructura', clientCode: 'LIGROW', concept: 'Sistemas Internos', summary: 'Refactorización a Node.js Express y despliegue Vercel', kickoffDate: '2026-08-15', category: 'personal', status: 'activo', colorAccent: '#3b82f6', trafficLight: 'orange', progressPct: 80, tasksCount: 3 },
+  { clientId: 'cli-03', clientName: 'Andorra Ecommerce - Rediseño', clientCode: 'ANDOEE', concept: 'Rediseño UX/UI Store', summary: 'Optimización de embudo de venta y migración a Shopify Plus', kickoffDate: '2026-09-10', category: 'cliente', status: 'activo', colorAccent: '#10b981', trafficLight: 'red', progressPct: 40, tasksCount: 2 }
 ];
 
 const SEED_TASKS = [
@@ -59,24 +59,69 @@ function esc(str = '') {
     .replace(/'/g, '&#039;');
 }
 
-/* ── Semáforo de Salud de Proyecto ──────────────── */
-function getProjectHealth(clientId) {
-  const projectTasks = S.allTasks.filter(t => t.clientId === clientId && t.status !== 'Finalizada');
-  const todayStr = new Date().toISOString().substring(0, 10);
-  const hasOverdue = projectTasks.some(t => t.dueDate && t.dueDate < todayStr);
-  const hasCritical = projectTasks.some(t => t.priority === 'Alta');
+/* ── Semáforo de Proyecto ───────────────────────── */
+const TRAFFIC_LIGHTS = {
+  green:  { label: 'Verde', code: 'traffic-green' },
+  orange: { label: 'Naranja', code: 'traffic-orange' },
+  red:    { label: 'Rojo', code: 'traffic-red' },
+};
 
-  if (hasOverdue || hasCritical) {
-    return { status: 'Atención', code: 'atencion', label: 'Atención', emoji: '🔴' };
+function getProjectHealth(clientId) {
+  const client = S.clients.find(item => item.clientId === clientId);
+  const trafficLight = client?.trafficLight || 'green';
+  return TRAFFIC_LIGHTS[trafficLight] || TRAFFIC_LIGHTS.green;
+}
+
+async function persistProjectClient(client, message = 'Proyecto actualizado') {
+  const index = S.clients.findIndex(item => item.clientId === client.clientId);
+  if (index >= 0) S.clients[index] = client;
+  else S.clients = [client, ...S.clients];
+  if (S.activeClient?.clientId === client.clientId) S.activeClient = client;
+
+  if (IS_PREVIEW) {
+    savePreviewState();
+    toast(message);
+    render();
+    return;
   }
-  if (projectTasks.length >= 3) {
-    return { status: 'Carga alta', code: 'carga-alta', label: 'Carga Alta', emoji: '🟡' };
+
+  try {
+    await api('/clients', { method: 'POST', body: JSON.stringify(client) });
+    toast(message);
+    await loadAll();
+  } catch (error) {
+    toast(error.message || 'No se ha podido guardar el proyecto', 'err');
   }
-  return { status: 'En edición', code: 'en-curso', label: 'En marcha', emoji: '🟢' };
+}
+
+function setProjectTrafficLight(clientId, trafficLight) {
+  const client = S.clients.find(item => item.clientId === clientId);
+  if (!client || !TRAFFIC_LIGHTS[trafficLight]) return;
+  persistProjectClient({ ...client, trafficLight }, `Semáforo ${TRAFFIC_LIGHTS[trafficLight].label.toLowerCase()} seleccionado`);
 }
 
 /* ── API ───────────────────────────────────────── */
 const IS_PREVIEW = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+const PREVIEW_STATE_KEY = 'ligrow-tasks-preview-state-v1';
+
+function readPreviewState() {
+  if (!IS_PREVIEW) return null;
+  try {
+    const state = JSON.parse(localStorage.getItem(PREVIEW_STATE_KEY) || 'null');
+    return state && Array.isArray(state.clients) && Array.isArray(state.tasks) ? state : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function savePreviewState() {
+  if (!IS_PREVIEW) return;
+  try {
+    localStorage.setItem(PREVIEW_STATE_KEY, JSON.stringify({ clients: S.clients, tasks: S.allTasks }));
+  } catch (_error) {
+    // El almacenamiento local es una mejora de la preview; la interfaz sigue siendo utilizable si falla.
+  }
+}
 
 function getMockForUrl(url = '') {
   if (url.startsWith('/tasks') || url.includes('/tasks/')) return SEED_TASKS;
@@ -172,6 +217,8 @@ function escListener(e) {
 function buildModal(type, data) {
   if (type === 'task')     return modalTask(data);
   if (type === 'client')   return modalClient(data);
+  if (type === 'resource') return modalProjectResource(data);
+  if (type === 'reminder') return modalProjectReminder(data);
   if (type === 'template') return modalTemplate(data);
   if (type === 'confirm')  return modalConfirm(data);
   return '';
@@ -325,6 +372,14 @@ function modalClient(d = {}) {
             <label class="form-label">Fecha de inicio</label>
             <input class="form-input" name="kickoffDate" type="date"${val('kickoffDate')}>
           </div>
+          <div class="form-field">
+            <label class="form-label">Semáforo</label>
+            <select class="form-input" name="trafficLight">
+              <option value="green"${(d.trafficLight || 'green') === 'green' ? ' selected' : ''}>Verde</option>
+              <option value="orange"${d.trafficLight === 'orange' ? ' selected' : ''}>Naranja</option>
+              <option value="red"${d.trafficLight === 'red' ? ' selected' : ''}>Rojo</option>
+            </select>
+          </div>
           <div class="form-field full">
             <label class="form-label">Concepto / Descripción corta</label>
             <input class="form-input" name="concept" placeholder="ej: Productividad personal y automatizaciones"${val('concept')}>
@@ -339,6 +394,52 @@ function modalClient(d = {}) {
           <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
           <button type="submit" class="btn-primary">Guardar</button>
         </div>
+      </form>
+    </div>
+  </div>`;
+}
+
+function modalProjectResource(d = {}) {
+  const client = S.clients.find(item => item.clientId === (d.clientId || S.activeClient?.clientId));
+  if (!client) return '';
+  return `
+  <div class="modal modal-compact" style="max-width:500px;">
+    <div class="modal-header">
+      <div><div class="modal-kicker">${esc(client.clientName)}</div><div class="modal-title">Añadir recurso</div></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form data-type="project-resource">
+        <input type="hidden" name="clientId" value="${esc(client.clientId)}">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Nombre *</label><input class="form-input" name="title" required placeholder="Ej. Briefing de campaña"></div>
+          <div class="form-field full"><label class="form-label">Enlace o ubicación *</label><input class="form-input" name="url" required placeholder="https://…"></div>
+          <div class="form-field"><label class="form-label">Tipo</label><select class="form-input" name="kind"><option value="file">Archivo</option><option value="link">Enlace</option></select></div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Añadir recurso</button></div>
+      </form>
+    </div>
+  </div>`;
+}
+
+function modalProjectReminder(d = {}) {
+  const client = S.clients.find(item => item.clientId === (d.clientId || S.activeClient?.clientId));
+  if (!client) return '';
+  return `
+  <div class="modal modal-compact" style="max-width:500px;">
+    <div class="modal-header">
+      <div><div class="modal-kicker">${esc(client.clientName)}</div><div class="modal-title">Nuevo recordatorio</div></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form data-type="project-reminder">
+        <input type="hidden" name="clientId" value="${esc(client.clientId)}">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Recordatorio *</label><input class="form-input" name="title" required placeholder="¿Qué hay que recordar?"></div>
+          <div class="form-field"><label class="form-label">Fecha</label><input class="form-input" name="date" type="date"></div>
+          <div class="form-field"><label class="form-label">Prioridad</label><select class="form-input" name="priority">${PRIORITIES.map(priority => `<option${priority === 'Media' ? ' selected' : ''}>${priority}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Añadir recordatorio</button></div>
       </form>
     </div>
   </div>`;
@@ -465,6 +566,32 @@ async function handleFormSubmit(e) {
     };
   }
 
+  if (type === 'client') {
+    const existing = data.clientId ? S.clients.find(item => item.clientId === data.clientId) : null;
+    data = {
+      ...(existing || {}),
+      ...data,
+      clientId: data.clientId || `project-${Date.now()}`,
+      trafficLight: data.trafficLight || existing?.trafficLight || 'green',
+      resources: existing?.resources || [],
+      reminders: existing?.reminders || [],
+    };
+  }
+
+  if (type === 'project-resource' || type === 'project-reminder') {
+    const client = S.clients.find(item => item.clientId === data.clientId);
+    if (!client) return;
+    const item = type === 'project-resource'
+      ? { id: `resource-${Date.now()}`, title: data.title.trim(), url: data.url.trim(), kind: data.kind || 'file' }
+      : { id: `reminder-${Date.now()}`, title: data.title.trim(), date: data.date || '', priority: data.priority || 'Media' };
+    const updatedClient = type === 'project-resource'
+      ? { ...client, resources: [...(client.resources || []), item] }
+      : { ...client, reminders: [...(client.reminders || []), item] };
+    closeModal();
+    await persistProjectClient(updatedClient, type === 'project-resource' ? 'Recurso añadido' : 'Recordatorio añadido');
+    return;
+  }
+
   try {
     if (type === 'task' && IS_PREVIEW) {
       const localTask = data.taskId
@@ -474,9 +601,16 @@ async function handleFormSubmit(e) {
       if (foundIndex >= 0) S.allTasks[foundIndex] = localTask;
       else S.allTasks = [localTask, ...S.allTasks];
       S.tasks = S.activeClient ? S.allTasks.filter(task => task.clientId === S.activeClient.clientId) : S.allTasks;
+      savePreviewState();
       closeModal();
       toast(data.taskId ? 'Guardado correctamente' : 'Tarea creada');
       render();
+      return;
+    }
+
+    if (type === 'client' && IS_PREVIEW) {
+      closeModal();
+      await persistProjectClient(data, data.clientId?.startsWith('project-') ? 'Proyecto creado' : 'Proyecto actualizado');
       return;
     }
 
@@ -572,6 +706,13 @@ async function loadAll() {
   S.loading = true;
   render();
   try {
+    const previewState = readPreviewState();
+    if (previewState) {
+      S.clients = previewState.clients;
+      S.allTasks = previewState.tasks;
+      if (S.activeClient) S.activeClient = S.clients.find(c => c.clientId === S.activeClient.clientId) || null;
+      return;
+    }
     const [clients, tasks] = await Promise.all([
       api('/clients'),
       api('/tasks'),
@@ -595,6 +736,13 @@ async function loadAll() {
 }
 
 async function loadClientTasks(clientId) {
+  if (IS_PREVIEW) {
+    S.tasks = S.allTasks.filter(task => task.clientId === clientId);
+    S.templates = [];
+    S.months = [];
+    render();
+    return;
+  }
   try {
     const [tasks, templates, months] = await Promise.all([
       api('/tasks/client/' + clientId),
@@ -837,17 +985,12 @@ function renderProjectFolders() {
       const clientTasks = S.allTasks.filter(t => t.clientId === c.clientId);
       const ready = clientTasks.filter(t => t.status === 'Finalizada').length;
       const pct = clientTasks.length ? Math.round((ready / clientTasks.length) * 100) : (c.progressPct || 0);
-      const health = getProjectHealth(c.clientId);
-
       return `
       <div class="home-client-card" onclick="selectClient('${c.clientId}')">
         <div class="home-client-header">
           <div class="client-avatar" style="background:${c.colorAccent || '#6366f1'}">${c.clientCode || 'PROJ'}</div>
           <div style="flex:1;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div class="home-client-name">${esc(c.clientName)}</div>
-              <span class="health-badge ${health.code}">${health.label}</span>
-            </div>
+            <div class="home-client-name">${esc(c.clientName)}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px;">${c.category === 'personal' ? 'Proyecto Personal' : 'Proyecto Cliente'}</div>
           </div>
         </div>
@@ -951,6 +1094,7 @@ function findTask(taskId) {
 async function persistInlineTask(task) {
   try {
     await api('/tasks', { method: 'POST', body: JSON.stringify(task) });
+    savePreviewState();
   } catch (error) {
     toast(error.message || 'No se ha podido guardar la tarea', 'err');
   }
@@ -1022,7 +1166,14 @@ function renderProjectWorkspace() {
   const today = new Date().toISOString().slice(0, 10);
   const open = allTasks.filter(task => task.status !== 'Finalizada');
   const endingSoon = open.filter(task => getTaskEndDate(task) && getTaskEndDate(task) < today);
-  const resources = allTasks.flatMap(task => (task.attachments || []).map(file => ({ ...file, taskName: task.taskName })));
+  const resources = [
+    ...(client.resources || []).map(resource => ({ ...resource, taskName: 'Proyecto' })),
+    ...allTasks.flatMap(task => (task.attachments || []).map(file => ({ ...file, taskName: task.taskName }))),
+  ];
+  const reminders = [
+    ...(client.reminders || []).map(reminder => ({ ...reminder, source: 'project' })),
+    ...open.map(task => ({ id: task.taskId || task.id, title: task.taskName, date: getTaskEndDate(task), priority: task.priority, source: 'task' })),
+  ];
   const health = getProjectHealth(client.clientId);
 
   return `
@@ -1033,34 +1184,39 @@ function renderProjectWorkspace() {
         <div class="project-heading"><span class="project-folder-icon">⌁</span><h2>${esc(client.clientName)}</h2></div>
         <p>${esc(client.summary || client.concept || 'Centraliza las tareas, documentación y seguimiento del proyecto.')}</p>
       </div>
-      <div class="project-hero-side"><span class="health-badge ${health.code}">${health.label}</span><span class="project-code">${esc(client.clientCode || 'PROY')}</span></div>
+      <div class="project-hero-side"><div class="traffic-light-control" aria-label="Semáforo del proyecto"><span>Semáforo</span>${Object.entries(TRAFFIC_LIGHTS).map(([value, light]) => `<button type="button" class="traffic-light-option ${health.code === light.code ? 'selected' : ''}" title="${light.label}" aria-label="Semáforo ${light.label}" onclick="setProjectTrafficLight('${client.clientId}','${value}')"><i class="${light.code}"></i><b>${light.label}</b></button>`).join('')}</div></div>
     </section>
+
+    <div class="project-state-summary project-state-summary-compact" aria-label="Resumen de tareas">
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','')"><strong>${allTasks.length}</strong><span>Total</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','Sin empezar')"><strong>${allTasks.filter(task => task.status === 'Sin empezar').length}</strong><span>Sin empezar</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','En edición')"><strong>${allTasks.filter(task => task.status === 'En edición').length}</strong><span>Edición</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','En producción')"><strong>${allTasks.filter(task => task.status === 'En producción').length}</strong><span>Producción</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','Finalizada')"><strong>${allTasks.filter(task => task.status === 'Finalizada').length}</strong><span>Finalizadas</span></button>
+    </div>
 
     <div class="project-overview-grid project-context-grid">
       <section class="project-panel resource-panel">
-        <div class="panel-heading"><span>▧</span><h3>Documentos y recursos</h3><small>${resources.length} vinculados</small></div>
+        <div class="panel-heading"><span>▧</span><h3>Documentos y recursos</h3><small>${resources.length} vinculados</small><button class="panel-add" type="button" onclick="openModal('resource',{clientId:'${client.clientId}'})" aria-label="Añadir recurso">＋</button></div>
         ${resources.length ? `<div class="resource-list">${resources.slice(0, 3).map(resource => `<a class="resource-item" href="${esc(resource.url || '#')}" target="_blank" onclick="event.stopPropagation()"><span>${resource.kind === 'link' || /^https?:\/\//i.test(resource.url || '') ? '↗' : '▧'}</span><strong>${esc(resource.title || resource.name || resource.url || 'Recurso')}</strong><small>${esc(resource.taskName)}</small></a>`).join('')}</div>` : '<div class="panel-empty">Los archivos y enlaces de las tareas aparecerán aquí.</div>'}
       </section>
       <section class="project-panel reminders-panel">
-        <div class="panel-heading"><span>◷</span><h3>Recordatorios</h3><small>${open.length} activos</small></div>
-        <div class="reminder-list">${open.length ? open.slice(0, 3).map(task => `<button class="reminder-item" onclick="toggleProjectTask('${task.taskId || task.id}')"><span class="priority-dot ${(task.priority || 'Media').toLowerCase()}"></span><strong>${esc(task.taskName)}</strong><small>${formatTaskDate(getTaskEndDate(task))}</small></button>`).join('') : '<div class="panel-empty">No hay recordatorios activos.</div>'}</div>
+        <div class="panel-heading"><span>◷</span><h3>Recordatorios</h3><small>${reminders.length} activos</small><button class="panel-add" type="button" onclick="openModal('reminder',{clientId:'${client.clientId}'})" aria-label="Añadir recordatorio">＋</button></div>
+        <div class="reminder-list">${reminders.length ? reminders.slice(0, 3).map(reminder => reminder.source === 'task' ? `<button class="reminder-item" onclick="toggleProjectTask('${reminder.id}')"><span class="priority-dot ${(reminder.priority || 'Media').toLowerCase()}"></span><strong>${esc(reminder.title)}</strong><small>${formatTaskDate(reminder.date)}</small></button>` : `<div class="reminder-item"><span class="priority-dot ${(reminder.priority || 'Media').toLowerCase()}"></span><strong>${esc(reminder.title)}</strong><small>${formatTaskDate(reminder.date)}</small></div>`).join('') : '<div class="panel-empty">No hay recordatorios activos.</div>'}</div>
       </section>
-    </div>
-
-    <div class="project-metrics project-state-summary">
-      <button type="button" class="project-metric" onclick="setProjectFilter('status','')"><strong>${allTasks.length}</strong><span>Total</span></button>
-      <button type="button" class="project-metric" onclick="setProjectFilter('status','Sin empezar')"><strong>${allTasks.filter(task => task.status === 'Sin empezar').length}</strong><span>Sin empezar</span></button>
-      <button type="button" class="project-metric" onclick="setProjectFilter('status','En edición')"><strong>${allTasks.filter(task => task.status === 'En edición').length}</strong><span>En edición</span></button>
-      <button type="button" class="project-metric" onclick="setProjectFilter('status','En producción')"><strong>${allTasks.filter(task => task.status === 'En producción').length}</strong><span>En producción</span></button>
-      <button type="button" class="project-metric" onclick="setProjectFilter('status','Finalizada')"><strong>${allTasks.filter(task => task.status === 'Finalizada').length}</strong><span>Finalizadas</span></button>
     </div>
 
     <section class="project-tasks-section">
       <div class="tasks-section-heading"><div><div class="eyebrow">Seguimiento</div><h3>Tareas</h3><p>${open.length} activas${endingSoon.length ? ` · ${endingSoon.length} con fecha vencida` : ''}</p></div><div class="task-view-actions"><button class="btn-primary" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Nueva tarea</button><button class="btn-secondary btn-sm" onclick="setView('kanban')">Ver Kanban</button></div></div>
       <div class="project-filter-bar"><div class="inline-search">⌕<input placeholder="Buscar tareas…" value="${esc(S.searchQuery)}" oninput="S.searchQuery=this.value;render()"></div><select onchange="setProjectFilter('status',this.value)"><option value="">Estado: todos</option>${STATUSES.map(status => `<option value="${status}"${S.projectFilters.status === status ? ' selected' : ''}>${status}</option>`).join('')}</select><select onchange="setProjectFilter('priority',this.value)"><option value="">Prioridad: todas</option>${PRIORITIES.map(priority => `<option value="${priority}"${S.projectFilters.priority === priority ? ' selected' : ''}>${priority}</option>`).join('')}</select></div>
-      <div class="project-task-list"><div class="project-task-list-head"><span>Tarea</span><span>Fecha de fin</span><span>Prioridad</span><span>Estado</span></div>${tasks.length ? tasks.map(renderProjectTask).join('') : '<div class="panel-empty">No hay tareas que coincidan con los filtros.</div>'}</div>
+      ${tasks.length ? `<div class="project-task-groups">${renderProjectTaskGroup('Por completar', tasks.filter(task => task.status !== 'Finalizada'), 'open')}${renderProjectTaskGroup('Completadas', tasks.filter(task => task.status === 'Finalizada'), 'done')}</div>` : '<div class="project-task-list"><div class="panel-empty">No hay tareas que coincidan con los filtros.</div></div>'}
     </section>
   </div>`;
+}
+
+function renderProjectTaskGroup(title, tasks, tone) {
+  if (!tasks.length) return '';
+  return `<section class="project-task-group project-task-group-${tone}"><div class="task-group-heading"><span>${title}</span><small>${tasks.length}</small></div><div class="project-task-list"><div class="project-task-list-head"><span>Tarea</span><span>Fecha de fin</span><span>Prioridad</span><span>Estado</span></div>${tasks.map(renderProjectTask).join('')}</div></section>`;
 }
 
 function renderProjectTask(task) {
