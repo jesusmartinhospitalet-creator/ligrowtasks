@@ -13,20 +13,47 @@ const SEED_TASKS = [
   { id: 'tsk-04', taskCode: 'AND-301', clientId: 'cli-03', clientName: 'Andorra Ecommerce - Rediseño', taskName: 'Aprobación Wireframes UX/UI Mobile', owner: 'Blanca', status: 'Listo', priority: 'Media', taskType: 'Puntual', category: 'Diseño', dueDate: '2026-09-04', description: 'Diseños aceptados por cliente.', subtasks: [{ id: 'sub-5', title: 'Figma prototype', completed: true }], tags: ['Figma', 'UI/UX'], attachments: [] }
 ];
 
+const INDEX_HTML = `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ligrow Tasks · Personal & Project Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css?v=16.0" />
+</head>
+<body>
+  <div id="app"></div>
+  <script src="/app-v3.js?v=16.0"></script>
+</body>
+</html>`;
+
 module.exports = (req, res) => {
+  res.statusCode = 200;
   const url = req.url || '';
 
-  if (url.includes('health')) {
-    return res.status(200).json({ status: 'running', app: 'Ligrow Tasks API' });
+  if (url.includes('/api/health') || url.includes('/health')) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify({ status: 'running', app: 'Ligrow Tasks API' }));
   }
 
-  if (url.includes('clients')) {
-    return res.status(200).json(SEED_CLIENTS);
+  if (url.includes('/api/clients') || url.includes('/clients')) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify(SEED_CLIENTS));
   }
 
-  if (url.includes('tasks')) {
-    return res.status(200).json(SEED_TASKS);
+  if (url.includes('/api/tasks') || url.includes('/tasks')) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify(SEED_TASKS));
   }
 
-  return res.status(200).json([]);
+  if (url.startsWith('/api/')) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify([]));
+  }
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.end(INDEX_HTML);
 };
