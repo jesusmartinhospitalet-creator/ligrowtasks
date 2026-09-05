@@ -2,16 +2,14 @@
   "name": "ligrowtasks",
   "version": "0.1.0",
   "private": true,
-  "description": "Ligrow Tasks · Migración desde Google Apps Script a Node.js",
+  "description": "Ligrow Tasks · Static Frontend",
   "scripts": {
-    "build": "node scripts/bundle-static.js",
-    "dev": "node src/server.js",
-    "start": "node src/server.js"
+    "build": "node scripts/bundle-static.js"
   },
   "engines": {
     "node": "20.x"
   },
-  "dependencies": {
+  "devDependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
