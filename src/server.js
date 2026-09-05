@@ -45,11 +45,12 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/months', monthRoutes);
 app.use('/api/comments', commentRoutes);
 
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API route not found' });
+});
+
 app.get('*', (req, res) => {
-  const indexHtml = path.join(publicDir, 'index.html');
-  if (fs.existsSync(indexHtml)) {
-    return res.sendFile(indexHtml);
-  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(`<!doctype html>
 <html lang="es">
 <head>
