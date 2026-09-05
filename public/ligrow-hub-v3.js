@@ -73,7 +73,7 @@ const SEED_TASKS = [
 ];
 
 /* ── API ───────────────────────────────────────── */
-const IS_PREVIEW = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
+const IS_PREVIEW = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
 
 async function api(url, opts = {}) {
   if (IS_PREVIEW && (!opts.method || opts.method === 'GET')) {
