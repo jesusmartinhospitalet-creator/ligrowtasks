@@ -27,7 +27,9 @@ app.use(express.urlencoded({ extended: true }));
 const fs = require('fs');
 
 // Serve static files
-const publicDir = path.join(__dirname, '..', 'public');
+const publicDir = process.env.VERCEL
+  ? path.join(process.cwd(), 'public')
+  : path.join(__dirname, '..', 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
 }
