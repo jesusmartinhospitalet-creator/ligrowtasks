@@ -2,7 +2,7 @@ const memoryStore = require('./mock-db');
 const fallback = require('./database-fallback');
 
 let realPool = null;
-if (process.env.DATABASE_URL) {
+if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres')) {
   try {
     const { Pool } = require('pg');
     realPool = new Pool({
