@@ -1,3 +1,5 @@
-module.exports = (req, res) => {
-  res.status(200).send('Vercel Serverless Function OK');
-};
+'use strict';
+
+const app = require('../src/server');
+
+module.exports = app;
