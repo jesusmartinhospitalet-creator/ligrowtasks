@@ -76,13 +76,13 @@ const SEED_TASKS = [
 const IS_PREVIEW = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
 
 async function api(url, opts = {}) {
-  if (IS_PREVIEW && (!opts.method || opts.method === 'GET')) {
-    if (url.startsWith('/clients')) return SEED_CLIENTS;
-    if (url.startsWith('/tasks')) return SEED_TASKS;
-    if (url.startsWith('/comments')) return [];
-    if (url.startsWith('/templates')) return [];
-    if (url.startsWith('/months')) return [];
-    return [];
+  if (IS_PREVIEW) {
+    if (!opts.method || opts.method === 'GET') {
+      if (url.includes('client')) return SEED_CLIENTS;
+      if (url.includes('task')) return SEED_TASKS;
+      return [];
+    }
+    return { success: true };
   }
 
   try {
@@ -95,11 +95,8 @@ async function api(url, opts = {}) {
     return JSON.parse(text);
   } catch (err) {
     console.warn(`[API Fallback for ${url}]:`, err.message);
-    if (url.startsWith('/clients')) return SEED_CLIENTS;
-    if (url.startsWith('/tasks')) return SEED_TASKS;
-    if (url.startsWith('/comments')) return [];
-    if (url.startsWith('/templates')) return [];
-    if (url.startsWith('/months')) return [];
+    if (url.includes('client')) return SEED_CLIENTS;
+    if (url.includes('task')) return SEED_TASKS;
     return [];
   }
 }
