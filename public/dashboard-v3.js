@@ -82,6 +82,8 @@ async function api(url, opts = {}) {
       ...opts,
     });
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) throw new Error('Response is not JSON');
     return await res.json();
   } catch (err) {
     console.warn(`[API Fallback for ${url}]:`, err.message);
