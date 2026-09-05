@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Ligrow Tasks · Migración desde Google Apps Script a Node.js",
-  "main": "src/server.js",
+  "main": "api/index.js",
   "scripts": {
     "dev": "node src/server.js",
     "start": "node src/server.js"
