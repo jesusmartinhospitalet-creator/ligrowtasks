@@ -7,7 +7,7 @@
     "build": "node scripts/bundle-static.js"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "devDependencies": {
     "bcryptjs": "^2.4.3",
