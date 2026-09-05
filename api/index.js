@@ -14,22 +14,19 @@ const SEED_TASKS = [
 ];
 
 module.exports = (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Content-Type', 'application/json');
-
   const url = req.url || '';
 
   if (url.includes('health')) {
-    return res.end(JSON.stringify({ status: 'running', app: 'Ligrow Tasks API' }));
+    return res.status(200).json({ status: 'running', app: 'Ligrow Tasks API' });
   }
 
   if (url.includes('clients')) {
-    return res.end(JSON.stringify(SEED_CLIENTS));
+    return res.status(200).json(SEED_CLIENTS);
   }
 
   if (url.includes('tasks')) {
-    return res.end(JSON.stringify(SEED_TASKS));
+    return res.status(200).json(SEED_TASKS);
   }
 
-  return res.end(JSON.stringify([]));
+  return res.status(200).json([]);
 };
