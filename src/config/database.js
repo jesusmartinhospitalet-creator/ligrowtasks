@@ -2,30 +2,35 @@ const { Pool } = require('pg');
 const memoryStore = require('./mock-db');
 const fallback = require('./database-fallback');
 
-let pool;
-
+let realPool = null;
 if (process.env.DATABASE_URL) {
-  if (!global._pgPool) {
-    global._pgPool = new Pool({
+  try {
+    realPool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
       max: 2,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 3000,
       idleTimeoutMillis: 10000,
     });
-    global._pgPool.on('error', (err) => {
-      console.error('[pg pool error]', err.message);
-    });
+    realPool.on('error', (err) => console.error('[pg pool error]', err.message));
+  } catch (e) {
+    console.error('[pg init error]', e.message);
   }
-  pool = global._pgPool;
-} else {
-  console.log('[db] DATABASE_URL missing, using in-memory store fallback');
-  pool = {
-    query: async (text, params = []) => {
-      return fallback.query(text, params, memoryStore);
-    },
-    on: () => {}
-  };
 }
+
+const pool = {
+  query: async (text, params = []) => {
+    if (realPool) {
+      try {
+        const res = await realPool.query(text, params);
+        return res;
+      } catch (err) {
+        console.warn('[DB query failed, using in-memory store fallback]:', err.message);
+      }
+    }
+    return fallback.query(text, params, memoryStore);
+  },
+  on: () => {}
+};
 
 module.exports = pool;
