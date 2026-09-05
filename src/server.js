@@ -34,7 +34,7 @@ if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
 }
 
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({ app: 'Ligrow Tasks API', status: 'running', db: !!process.env.DATABASE_URL });
 });
 

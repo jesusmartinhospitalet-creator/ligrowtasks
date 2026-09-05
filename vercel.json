@@ -15,8 +15,8 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
-    { "src": "/styles.css", "dest": "/styles.css" },
-    { "src": "/dashboard-v3.js", "dest": "/dashboard-v3.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/styles.css", "dest": "/public/styles.css" },
+    { "src": "/dashboard-v3.js", "dest": "/public/dashboard-v3.js" },
+    { "src": "/(.*)", "dest": "/public/index.html" }
   ]
 }
