@@ -4,7 +4,7 @@ const pool = require('../config/database');
 function normalizeClientCode(code = '', clientName = '') {
   const source = String(code || clientName || '')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '');
 
