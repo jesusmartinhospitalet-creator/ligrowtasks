@@ -5,6 +5,7 @@
   "description": "Ligrow Tasks · Migración desde Google Apps Script a Node.js",
   "main": "src/server.js",
   "scripts": {
+    "build": "echo 'Static build ready'",
     "dev": "node src/server.js",
     "start": "node src/server.js"
   },

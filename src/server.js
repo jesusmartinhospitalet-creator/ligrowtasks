@@ -74,7 +74,7 @@ app.use((err, req, res, _next) => {
 
 module.exports = app;
 
-if (require.main === module) {
+if (require.main === module && !process.env.VERCEL) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Ligrow Tasks API running on port ${PORT}`));
 }
