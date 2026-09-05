@@ -75,12 +75,16 @@ const SEED_TASKS = [
 /* ── API ───────────────────────────────────────── */
 const IS_PREVIEW = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
 
+function getMockForUrl(url = '') {
+  if (url.startsWith('/tasks') || url.includes('/tasks/')) return SEED_TASKS;
+  if (url.startsWith('/clients') || url.includes('/clients/')) return SEED_CLIENTS;
+  return [];
+}
+
 async function api(url, opts = {}) {
   if (IS_PREVIEW) {
     if (!opts.method || opts.method === 'GET') {
-      if (url.includes('client')) return SEED_CLIENTS;
-      if (url.includes('task')) return SEED_TASKS;
-      return [];
+      return getMockForUrl(url);
     }
     return { success: true };
   }
@@ -92,12 +96,14 @@ async function api(url, opts = {}) {
     });
     const text = await res.text();
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    return JSON.parse(text);
+    try {
+      return JSON.parse(text);
+    } catch (_jsonErr) {
+      return getMockForUrl(url);
+    }
   } catch (err) {
     console.warn(`[API Fallback for ${url}]:`, err.message);
-    if (url.includes('client')) return SEED_CLIENTS;
-    if (url.includes('task')) return SEED_TASKS;
-    return [];
+    return getMockForUrl(url);
   }
 }
 
