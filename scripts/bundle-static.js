@@ -6,6 +6,13 @@ const rootDir = path.join(__dirname, '..');
 const css = fs.readFileSync(path.join(rootDir, 'styles.css'), 'utf-8');
 const js = fs.readFileSync(path.join(rootDir, 'app-v3.js'), 'utf-8');
 
+try {
+  new Function(js);
+} catch (error) {
+  console.error(`[bundle-static] app-v3.js contiene un error de sintaxis: ${error.message}`);
+  process.exit(1);
+}
+
 const html = `<!doctype html>
 <html lang="es">
 <head>
