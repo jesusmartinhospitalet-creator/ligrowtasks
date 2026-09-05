@@ -993,15 +993,24 @@ async function addInlineSubtask(event, taskId) {
   render();
 }
 
-async function addInlineAttachment(event, taskId) {
+async function addInlineAttachment(event, taskId, kind = 'link') {
   event.preventDefault();
   const form = event.currentTarget;
   const [title, url] = form.querySelectorAll('input');
   const task = findTask(taskId);
   if (!task || !url?.value.trim()) return;
-  task.attachments = [...(task.attachments || []), { title: title.value.trim() || url.value.trim(), url: url.value.trim() }];
+  task.attachments = [...(task.attachments || []), { title: title.value.trim() || url.value.trim(), url: url.value.trim(), kind }];
   await persistInlineTask(task);
   render();
+}
+
+function splitTaskAttachments(task = {}) {
+  const attachments = task.attachments || [];
+  const isLink = item => item.kind === 'link' || (!item.kind && /^https?:\/\//i.test(item.url || ''));
+  return {
+    files: attachments.filter(item => !isLink(item)),
+    links: attachments.filter(isLink),
+  };
 }
 
 function renderProjectWorkspace() {
@@ -1013,6 +1022,7 @@ function renderProjectWorkspace() {
   const today = new Date().toISOString().slice(0, 10);
   const open = allTasks.filter(task => task.status !== 'Finalizada');
   const endingSoon = open.filter(task => getTaskEndDate(task) && getTaskEndDate(task) < today);
+  const resources = allTasks.flatMap(task => (task.attachments || []).map(file => ({ ...file, taskName: task.taskName })));
   const health = getProjectHealth(client.clientId);
 
   return `
@@ -1025,6 +1035,17 @@ function renderProjectWorkspace() {
       </div>
       <div class="project-hero-side"><span class="health-badge ${health.code}">${health.label}</span><span class="project-code">${esc(client.clientCode || 'PROY')}</span></div>
     </section>
+
+    <div class="project-overview-grid project-context-grid">
+      <section class="project-panel resource-panel">
+        <div class="panel-heading"><span>▧</span><h3>Documentos y recursos</h3><small>${resources.length} vinculados</small></div>
+        ${resources.length ? `<div class="resource-list">${resources.slice(0, 3).map(resource => `<a class="resource-item" href="${esc(resource.url || '#')}" target="_blank" onclick="event.stopPropagation()"><span>${resource.kind === 'link' || /^https?:\/\//i.test(resource.url || '') ? '↗' : '▧'}</span><strong>${esc(resource.title || resource.name || resource.url || 'Recurso')}</strong><small>${esc(resource.taskName)}</small></a>`).join('')}</div>` : '<div class="panel-empty">Los archivos y enlaces de las tareas aparecerán aquí.</div>'}
+      </section>
+      <section class="project-panel reminders-panel">
+        <div class="panel-heading"><span>◷</span><h3>Recordatorios</h3><small>${open.length} activos</small></div>
+        <div class="reminder-list">${open.length ? open.slice(0, 3).map(task => `<button class="reminder-item" onclick="toggleProjectTask('${task.taskId || task.id}')"><span class="priority-dot ${(task.priority || 'Media').toLowerCase()}"></span><strong>${esc(task.taskName)}</strong><small>${formatTaskDate(getTaskEndDate(task))}</small></button>`).join('') : '<div class="panel-empty">No hay recordatorios activos.</div>'}</div>
+      </section>
+    </div>
 
     <div class="project-metrics project-state-summary">
       <button type="button" class="project-metric" onclick="setProjectFilter('status','')"><strong>${allTasks.length}</strong><span>Total</span></button>
@@ -1048,16 +1069,31 @@ function renderProjectTask(task) {
   const endDate = getTaskEndDate(task);
   const statusTone = taskTone(task.status);
   const priorityTone = taskTone(task.priority);
+  const subtasks = task.subtasks || [];
+  const completedSubtasks = subtasks.filter(item => item.completed).length;
+  const { files, links } = splitTaskAttachments(task);
   return `
   <article class="project-task ${isExpanded ? 'expanded' : ''}">
     <div class="project-task-row">
       <button class="task-expand" aria-label="Desplegar tarea" onclick="toggleProjectTask('${taskId}')">${isExpanded ? '⌃' : '⌄'}</button>
-      <button class="project-task-name" onclick="toggleProjectTask('${taskId}')"><strong>${esc(task.taskName)}</strong><span>${esc(task.description || 'Añade una breve descripción para dar contexto a la tarea.')}</span></button>
+      <div class="project-task-main">
+        <button class="project-task-name" onclick="toggleProjectTask('${taskId}')"><strong>${esc(task.taskName)}</strong><span>${esc(task.description || 'Añade una breve descripción para dar contexto a la tarea.')}</span></button>
+        <div class="task-elements" aria-label="Elementos de la tarea">
+          <button type="button" onclick="toggleProjectTask('${taskId}')">☑ Checklist ${completedSubtasks}/${subtasks.length}</button>
+          <button type="button" onclick="toggleProjectTask('${taskId}')">↗ Enlaces ${links.length}</button>
+          <button type="button" onclick="toggleProjectTask('${taskId}')">▧ Archivos ${files.length}</button>
+        </div>
+      </div>
       <label class="task-date-control"><span>Fecha de fin</span><input type="date" value="${esc(endDate)}" onchange="updateTaskEndDate('${taskId}',this.value)"></label>
       <select class="task-inline-select priority-select priority-${priorityTone}" aria-label="Prioridad" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','priority',this.value)">${PRIORITIES.map(priority => `<option${task.priority === priority ? ' selected' : ''}>${priority}</option>`).join('')}</select>
       <select class="task-inline-select status-select status-${statusTone}" aria-label="Estado" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','status',this.value)">${STATUSES.map(status => `<option${task.status === status ? ' selected' : ''}>${status}</option>`).join('')}</select>
     </div>
-    ${isExpanded ? `<div class="project-task-detail project-task-detail-simple"><div class="task-detail-card"><h4>Descripción</h4><textarea placeholder="Explica el objetivo y el resultado esperado." onchange="updateInlineTask('${taskId}','description',this.value)">${esc(task.description || '')}</textarea><p>Los cambios se guardan al salir del campo.</p></div></div>` : ''}
+    ${isExpanded ? `<div class="project-task-detail project-task-detail-rich">
+      <div class="task-detail-card"><h4>Descripción</h4><textarea placeholder="Explica el objetivo y el resultado esperado." onchange="updateInlineTask('${taskId}','description',this.value)">${esc(task.description || '')}</textarea><p>Los cambios se guardan al salir del campo.</p></div>
+      <div class="task-detail-card"><h4>Checklist</h4><div class="inline-checklist">${subtasks.length ? subtasks.map(item => `<label><input type="checkbox"${item.completed ? ' checked' : ''} onchange="toggleInlineSubtask('${taskId}','${item.id}')"><span>${esc(item.text || item.title || '')}</span></label>`).join('') : '<p>Sin elementos todavía.</p>'}</div><form class="inline-add" onsubmit="addInlineSubtask(event,'${taskId}')"><input placeholder="Añadir elemento…"><button type="submit" aria-label="Añadir elemento">＋</button></form></div>
+      <div class="task-detail-card"><h4>Archivos</h4>${files.length ? `<div class="inline-resource-list">${files.map(file => `<a href="${esc(file.url || '#')}" target="_blank">▧ ${esc(file.title || file.name || file.url)}</a>`).join('')}</div>` : '<p>Sin archivos vinculados.</p>'}<form class="inline-link-form" onsubmit="addInlineAttachment(event,'${taskId}','file')"><input placeholder="Nombre del archivo"><input placeholder="URL del archivo"><button type="submit" aria-label="Añadir archivo">＋</button></form></div>
+      <div class="task-detail-card"><h4>Enlaces</h4>${links.length ? `<div class="inline-resource-list">${links.map(link => `<a href="${esc(link.url || '#')}" target="_blank">↗ ${esc(link.title || link.name || link.url)}</a>`).join('')}</div>` : '<p>Sin enlaces vinculados.</p>'}<form class="inline-link-form" onsubmit="addInlineAttachment(event,'${taskId}','link')"><input placeholder="Nombre del enlace"><input placeholder="https://…"><button type="submit" aria-label="Añadir enlace">＋</button></form></div>
+    </div>` : ''}
   </article>`;
 }
 
