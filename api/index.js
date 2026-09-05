@@ -1,8 +1,9 @@
 'use strict';
 
-const app = require('../src/server');
+module.exports = (req, res) => {
+  res.status(200).json({ status: 'running', app: 'Ligrow Tasks API' });
+};
 
-module.exports = app;
 
 
 
