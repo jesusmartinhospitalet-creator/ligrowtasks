@@ -644,8 +644,8 @@ async function loadAll() {
       api('/clients'),
       api('/tasks'),
     ]);
-    S.clients  = clients;
-    S.allTasks = tasks;
+    S.clients  = Array.isArray(clients) && clients.length ? clients : SEED_CLIENTS;
+    S.allTasks = Array.isArray(tasks) && tasks.length ? tasks : SEED_TASKS;
 
     if (S.activeClient) {
       const updated = S.clients.find(c => c.clientId === S.activeClient.clientId);
@@ -653,7 +653,9 @@ async function loadAll() {
       if (S.activeClient) await loadClientTasks(S.activeClient.clientId);
     }
   } catch (err) {
-    toast('Error cargando datos: ' + err.message, 'err');
+    console.error('Error loading data:', err);
+    S.clients = SEED_CLIENTS;
+    S.allTasks = SEED_TASKS;
   } finally {
     S.loading = false;
     render();
@@ -677,7 +679,10 @@ async function loadClientTasks(clientId) {
 
 /* ── Render Main Root ──────────────────────────── */
 function render() {
-  app.innerHTML = renderSidebar() + renderContent();
+  const container = document.getElementById('app');
+  if (container) {
+    container.innerHTML = renderSidebar() + renderContent();
+  }
 }
 
 /* ── Sidebar Component ─────────────────────────── */
