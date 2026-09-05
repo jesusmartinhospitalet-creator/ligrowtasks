@@ -1102,3 +1102,20 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 .workspace-tab { padding: 4px 12px; font-size: 11px; font-weight: 700; border-radius: var(--radius-pill); cursor: pointer; color: var(--text3); transition: all .15s; }
 .workspace-tab.active { background: var(--orange); color: #fff; }
 
+/* ── Semáforo de Salud de Proyecto ──────────────── */
+.health-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.health-badge.atencion { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.health-badge.carga-alta { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.health-badge.en-curso { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+.health-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.health-dot.atencion { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+.health-dot.carga-alta { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
+.health-dot.en-curso { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+
+/* ── Attachments & Files ───────────────────────── */
+.attachment-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.attachment-chip { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 12px; font-weight: 600; color: var(--text2); text-decoration: none; transition: background .15s; }
+.attachment-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+

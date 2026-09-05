@@ -6,7 +6,7 @@ const S = {
   months:          [],
   allTasks:        [],
   activeClient:    null,
-  view:            'home', // 'home' | 'projects' | 'calendar' | 'analytics' | 'kanban' | 'table' | 'gantt' | 'templates' | 'months'
+  view:            'home', // 'home' | 'projects' | 'calendar' | 'kanban' | 'table' | 'gantt' | 'templates' | 'months'
   workspace:       'all',  // 'all' | 'personal' | 'cliente'
   searchQuery:     '',
   selectedTag:     '',
@@ -20,12 +20,11 @@ const OWNERS        = ['Jesús', 'Blanca', 'Alejandro'];
 const STATUSES      = ['En curso', 'Detenido', 'Listo'];
 const PRIORITIES    = ['Alta', 'Media', 'Baja'];
 const VIEWS_CLIENT  = ['kanban', 'table', 'gantt', 'templates', 'months'];
-const VIEWS_GLOBAL  = ['home', 'projects', 'calendar', 'analytics', 'kanban', 'table'];
+const VIEWS_GLOBAL  = ['home', 'projects', 'calendar', 'kanban', 'table'];
 const VIEW_LABELS   = {
-  home: 'Inicio',
+  home: 'Dashboard',
   projects: 'Proyectos',
   calendar: 'Calendario',
-  analytics: 'Analítica',
   kanban: 'Kanban',
   table: 'Tabla',
   gantt: 'Gantt',
@@ -43,6 +42,22 @@ function esc(str = '') {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+/* ── Semáforo de Salud de Proyecto ──────────────── */
+function getProjectHealth(clientId) {
+  const projectTasks = S.allTasks.filter(t => t.clientId === clientId && t.status !== 'Listo');
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const hasOverdue = projectTasks.some(t => t.dueDate && t.dueDate < todayStr);
+  const hasCritical = projectTasks.some(t => t.priority === 'Alta');
+
+  if (hasOverdue || hasCritical) {
+    return { status: 'Atención', code: 'atencion', label: 'Atención', emoji: '🔴' };
+  }
+  if (projectTasks.length >= 3) {
+    return { status: 'Carga alta', code: 'carga-alta', label: 'Carga Alta', emoji: '🟡' };
+  }
+  return { status: 'En curso', code: 'en-curso', label: 'En Curso', emoji: '🟢' };
 }
 
 /* ── API ───────────────────────────────────────── */
@@ -133,12 +148,13 @@ function modalTask(d = {}) {
 
   const subtasks = d.subtasks || [];
   const tagsStr = (d.tags || []).join(', ');
+  const attachments = d.attachments || [];
   const comments = (d.taskId && S.comments[d.taskId]) ? S.comments[d.taskId] : [];
 
   return `
-  <div class="modal" style="max-width: 640px;">
+  <div class="modal" style="max-width: 680px;">
     <div class="modal-header">
-      <div class="modal-title">${isEdit ? 'Editar tarea ' + (d.taskCode ? `[${d.taskCode}]` : '') : 'Nueva tarea'}</div>
+      <div class="modal-title">${isEdit ? 'Editar Tarea ' + (d.taskCode ? `[${d.taskCode}]` : '') : 'Nueva Tarea'}</div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -177,7 +193,7 @@ function modalTask(d = {}) {
             <input class="form-input" name="taskMonth" type="month"${val('taskMonth')}>
           </div>
           <div class="form-field">
-            <label class="form-label">Fecha de vencimiento</label>
+            <label class="form-label">Fecha de entrega / Vencimiento</label>
             <input class="form-input" name="dueDate" type="date"${val('dueDate')}>
           </div>
           <div class="form-field">
@@ -193,13 +209,13 @@ function modalTask(d = {}) {
             <input class="form-input" name="tags" placeholder="#ai, #dev, #diseño" value="${esc(tagsStr)}">
           </div>
           <div class="form-field full">
-            <label class="form-label">Descripción</label>
-            <textarea class="form-input" name="description" rows="3" placeholder="Detalles opcionales…">${esc(d.description || '')}</textarea>
+            <label class="form-label">Descripción / Notas ampliadas</label>
+            <textarea class="form-input" name="description" rows="3" placeholder="Detalles, enlaces e información relevante…">${esc(d.description || '')}</textarea>
           </div>
 
-          <!-- Subtareas Section -->
+          <!-- Subtareas / Checklist -->
           <div class="form-field full">
-            <label class="form-label">Subtareas / Checklist</label>
+            <label class="form-label">Checklist de Subtareas</label>
             <div class="subtask-list" id="modal-subtask-list">
               ${subtasks.map((st, idx) => `
                 <div class="subtask-item ${st.completed ? 'completed' : ''}">
@@ -210,13 +226,32 @@ function modalTask(d = {}) {
               `).join('')}
             </div>
             <div style="display:flex;gap:8px;margin-top:8px;">
-              <input class="form-input" id="new-subtask-input" placeholder="+ Añadir subtarea…">
+              <input class="form-input" id="new-subtask-input" placeholder="+ Añadir elemento a la checklist…">
               <button type="button" class="btn-secondary btn-sm" onclick="addModalSubtask()">Añadir</button>
             </div>
           </div>
 
+          <!-- Archivos y Enlaces (PDFs, Docs, Links) -->
+          <div class="form-field full">
+            <label class="form-label">Archivos y Enlaces Adjuntos (PDFs, Docs, URLs)</label>
+            <div class="attachment-list" id="modal-attachment-list">
+              ${attachments.map((att, idx) => `
+                <div class="attachment-chip">
+                  <span>📎</span>
+                  <a href="${esc(att.url || '#')}" target="_blank" style="flex:1;">${esc(att.title || att.url)}</a>
+                  <button type="button" class="pin-btn" onclick="this.parentElement.remove()">✕</button>
+                </div>
+              `).join('')}
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <input class="form-input" id="new-attachment-title" placeholder="Título o nombre del archivo/enlace" style="flex:1;">
+              <input class="form-input" id="new-attachment-url" placeholder="https://..." style="flex:1;">
+              <button type="button" class="btn-secondary btn-sm" onclick="addModalAttachment()">Adjuntar</button>
+            </div>
+          </div>
+
           ${isEdit ? `
-          <!-- Comments Thread -->
+          <!-- Comments & Historial -->
           <div class="form-field full comments-section">
             <div class="comments-title">Comentarios e Historial</div>
             <div class="comments-list">
@@ -228,10 +263,10 @@ function modalTask(d = {}) {
                   </div>
                   <div>${esc(c.text)}</div>
                 </div>
-              `).join('') : '<div style="font-size:12px;color:var(--text4)">No hay comentarios aún.</div>'}
+              `).join('') : '<div style="font-size:12px;color:var(--text4)">No hay comentarios todavía.</div>'}
             </div>
             <div class="comment-form">
-              <input class="comment-input" id="new-comment-text" placeholder="Escribe un comentario…">
+              <input class="comment-input" id="new-comment-text" placeholder="Escribe una observación o actualización…">
               <button type="button" class="btn-primary btn-sm" onclick="submitComment('${d.taskId}')">Comentar</button>
             </div>
           </div>
@@ -261,6 +296,26 @@ function addModalSubtask() {
   `;
   list.appendChild(div);
   inp.value = '';
+}
+
+function addModalAttachment() {
+  const tInp = document.getElementById('new-attachment-title');
+  const uInp = document.getElementById('new-attachment-url');
+  if (!uInp || !uInp.value.trim()) return;
+  const title = tInp?.value.trim() || uInp.value.trim();
+  const url = uInp.value.trim();
+
+  const list = document.getElementById('modal-attachment-list');
+  const div = document.createElement('div');
+  div.className = 'attachment-chip';
+  div.innerHTML = `
+    <span>📎</span>
+    <a href="${esc(url)}" target="_blank" style="flex:1;" data-url="${esc(url)}">${esc(title)}</a>
+    <button type="button" class="pin-btn" onclick="this.parentElement.remove()">✕</button>
+  `;
+  list.appendChild(div);
+  if (tInp) tInp.value = '';
+  uInp.value = '';
 }
 
 async function submitComment(taskId) {
@@ -304,7 +359,7 @@ function modalClient(d = {}) {
         <div class="form-grid">
           <div class="form-field full">
             <label class="form-label">Nombre del proyecto *</label>
-            <input class="form-input" name="clientName" required placeholder="Nombre del proyecto o cliente"${val('clientName')}>
+            <input class="form-input" name="clientName" required placeholder="Nombre del proyecto o marca"${val('clientName')}>
           </div>
           <div class="form-field">
             <label class="form-label">Categoría / Espacio</label>
@@ -327,7 +382,7 @@ function modalClient(d = {}) {
           </div>
           <div class="form-field full">
             <label class="form-label">Concepto / Descripción corta</label>
-            <input class="form-input" name="concept" placeholder="ej: Productividad con IA"${val('concept')}>
+            <input class="form-input" name="concept" placeholder="ej: Productividad personal y automatizaciones"${val('concept')}>
           </div>
           <div class="form-field full">
             <label class="form-label">Resumen / Objetivos</label>
@@ -412,7 +467,7 @@ function modalConfirm(d) {
 }
 
 function confirmDelete(entity, id) {
-  const names = { task: 'esta tarea', client: 'este proyecto/cliente', template: 'esta plantilla' };
+  const names = { task: 'esta tarea', client: 'este proyecto', template: 'esta plantilla' };
   openModal('confirm', { entity, id, title: 'Eliminar', message: `¿Estás seguro de que quieres eliminar ${names[entity] || 'este elemento'}?` });
 }
 
@@ -453,6 +508,17 @@ async function handleFormSubmit(e) {
     });
     data.subtasks = subtasks;
 
+    // Parse attachments from DOM
+    const attachmentEls = form.querySelectorAll('#modal-attachment-list .attachment-chip');
+    const attachments = [];
+    attachmentEls.forEach((el) => {
+      const a = el.querySelector('a');
+      if (a) {
+        attachments.push({ title: a.innerText, url: a.getAttribute('href') });
+      }
+    });
+    data.attachments = attachments;
+
     // Parse tags
     const tagsRaw = data.tags || '';
     data.tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t.length > 0).map(t => t.startsWith('#') ? t : `#${t}`);
@@ -468,21 +534,6 @@ async function handleFormSubmit(e) {
     await loadAll();
   } catch (err) {
     toast(err.message || 'Error al guardar', 'err');
-  }
-}
-
-async function toggleSubtask(taskId, subtaskId) {
-  const task = S.allTasks.find(t => t.taskId === taskId);
-  if (!task || !task.subtasks) return;
-  const st = task.subtasks.find(s => s.id === subtaskId);
-  if (st) {
-    st.completed = !st.completed;
-    try {
-      await api('/tasks', { method: 'POST', body: JSON.stringify(task) });
-      render();
-    } catch (e) {
-      toast('Error al actualizar subtarea', 'err');
-    }
   }
 }
 
@@ -605,8 +656,11 @@ function render() {
 
 /* ── Sidebar Component ─────────────────────────── */
 function renderSidebar() {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const overdueCount = S.allTasks.filter(t => t.status !== 'Listo' && t.dueDate && new Date(t.dueDate) < today).length;
+  const todayStr = new Date().toISOString().substring(0, 10);
+
+  const activeTasks = S.allTasks.filter(t => t.status !== 'Listo');
+  const criticalCount = activeTasks.filter(t => t.priority === 'Alta' || (t.dueDate && t.dueDate < todayStr)).length;
+  const pendingCount = activeTasks.length;
 
   const filteredClients = S.clients.filter(c => {
     if (S.workspace === 'personal') return c.category === 'personal';
@@ -617,11 +671,12 @@ function renderSidebar() {
   const clientItems = filteredClients.map(c => {
     const active = S.activeClient?.clientId === c.clientId;
     const initials = (c.clientName || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    const isPersonal = c.category === 'personal';
+    const health = getProjectHealth(c.clientId);
 
     return `
     <div class="client-item${active ? ' active' : ''}" onclick="selectClient('${c.clientId}')">
-      <div class="client-avatar" style="background:${c.colorAccent || (isPersonal ? 'var(--orange)' : 'var(--status-curso)')}">${initials}</div>
+      <div class="health-dot ${health.code}" title="Estado: ${health.label}"></div>
+      <div class="client-avatar" style="background:${c.colorAccent || '#6366f1'}">${initials}</div>
       <span class="client-name">${esc(c.clientName)}</span>
       <div class="client-actions" onclick="event.stopPropagation()">
         <button class="client-action-btn" onclick="openModal('client',${JSON.stringify(c).replace(/"/g,'&quot;')})" title="Editar">✎</button>
@@ -636,7 +691,7 @@ function renderSidebar() {
       <div class="sidebar-logo-sub">Task & Project Hub</div>
     </div>
 
-    <!-- Workspace Pill Selector -->
+    <!-- Selector Espacio de Trabajo -->
     <div style="padding: 12px 14px 4px;">
       <div class="workspace-tabs">
         <div class="workspace-tab ${S.workspace === 'all' ? 'active' : ''}" onclick="setWorkspace('all')">Todos</div>
@@ -645,29 +700,28 @@ function renderSidebar() {
       </div>
     </div>
 
+    <!-- Navegación Estricta: Dashboard, Proyectos, Calendario -->
     <div style="padding: 8px 8px 0;">
       <div class="sidebar-home-btn ${S.view === 'home' ? 'active' : ''}" onclick="goHome()">
         <span class="sidebar-home-icon">⌂</span>
-        <span>Inicio / Resumen</span>
-        ${overdueCount ? `<span class="sidebar-badge">${overdueCount}</span>` : ''}
+        <span>Dashboard</span>
+        ${criticalCount ? `<span class="sidebar-badge">${criticalCount}</span>` : ''}
       </div>
       <div class="sidebar-home-btn ${S.view === 'projects' ? 'active' : ''}" onclick="setView('projects')">
         <span class="sidebar-home-icon">📁</span>
-        <span>Proyectos Hub</span>
+        <span>Proyectos</span>
+        <span style="font-size:11px;font-weight:700;color:var(--text3);margin-left:auto;">${filteredClients.length}</span>
       </div>
       <div class="sidebar-home-btn ${S.view === 'calendar' ? 'active' : ''}" onclick="setView('calendar')">
         <span class="sidebar-home-icon">📅</span>
         <span>Calendario</span>
-      </div>
-      <div class="sidebar-home-btn ${S.view === 'analytics' ? 'active' : ''}" onclick="setView('analytics')">
-        <span class="sidebar-home-icon">📊</span>
-        <span>Analítica</span>
+        ${pendingCount ? `<span style="font-size:11px;font-weight:700;color:var(--text4);margin-left:auto;">${pendingCount}</span>` : ''}
       </div>
     </div>
 
-    <div class="sidebar-section">${S.workspace === 'personal' ? 'Mis Proyectos' : S.workspace === 'cliente' ? 'Clientes' : 'Proyectos & Clientes'}</div>
+    <div class="sidebar-section">${S.workspace === 'personal' ? 'Proyectos Personales' : S.workspace === 'cliente' ? 'Proyectos Cliente' : 'Todos los Proyectos'}</div>
     <div class="sidebar-clients">
-      ${filteredClients.length ? clientItems : '<div style="padding:12px 10px;font-size:12px;color:var(--text4);">Sin proyectos aquí</div>'}
+      ${filteredClients.length ? clientItems : '<div style="padding:12px 10px;font-size:12px;color:var(--text4);">Sin proyectos</div>'}
     </div>
     <div class="sidebar-footer">
       <button class="btn-new-client" onclick="openModal('client')">＋ Nuevo proyecto</button>
@@ -675,9 +729,8 @@ function renderSidebar() {
   </div>`;
 }
 
-/* ── Content Container (Header + Views) ───────── */
+/* ── Content Container ─────────────────────────── */
 function renderContent() {
-  const isGlobalView = VIEWS_GLOBAL.includes(S.view);
   const activeTitle = S.activeClient ? S.activeClient.clientName : (VIEW_LABELS[S.view] || 'Dashboard');
 
   const tabs = S.activeClient
@@ -690,14 +743,14 @@ function renderContent() {
       <div class="main-header-top">
         <div>
           <div class="main-title">${esc(activeTitle)}</div>
-          ${S.activeClient?.concept ? `<div class="main-subtitle">${esc(S.activeClient.concept)}</div>` : '<div class="main-subtitle">Centro de Control de Proyectos Personales y Profesionales</div>'}
+          ${S.activeClient?.concept ? `<div class="main-subtitle">${esc(S.activeClient.concept)}</div>` : '<div class="main-subtitle">Gestión Integral de Proyectos y Tareas Personales</div>'}
         </div>
 
-        <!-- Global Search Bar & Actions -->
+        <!-- Buscador Global & Acción Rápida -->
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="search-box">
             <span>🔍</span>
-            <input placeholder="Buscar tareas, tags..." value="${esc(S.searchQuery)}" oninput="S.searchQuery=this.value;render();">
+            <input placeholder="Buscar tareas, archivos, #tags..." value="${esc(S.searchQuery)}" oninput="S.searchQuery=this.value;render();">
           </div>
           <button class="btn-primary" onclick="openModal('task')">＋ Nueva tarea</button>
         </div>
@@ -714,7 +767,6 @@ function renderActiveView() {
   if (S.view === 'home')      return renderHome();
   if (S.view === 'projects')  return renderProjects();
   if (S.view === 'calendar')  return renderCalendar();
-  if (S.view === 'analytics') return renderAnalytics();
   if (S.view === 'kanban')    return renderKanban();
   if (S.view === 'table')     return renderTable();
   if (S.view === 'gantt')     return renderGantt();
@@ -723,31 +775,32 @@ function renderActiveView() {
   return '';
 }
 
-/* ── Home View ─────────────────────────────────── */
+/* ── Home / Dashboard View (Limpio y Minimalista) ─────────── */
 function renderHome() {
   const tasks = getFilteredTasks();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const in7   = new Date(today); in7.setDate(today.getDate() + 7);
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const in7Str   = new Date(Date.now() + 7*84600000).toISOString().substring(0, 10);
 
   const active = tasks.filter(t => t.status !== 'Listo');
-  const overdue = active.filter(t => t.dueDate && new Date(t.dueDate) < today);
-  const thisWeek = active.filter(t => t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) <= in7);
+  const overdue = active.filter(t => t.dueDate && t.dueDate < todayStr);
+  const critical = active.filter(t => t.priority === 'Alta');
+  const thisWeek = active.filter(t => t.dueDate && t.dueDate >= todayStr && t.dueDate <= in7Str);
 
   return `
   <div class="home-grid">
-    <!-- Stat Banner -->
+    <!-- Stat Banner Limpio -->
     <div class="home-banner">
       <div class="home-stat-card ${overdue.length ? 'home-stat-alert' : ''}">
         <div class="home-stat-num">${overdue.length}</div>
-        <div class="home-stat-label">Vencidas</div>
+        <div class="home-stat-label">Vencidas / Críticas</div>
       </div>
       <div class="home-stat-card">
         <div class="home-stat-num">${thisWeek.length}</div>
-        <div class="home-stat-label">Esta semana</div>
+        <div class="home-stat-label">Próximos 7 Días</div>
       </div>
       <div class="home-stat-card">
         <div class="home-stat-num">${active.length}</div>
-        <div class="home-stat-label">Tareas abiertas</div>
+        <div class="home-stat-label">Tareas Abiertas</div>
       </div>
       <div class="home-stat-card">
         <div class="home-stat-num">${tasks.filter(t => t.status === 'Listo').length}</div>
@@ -755,44 +808,48 @@ function renderHome() {
       </div>
     </div>
 
-    <!-- Main Section: Tareas Vencidas y Próximas -->
+    <!-- Tareas Vencidas y Críticas -->
     <div style="display:flex;flex-direction:column;gap:20px;">
-      ${overdue.length ? `
+      ${overdue.length || critical.length ? `
         <div class="home-section">
-          <div class="home-section-title home-section-alert">⚠ Tareas Vencidas (${overdue.length})</div>
+          <div class="home-section-title home-section-alert">🚨 Prioridades Críticas & Vencidas (${overdue.length + critical.length})</div>
           <div class="home-task-list">
-            ${overdue.map(t => renderHomeTaskRow(t, true)).join('')}
+            ${[...new Set([...overdue, ...critical])].map(t => renderHomeTaskRow(t, true)).join('')}
           </div>
         </div>
       ` : ''}
 
       <div class="home-section">
-        <div class="home-section-title">📅 Próximas Tareas (${thisWeek.length})</div>
+        <div class="home-section-title">📋 Tareas para esta semana (${thisWeek.length})</div>
         <div class="home-task-list">
-          ${thisWeek.length ? thisWeek.map(t => renderHomeTaskRow(t)).join('') : '<div class="home-empty">No hay tareas programadas para esta semana. ¡Buen trabajo!</div>'}
+          ${thisWeek.length ? thisWeek.map(t => renderHomeTaskRow(t)).join('') : '<div class="home-empty">No hay tareas urgentes programadas. ¡Todo ordenado!</div>'}
         </div>
       </div>
     </div>
   </div>`;
 }
 
-function renderHomeTaskRow(t, isOverdue = false) {
+function renderHomeTaskRow(t, isAlert = false) {
   const pins = getPins();
   const isPinned = pins.has(t.taskId);
   const subtasks = t.subtasks || [];
   const completedSub = subtasks.filter(s => s.completed).length;
+  const attachments = t.attachments || [];
 
   return `
   <div class="home-task-row" onclick="openModal('task', ${JSON.stringify(t).replace(/"/g,'&quot;')})">
-    <div class="home-task-date ${isOverdue ? 'overdue' : ''}">${t.dueDate || 'Sin fecha'}</div>
+    <div class="home-task-date ${isAlert ? 'overdue' : ''}">${t.dueDate || 'Sin fecha'}</div>
     <div>
       <div class="home-task-name">${esc(t.taskName)}</div>
-      ${subtasks.length ? `
-        <div class="subtasks-progress">
-          <div class="progress-bar-sm"><div class="progress-fill-sm" style="width:${(completedSub/subtasks.length)*100}%"></div></div>
-          <span>${completedSub}/${subtasks.length}</span>
-        </div>
-      ` : ''}
+      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+        ${subtasks.length ? `
+          <div class="subtasks-progress" style="margin-top:0;">
+            <div class="progress-bar-sm"><div class="progress-fill-sm" style="width:${(completedSub/subtasks.length)*100}%"></div></div>
+            <span>${completedSub}/${subtasks.length}</span>
+          </div>
+        ` : ''}
+        ${attachments.length ? `<span style="font-size:11px;color:var(--text3);">📎 ${attachments.length} adjuntos</span>` : ''}
+      </div>
     </div>
     <div class="badge badge-pri-${(t.priority || 'media').toLowerCase()}">${t.priority}</div>
     <div class="home-tag">${t.owner || '—'}</div>
@@ -800,7 +857,7 @@ function renderHomeTaskRow(t, isOverdue = false) {
   </div>`;
 }
 
-/* ── Projects View (Project Hub) ───────────────── */
+/* ── Projects View (Project Hub con Semáforo) ──── */
 function renderProjects() {
   const filtered = S.clients.filter(c => {
     if (S.workspace === 'personal') return c.category === 'personal';
@@ -814,19 +871,23 @@ function renderProjects() {
       const clientTasks = S.allTasks.filter(t => t.clientId === c.clientId);
       const ready = clientTasks.filter(t => t.status === 'Listo').length;
       const pct = clientTasks.length ? Math.round((ready / clientTasks.length) * 100) : (c.progressPct || 0);
+      const health = getProjectHealth(c.clientId);
 
       return `
       <div class="home-client-card" onclick="selectClient('${c.clientId}')">
         <div class="home-client-header">
           <div class="client-avatar" style="background:${c.colorAccent || '#6366f1'}">${c.clientCode || 'PROJ'}</div>
-          <div>
-            <div class="home-client-name">${esc(c.clientName)}</div>
-            <div style="font-size:11px;color:var(--text3);">${c.category === 'personal' ? 'Personal' : 'Cliente'}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div class="home-client-name">${esc(c.clientName)}</div>
+              <span class="health-badge ${health.code}">${health.label}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${c.category === 'personal' ? 'Proyecto Personal' : 'Proyecto Cliente'}</div>
           </div>
         </div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">${esc(c.concept || 'Sin descripción')}</div>
 
-        <!-- Progress Bar -->
+        <!-- Barra de Progreso -->
         <div class="bar-item" style="margin-bottom:12px;">
           <div class="bar-info"><span>Progreso</span><span>${pct}%</span></div>
           <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
@@ -835,7 +896,7 @@ function renderProjects() {
         <div class="home-client-stats">
           <div class="home-client-stat">
             <div class="home-client-num">${clientTasks.length}</div>
-            <div class="home-client-label">Total</div>
+            <div class="home-client-label">Total Tareas</div>
           </div>
           <div class="home-client-stat">
             <div class="home-client-num home-num-warn">${clientTasks.filter(t => t.status === 'En curso').length}</div>
@@ -843,7 +904,7 @@ function renderProjects() {
           </div>
           <div class="home-client-stat">
             <div class="home-client-num" style="color:var(--status-listo)">${ready}</div>
-            <div class="home-client-label">Listas</div>
+            <div class="home-client-label">Completadas</div>
           </div>
         </div>
       </div>`;
@@ -861,15 +922,14 @@ function renderCalendar() {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
-  // Day offset (Monday start)
   let startOffset = firstDay.getDay() - 1;
   if (startOffset < 0) startOffset = 6;
 
   const totalCells = Math.ceil((startOffset + lastDay.getDate()) / 7) * 7;
   const tasks = getFilteredTasks();
+  const todayStr = new Date().toISOString().substring(0, 10);
 
   let cells = [];
-  const todayStr = new Date().toISOString().substring(0, 10);
 
   for (let i = 0; i < totalCells; i++) {
     const dayNum = i - startOffset + 1;
@@ -927,75 +987,6 @@ function changeMonth(delta) {
   render();
 }
 
-/* ── Analytics View ────────────────────────────── */
-function renderAnalytics() {
-  const tasks = getFilteredTasks();
-  const total = tasks.length;
-  const ready = tasks.filter(t => t.status === 'Listo').length;
-  const inProgress = tasks.filter(t => t.status === 'En curso').length;
-  const pct = total ? Math.round((ready / total) * 100) : 0;
-
-  const ownersCount = {};
-  OWNERS.forEach(o => ownersCount[o] = tasks.filter(t => t.owner === o).length);
-
-  const prioCount = {};
-  PRIORITIES.forEach(p => prioCount[p] = tasks.filter(t => t.priority === p).length);
-
-  return `
-  <div class="analytics-view">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--orange)">${total}</div>
-        <div class="stat-lbl">Total Tareas</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--status-listo)">${pct}%</div>
-        <div class="stat-lbl">Tasa de Completado</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--status-curso)">${inProgress}</div>
-        <div class="stat-lbl">En Curso</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--status-listo)">${ready}</div>
-        <div class="stat-lbl">Completadas</div>
-      </div>
-    </div>
-
-    <div class="charts-row">
-      <div class="chart-box">
-        <div class="chart-title">Carga de Trabajo por Responsable</div>
-        <div class="bar-chart">
-          ${OWNERS.map(o => {
-            const count = ownersCount[o] || 0;
-            const barPct = total ? Math.round((count / total) * 100) : 0;
-            return `
-            <div class="bar-item">
-              <div class="bar-info"><span>${o}</span><span>${count} tareas (${barPct}%)</span></div>
-              <div class="bar-track"><div class="bar-fill" style="width:${barPct}%"></div></div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>
-
-      <div class="chart-box">
-        <div class="chart-title">Distribución por Prioridad</div>
-        <div class="bar-chart">
-          ${PRIORITIES.map(p => {
-            const count = prioCount[p] || 0;
-            const barPct = total ? Math.round((count / total) * 100) : 0;
-            return `
-            <div class="bar-item">
-              <div class="bar-info"><span>${p}</span><span>${count} tareas (${barPct}%)</span></div>
-              <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${p==='Alta'?'var(--pri-alta)':p==='Media'?'var(--pri-media)':'var(--pri-baja)'}"></div></div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
 /* ── Kanban View ───────────────────────────────── */
 function renderKanban() {
   return `<div class="kanban">
@@ -1029,6 +1020,7 @@ function renderTaskCard(t) {
   const subtasks = t.subtasks || [];
   const completedSub = subtasks.filter(s => s.completed).length;
   const tags = t.tags || [];
+  const attachments = t.attachments || [];
 
   return `
   <div class="kanban-card" onclick="openModal('task', ${JSON.stringify(t).replace(/"/g,'&quot;')})">
@@ -1043,6 +1035,10 @@ function renderTaskCard(t) {
         <div class="progress-bar-sm"><div class="progress-fill-sm" style="width:${(completedSub/subtasks.length)*100}%"></div></div>
         <span>${completedSub}/${subtasks.length}</span>
       </div>
+    ` : ''}
+
+    ${attachments.length ? `
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">📎 ${attachments.length} archivo(s)/enlace(s)</div>
     ` : ''}
 
     ${tags.length ? `
@@ -1073,12 +1069,14 @@ function renderTable() {
           <th>Prioridad</th>
           <th>Vencimiento</th>
           <th>Subtareas</th>
+          <th>Adjuntos</th>
         </tr>
       </thead>
       <tbody>
         ${tasks.map(t => {
           const subtasks = t.subtasks || [];
           const completedSub = subtasks.filter(s => s.completed).length;
+          const attachments = t.attachments || [];
           return `
           <tr onclick="openModal('task', ${JSON.stringify(t).replace(/"/g,'&quot;')})" style="cursor:pointer">
             <td style="font-weight:700;color:var(--orange)">${t.taskCode || '—'}</td>
@@ -1088,6 +1086,7 @@ function renderTable() {
             <td><span class="badge badge-pri-${t.priority.toLowerCase()}">${t.priority}</span></td>
             <td>${t.dueDate || '—'}</td>
             <td>${subtasks.length ? `${completedSub}/${subtasks.length}` : '—'}</td>
+            <td>${attachments.length ? `📎 ${attachments.length}` : '—'}</td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -1098,7 +1097,7 @@ function renderTable() {
 /* ── Gantt View ────────────────────────────────── */
 function renderGantt() {
   const tasks = getFilteredTasks().filter(t => t.startDate && t.dueDate);
-  if (!tasks.length) return `<div class="empty-state"><h3>Sin fechas de cronograma</h3><p>Asigna fecha de inicio y fin a las tareas para ver el diagrama de Gantt.</p></div>`;
+  if (!tasks.length) return `<div class="empty-state"><h3>Sin fechas de cronograma</h3><p>Asigna fecha de inicio y entrega a las tareas para ver el cronograma.</p></div>`;
 
   return `
   <div style="display:flex;flex-direction:column;gap:12px;">
@@ -1117,7 +1116,7 @@ function renderGantt() {
 
 /* ── Templates & Months Views ──────────────────── */
 function renderTemplates() {
-  return `<div class="home-empty">Plantillas del cliente cargadas.</div>`;
+  return `<div class="home-empty">Plantillas de tareas cargadas.</div>`;
 }
 function renderMonths() {
   return `<div class="home-empty">Historial mensual cargado.</div>`;
