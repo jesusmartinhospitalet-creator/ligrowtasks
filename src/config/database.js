@@ -1,10 +1,10 @@
-const { Pool } = require('pg');
 const memoryStore = require('./mock-db');
 const fallback = require('./database-fallback');
 
 let realPool = null;
 if (process.env.DATABASE_URL) {
   try {
+    const { Pool } = require('pg');
     realPool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
