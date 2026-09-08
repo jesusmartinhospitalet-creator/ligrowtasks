@@ -634,6 +634,37 @@ body{
 .ov-concept-def{font-size:11px;color:var(--text-3);line-height:1.5}
 .ov-concept-tag{font-size:8.5px;font-weight:700;letter-spacing:.5px;padding:1px 6px;border-radius:20px;background:var(--accent-light);color:var(--accent-text)}
 .doc-row:hover .doc-del{opacity:1!important}
+
+/* ── Responsive (tablet / iPad) ─────────────────────────────────────────── */
+@media (max-width:1080px){
+  #app{grid-template-columns:200px 1fr}
+  .stats{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+  .info-2,.kanban,.app-grid,.prov-cards{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .tb{padding:0 18px}
+  .tabs{margin:0 -18px;padding:0 18px}
+  .ct{padding:18px}
+  /* ad-hoc grids built inline in JS templates — keep in sync with the fixed layouts above */
+  [style*="grid-template-columns"]:not(.tk-2in-row){grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important}
+}
+@media (max-width:760px){
+  #app{grid-template-columns:1fr;height:auto;min-height:100vh}
+  body{overflow:auto}
+  .sb{
+    border-right:none;border-bottom:1px solid var(--sidebar-border);
+    max-height:46vh;
+  }
+  .mn{min-height:60vh}
+  .stats{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+  .info-2,.kanban,.app-grid,.prov-cards,.tk-detail{grid-template-columns:1fr}
+  .tk-panel{border-right:none;border-bottom:1px solid var(--border-2)}
+  .tk-panel:last-child{border-bottom:none}
+  [style*="grid-template-columns"]:not(.tk-2in-row){grid-template-columns:1fr !important}
+}
+/* fixed-width task table: scroll horizontally instead of clipping columns */
+@media (max-width:900px){
+  .tk-table{overflow-x:auto}
+  .tk-head-row,.tk-task-row{min-width:734px}
+}
   </style>
 </head>
 <body>
