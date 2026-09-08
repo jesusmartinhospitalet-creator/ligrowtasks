@@ -571,143 +571,60 @@ body{
 const DATA = [
   // ─ CLIENTES
   {
-    id:'ae', type:'cliente', color:'#C0392B', initials:'AE',
-    name:'Andorra Ecommerce', sub:'Rediseño UX/UI · Shopify Plus',
-    semaforo:'naranja',
-    description:'Proyecto de rediseño completo del ecommerce Andorra. Incluye migración a Shopify Plus y nueva pasarela de pagos.',
-    recordatorios:[
-      {id:'r1',text:'Revisar propuesta de tarifas',detail:'Pendiente confirmación cliente',due:'2026-09-15',done:false},
-      {id:'r2',text:'Reunión kick-off migración',detail:'Con equipo técnico Shopify',due:'2026-09-20',done:false},
-      {id:'r3',text:'Enviar accesos staging',detail:'Usuario y contraseña entorno pruebas',due:'2026-09-10',done:true},
-    ],
-    tasks:[
-      {code:'AE-001',name:'Auditoría completa del checkout',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-20',
-       description:'Auditoría completa del flujo de pago en todas las plataformas antes de la migración a Plus.',
-       checklist:[{text:'Revisar flujo de pago desktop',done:true},{text:'Revisar flujo mobile',done:true},{text:'Test pasarela Stripe',done:false},{text:'Documentar incidencias',done:false}],
-       links:[{name:'Notion · Brief checkout',href:'#'},{name:'Figma · Flujo actual',href:'#'}],
-       files:[{name:'audit-checkout-v1.pdf',href:'#'}]},
-      {code:'AE-002',name:'Migración a Shopify Plus',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-09-30',
-       description:'Migración completa del plan actual a Shopify Plus incluyendo temas y datos de clientes.',
-       checklist:[{text:'Exportar productos y clientes',done:true},{text:'Configurar plan Plus',done:false},{text:'Migrar temas personalizados',done:false}],
-       links:[],
-       files:[{name:'plan-migracion-v2.pdf',href:'#'},{name:'checklist-migracion.xlsx',href:'#'}]},
-      {code:'AE-003',name:'Integración pasarela de pagos',owner:'Alejandro',status:'En curso',priority:'Media',due:'2026-09-25',
-       description:'Configurar e integrar Stripe como pasarela principal de pagos para el nuevo plan Plus.',
-       links:[{name:'Stripe Dashboard',href:'#'}],
-       files:[{name:'stripe-docs.pdf',href:'#'}],
-       checklist:[{text:'Crear cuenta Stripe Business',done:true},{text:'Configurar webhooks',done:false},{text:'Test pago real con tarjeta',done:false}]},
-      {code:'AE-004',name:'Optimización velocidad mobile',owner:'Jesús',status:'Detenido',priority:'Media',due:'2026-09-18',
-       description:'Optimizar el rendimiento en dispositivos móviles según informe Lighthouse.',
-       links:[],files:[{name:'lighthouse-report.pdf',href:'#'}],checklist:[]},
-      {code:'AE-005',name:'Copy fichas de producto (es/fr/ca)',owner:'Blanca',status:'Detenido',priority:'Baja',due:'2026-09-22',
-       description:'Redactar copy de todas las fichas de producto en tres idiomas.',
-       links:[{name:'Google Sheets · Copy master',href:'#'}],files:[],checklist:[{text:'Copy en español',done:false},{text:'Copy en francés',done:false},{text:'Copy en catalán',done:false}]},
-      {code:'AE-006',name:'Setup Google Analytics 4',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-08',
-       description:'Configurar GA4 y verificar que los eventos de conversión se registran correctamente.',
-       checklist:[{text:'Crear propiedad GA4',done:true},{text:'Instalar gtag en theme',done:true},{text:'Verificar eventos clave',done:true}],
-       links:[{name:'Google Analytics',href:'#'}],files:[]},
-      {code:'AE-007',name:'Briefing estrategia Q4',owner:'Jesús',status:'Listo',priority:'Alta',due:'2026-09-05',
-       description:'Documento de estrategia y objetivos para el cuarto trimestre de 2026.',
-       links:[],files:[{name:'briefing-Q4-2026.pdf',href:'#'}],checklist:[]},
-    ]
+    id:'ab', type:'cliente', color:'#1D6FA4', initials:'AB',
+    name:'AsistecBCN', sub:'',
+    semaforo:null,
+    description:'',
+    recordatorios:[],
+    tasks:[]
   },
   {
-    id:'pn', type:'cliente', color:'#D35400', initials:'PN',
-    name:'Pic Negre', sub:'Campaña Invierno 2026',
-    semaforo:'verde',
-    description:'Campaña de marketing digital para la temporada de invierno 2026. Meta Ads, email marketing y creatividades.',
-    recordatorios:[
-      {id:'r1',text:'Tarifas – Ropa de alquiler',detail:'Pendiente para tarifas invierno',due:'2026-09-01',done:false},
-      {id:'r2',text:'La Central – Logo PNS',detail:'Botellas y maletines Seriprint',due:'2026-08-31',done:false},
-      {id:'r3',text:'Carlos Mejia',detail:'Mail Rentaski.com para fichas Google',due:'2026-08-31',done:false},
-    ],
-    tasks:[
-      {code:'PN-001',name:'Campaña Meta Ads Octubre',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-10-01'},
-      {code:'PN-002',name:'Creatividades temporada esquí',owner:'Jesús',status:'En curso',priority:'Media',due:'2026-09-28'},
-      {code:'PN-003',name:'Informe resultados Sept.',owner:'Alejandro',status:'Detenido',priority:'Media',due:'2026-09-30'},
-      {code:'PN-004',name:'Newsletter lanzamiento',owner:'Blanca',status:'Listo',priority:'Alta',due:'2026-09-05'},
-    ]
+    id:'dh', type:'cliente', color:'#2C3E50', initials:'DD',
+    name:'DHOMO DESIGN', sub:'',
+    semaforo:null,
+    description:'',
+    recordatorios:[],
+    tasks:[]
   },
   {
-    id:'lhc', type:'cliente', color:'#7D3C98', initials:'LH',
-    name:'Ligrow Hub', sub:'Infraestructura & Operaciones',
-    semaforo:'verde',
-    description:'Gestión de la infraestructura técnica y operaciones internas de Ligrow.',
-    recordatorios:[
-      {id:'r1',text:'Renovar dominio ligrow.app',detail:'Vence en noviembre',due:'2026-10-15',done:false},
-    ],
-    tasks:[
-      {code:'LH-001',name:'Renovar contrato hosting anual',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-15'},
-      {code:'LH-002',name:'Backup automatizado MySQL',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-07'},
-    ]
+    id:'cm', type:'cliente', color:'#A8385D', initials:'CM',
+    name:'CARMEN MOMENT', sub:'',
+    semaforo:null,
+    description:'',
+    recordatorios:[],
+    tasks:[]
   },
   // ─ APPS
   {
-    id:'lt', type:'app', color:'#3D51E8', initials:'LT',
-    name:'Ligrow Tasks', sub:'Task & Project Hub · Node.js + MySQL',
-    stack:['Node.js 20','Express 4','MySQL 2','Vercel'],
+    id:'pnh', type:'app', color:'#2563EB', initials:'PH',
+    name:'PIC NEGRE HUB', sub:'',
+    stack:[],
+    repo:'',
+    conns:[],
+    docs:[],
+    envs:[]
+  },
+  {
+    id:'lgt', type:'app', color:'#F04E23', initials:'LT',
+    name:'LIGROW TASKS', sub:'Task & Project Hub · Node.js + Supabase',
+    stack:['Node.js 20','Express 4','Supabase','Vercel'],
     repo:'jesusmartinhospitalet-creator/ligrowtasks',
     conns:[
       {ico:'🤖',name:'Claude Code',detail:'claude.ai/code · Sonnet 4.6',status:'ok',href:'https://claude.ai/code'},
       {ico:'🐙',name:'GitHub',detail:'ligrowtasks · rama main + claude/*',status:'ok',href:'#'},
-      {ico:'▲', name:'Vercel',detail:'ligrowtasks.vercel.app · Config pendiente',status:'warn',href:'https://vercel.com'},
-      {ico:'🟩',name:'Supabase',detail:'No configurado',status:'off',href:null},
+      {ico:'▲', name:'Vercel',detail:'ligrowtasks.vercel.app',status:'ok',href:'https://vercel.com'},
+      {ico:'🟩',name:'Supabase',detail:'epbfyofsazuwbfliosnq · PostgreSQL 15',status:'ok',href:'https://supabase.com'},
     ],
     docs:[
-      {name:'README.md',href:'github.com/…/README.md'},
-      {name:'Schema SQL',href:'github.com/…/database/schema.sql'},
-      {name:'vercel.json',href:'github.com/…/vercel.json'},
+      {name:'README.md',href:'github.com/jesusmartinhospitalet-creator/ligrowtasks/README.md'},
+      {name:'schema-postgres.sql',href:'github.com/jesusmartinhospitalet-creator/ligrowtasks/database/schema-postgres.sql'},
+      {name:'vercel.json',href:'github.com/jesusmartinhospitalet-creator/ligrowtasks/vercel.json'},
     ],
     envs:[
-      {key:'DB_HOST',val:'mysql.ligrow.app'},
-      {key:'DB_NAME',val:'ligrowtasks'},
-      {key:'DB_USER',val:'ligrow_user'},
+      {key:'SUPABASE_URL',val:'https://epbfyofsazuwbfliosnq.supabase.co'},
+      {key:'SUPABASE_SERVICE_KEY',val:'eyJhbGciOi…'},
       {key:'APP_PASSWORD_HASH',val:'$2b$10$wX…'},
       {key:'PORT',val:'3000'},
-    ]
-  },
-  {
-    id:'lb', type:'app', color:'#0EA371', initials:'LB',
-    name:'Ligrow Bot', sub:'Asistente Claude en Slack',
-    stack:['Claude API','Slack SDK','Node.js','Railway'],
-    repo:'jesusmartinhospitalet-creator/ligrow-bot',
-    conns:[
-      {ico:'🤖',name:'Claude API',detail:'claude-opus-5 · Anthropic Console',status:'ok',href:'https://console.anthropic.com'},
-      {ico:'💬',name:'Slack',detail:'Workspace: Ligrow · Bot token activo',status:'ok',href:'https://slack.com'},
-      {ico:'🐙',name:'GitHub',detail:'ligrow-bot · rama main',status:'ok',href:'#'},
-      {ico:'🚂',name:'Railway',detail:'ligrow-bot · producción activa',status:'ok',href:'https://railway.app'},
-    ],
-    docs:[
-      {name:'Guía de configuración',href:'notion.so/…/bot-setup'},
-      {name:'Slash commands disponibles',href:'notion.so/…/bot-commands'},
-      {name:'Logs Railway',href:'railway.app/project/…'},
-    ],
-    envs:[
-      {key:'ANTHROPIC_API_KEY',val:'sk-ant-api03-…'},
-      {key:'SLACK_BOT_TOKEN',val:'xoxb-…'},
-      {key:'SLACK_SIGNING_SECRET',val:'a1b2c3d4…'},
-      {key:'NODE_ENV',val:'production'},
-    ]
-  },
-  {
-    id:'la', type:'app', color:'#D46B00', initials:'LA',
-    name:'Ligrow Analytics', sub:'Dashboard SEO & Ads · Next.js + Supabase',
-    stack:['Next.js 14','Supabase','Vercel','Ahrefs API v3'],
-    repo:'jesusmartinhospitalet-creator/ligrow-analytics',
-    conns:[
-      {ico:'▲', name:'Vercel',detail:'analytics.ligrow.app · Desplegado',status:'ok',href:'https://vercel.com'},
-      {ico:'🟩',name:'Supabase',detail:'ligrow-analytics · PostgreSQL 15',status:'ok',href:'https://supabase.com'},
-      {ico:'🐙',name:'GitHub',detail:'ligrow-analytics · rama main',status:'ok',href:'#'},
-      {ico:'📊',name:'Ahrefs API',detail:'v3 · Plan Agency · 10 000 req/mes',status:'ok',href:'https://ahrefs.com'},
-    ],
-    docs:[
-      {name:'Documentación Ahrefs API',href:'ahrefs.com/api/docs'},
-      {name:'Schema Supabase',href:'supabase.com/…/schema'},
-    ],
-    envs:[
-      {key:'NEXT_PUBLIC_SUPABASE_URL',val:'https://xxx.supabase.co'},
-      {key:'SUPABASE_SERVICE_KEY',val:'eyJhbGciOi…'},
-      {key:'AHREFS_API_KEY',val:'ahrefs_api_…'},
     ]
   },
   // ─ PROVEEDORES
@@ -1807,6 +1724,12 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
+const STORE_VERSION='v2'
+if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
+  localStorage.removeItem('ligrow_data')
+  localStorage.removeItem('ligrow_state')
+  localStorage.setItem('ligrow_ver',STORE_VERSION)
+}
 try{
   const saved=JSON.parse(localStorage.getItem('ligrow_data')||'[]')
   saved.forEach(s=>{
