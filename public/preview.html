@@ -100,7 +100,35 @@ body{
 .pi{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:1px}
 .pi:hover{background:rgba(255,255,255,.05)}
 .pi.on{background:rgba(255,255,255,.08)}
-.pi-av{width:28px;height:28px;border-radius:7px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;letter-spacing:.5px}
+
+/* Avatar wrappers — shape differs by type */
+.pi-av-wrap{position:relative;flex-shrink:0;width:30px;height:30px}
+.pi-av{
+  width:30px;height:30px;
+  font-family:'Syne',sans-serif;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;letter-spacing:.5px;
+  position:absolute;inset:0;transition:filter .15s
+}
+/* Shapes by type */
+.pi-av.shape-cliente{border-radius:7px}
+.pi-av.shape-app{border-radius:50%}
+.pi-av.shape-proveedor{
+  border-radius:7px;
+  background:transparent !important;
+  border:1.5px solid rgba(255,255,255,.25);
+  font-size:12px
+}
+/* Type badge — tiny icon bottom-right */
+.pi-badge{
+  position:absolute;bottom:-2px;right:-2px;
+  width:13px;height:13px;border-radius:50%;
+  background:#131210;
+  border:1.5px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:7px;line-height:1;
+}
+
 .pi-info{flex:1;overflow:hidden}
 .pi-name{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
 .pi.on .pi-name{color:#fff}
@@ -118,10 +146,24 @@ body{
   flex-shrink:0;
 }
 .tb-row1{display:flex;align-items:center;gap:14px;padding:16px 0 12px}
+.proj-av-lg-wrap{position:relative;flex-shrink:0;width:40px;height:40px}
 .proj-av-lg{
-  width:38px;height:38px;border-radius:9px;
+  position:absolute;inset:0;
   font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;letter-spacing:.5px
+  display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.5px
+}
+.proj-av-lg.shape-cliente{border-radius:9px}
+.proj-av-lg.shape-app{border-radius:50%}
+.proj-av-lg.shape-proveedor{
+  border-radius:10px;background:transparent !important;
+  border:2px solid var(--accent);color:var(--accent);
+  font-size:16px
+}
+.proj-av-badge{
+  position:absolute;bottom:-1px;right:-1px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--surface);border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:8px;line-height:1
 }
 .proj-title-wrap{flex:1}
 .proj-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--text-1);letter-spacing:-.3px;line-height:1.2}
@@ -262,6 +304,32 @@ body{
 .cat-item.on .cat-name{color:var(--accent-text);font-weight:600}
 .cat-n{margin-left:auto;font-size:10px;font-weight:600;color:var(--text-3)}
 .cat-item.on .cat-n{color:var(--accent-text);opacity:.7}
+.cat-add-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 13px;cursor:pointer;
+  border-top:1px solid var(--border-2);
+  color:var(--text-3);font-size:12px;font-weight:600;
+  transition:all .15s;background:transparent;width:100%;border-radius:0 0 11px 11px;
+  border-left:none;border-right:none;border-bottom:none;font-family:inherit
+}
+.cat-add-btn:hover{background:var(--surface-2);color:var(--accent-text)}
+
+/* inline category name input */
+.cat-input-row{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 10px;border-top:1px solid var(--border-2);
+  background:var(--surface-2)
+}
+.cat-input{
+  flex:1;border:1px solid var(--border);border-radius:6px;
+  padding:5px 9px;font-size:12.5px;font-family:inherit;
+  background:var(--surface);color:var(--text-1);outline:none
+}
+.cat-input:focus{border-color:var(--accent)}
+.cat-input-ok{
+  padding:5px 10px;border-radius:6px;border:none;
+  background:var(--accent);color:#fff;font-size:12px;font-weight:600;font-family:inherit
+}
 
 .prov-content{flex:1;overflow-y:auto;min-width:0}
 .prov-content::-webkit-scrollbar{width:4px}
@@ -553,6 +621,11 @@ const ACCENT = {
   proveedor:{main:'#0F9460', light:'rgba(15,148,96,.09)',  text:'#0A7A4E'},
 }
 
+// Type visual config
+const TYPE_SHAPE  = {cliente:'shape-cliente', app:'shape-app', proveedor:'shape-proveedor'}
+const TYPE_BADGE  = {cliente:'🏢', app:'⚡', proveedor:'🗂️'}
+const TYPE_ICON   = {cliente:'🏢', app:'⚡', proveedor:'🗂️'}
+
 // ── State ────────────────────────────────────────────────────────────────────
 let S = {
   filter: 'todos',
@@ -560,6 +633,7 @@ let S = {
   view:   'resumen',
   provCat: null,
   open:   {},
+  addingCat: false,   // show inline add-category form
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -589,10 +663,30 @@ function applyAccent(type){
 
 // ── Event handlers ────────────────────────────────────────────────────────────
 function setFilter(f){ S.filter=f; const fl=filtered(); if(!fl.find(p=>p.id===S.proj?.id)) S.proj=fl[0]; render() }
-function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.view=defaultView(S.proj); S.provCat=null; S.open={}; render() }
+function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.view=defaultView(S.proj); S.provCat=null; S.open={}; S.addingCat=false; render() }
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
+function startAddCat(){ S.addingCat=true; render(); setTimeout(()=>document.getElementById('cat-input')?.focus(),50) }
+function cancelAddCat(){ S.addingCat=false; render() }
+function confirmAddCat(){
+  const input=document.getElementById('cat-input')
+  const name=(input?.value||'').trim()
+  if(!name)return
+  // pick a default emoji based on name
+  const emojiMap={foto:'📷',impresi:'🖨️',diseño:'🎨',design:'🎨',dev:'💻',video:'🎬',audio:'🎙️',event:'🎪',transport:'🚚',legal:'⚖️',traducc:'🌐'}
+  let ico='📁'
+  const lc=name.toLowerCase()
+  for(const [k,v] of Object.entries(emojiMap)){if(lc.includes(k)){ico=v;break}}
+  const prov=DATA.find(p=>p.type==='proveedor')
+  if(prov){
+    const newId='cat_'+Date.now()
+    prov.cats.push({id:newId,ico,name,n:0,provs:[]})
+    S.provCat=newId
+  }
+  S.addingCat=false
+  render()
+}
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(){
@@ -639,9 +733,15 @@ function sidebar(){
   </div>`
 }
 function pi(p){
-  const a = ACCENT[p.type]
+  const a     = ACCENT[p.type]
+  const shape = TYPE_SHAPE[p.type]
+  const badge = TYPE_BADGE[p.type]
+  const avStyle = p.type==='proveedor' ? `color:${p.color}` : `background:${p.color}`
   return `<div class="pi ${S.proj?.id===p.id?'on':''}" onclick="selectProj('${p.id}')">
-    <div class="pi-av" style="background:${p.color}">${p.initials}</div>
+    <div class="pi-av-wrap">
+      <div class="pi-av ${shape}" style="${avStyle}">${p.type==='proveedor'?badge:p.initials}</div>
+      <div class="pi-badge">${badge}</div>
+    </div>
     <div class="pi-info">
       <div class="pi-name">${p.name}</div>
       <div class="pi-sub">${p.sub}</div>
@@ -658,10 +758,17 @@ function main(){
   if(!tabs.includes(S.view)) S.view = tabs[0]
   const typeName = {cliente:'Cliente',app:'App',proveedor:'Proveedor'}[p.type]
   const btnLabel = p.type==='proveedor'?'+ Proveedor':p.type==='app'?'Abrir app':'+ Nueva tarea'
+  const shape    = TYPE_SHAPE[p.type]
+  const badge    = TYPE_BADGE[p.type]
+  const lgStyle  = p.type==='proveedor'?`color:${p.color}`:`background:${p.color}`
+  const lgInner  = p.type==='proveedor'?badge:p.initials
   return `<div class="mn">
     <div class="tb">
       <div class="tb-row1">
-        <div class="proj-av-lg" style="background:${p.color}">${p.initials}</div>
+        <div class="proj-av-lg-wrap">
+          <div class="proj-av-lg ${shape}" style="${lgStyle}">${lgInner}</div>
+          <div class="proj-av-badge">${badge}</div>
+        </div>
         <div class="proj-title-wrap">
           <div class="proj-title">${p.name}</div>
           <div class="proj-sub-text">${p.sub}</div>
@@ -875,6 +982,16 @@ function provContent(p){
             <span class="cat-n">${c.n}</span>
           </div>
         `).join('')}
+        ${S.addingCat
+          ? `<div class="cat-input-row">
+               <input id="cat-input" class="cat-input" placeholder="Nombre categoría…"
+                 onkeydown="if(event.key==='Enter')confirmAddCat();if(event.key==='Escape')cancelAddCat()"/>
+               <button class="cat-input-ok" onclick="confirmAddCat()">OK</button>
+             </div>`
+          : `<button class="cat-add-btn" onclick="startAddCat()">
+               <span style="font-size:15px;line-height:1">+</span> Nueva categoría
+             </button>`
+        }
       </div>
     </div>
     <div class="prov-content">
