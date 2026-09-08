@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const pool = require('../config/database');
+const supabase = require('../config/database');
 
 const OWNERS = ['Jesús', 'Blanca', 'Alejandro'];
 const STATUSES = ['En curso', 'Listo', 'Detenido'];
@@ -7,44 +7,81 @@ const PRIORITIES = ['Alta', 'Media', 'Baja'];
 const TASK_TYPES = ['puntual', 'mensual'];
 const MONTH_STATUSES = ['abierto', 'cerrado'];
 
+function mapTask(row) {
+  if (!row) return null;
+  return {
+    taskId:          row.id,
+    taskCode:        row.task_code,
+    clientId:        row.client_id,
+    taskName:        row.task_name,
+    owner:           row.owner,
+    status:          row.status,
+    priority:        row.priority,
+    taskType:        row.task_type,
+    taskMonth:       row.task_month,
+    monthStatus:     row.month_status,
+    templateId:      row.template_id,
+    dueDate:         row.due_date,
+    startDate:       row.start_date,
+    endDate:         row.end_date,
+    description:     row.description,
+    attachmentsJson: JSON.stringify(row.attachments_json || []),
+    attachments:     row.attachments_json || [],
+    checklist:       row.checklist || [],
+    links:           row.links || [],
+    files:           row.files || [],
+    createdAt:       row.created_at,
+    updatedAt:       row.updated_at
+  };
+}
+
 function normalizeTask(task = {}) {
   return {
-    taskId: task.taskId || '',
-    taskCode: task.taskCode || '',
-    clientId: task.clientId || '',
-    taskName: String(task.taskName || '').trim(),
-    owner: OWNERS.includes(task.owner) ? task.owner : OWNERS[0],
-    status: STATUSES.includes(task.status) ? task.status : 'En curso',
-    priority: PRIORITIES.includes(task.priority) ? task.priority : 'Media',
-    taskType: TASK_TYPES.includes(task.taskType) ? task.taskType : 'puntual',
-    taskMonth: task.taskMonth || '',
+    taskId:      task.taskId || '',
+    taskCode:    task.taskCode || '',
+    clientId:    task.clientId || '',
+    taskName:    String(task.taskName || '').trim(),
+    owner:       OWNERS.includes(task.owner) ? task.owner : OWNERS[0],
+    status:      STATUSES.includes(task.status) ? task.status : 'En curso',
+    priority:    PRIORITIES.includes(task.priority) ? task.priority : 'Media',
+    taskType:    TASK_TYPES.includes(task.taskType) ? task.taskType : 'puntual',
+    taskMonth:   task.taskMonth || '',
     monthStatus: task.taskType === 'mensual'
       ? (MONTH_STATUSES.includes(task.monthStatus) ? task.monthStatus : 'abierto')
       : '',
-    templateId: task.templateId || '',
-    dueDate: task.dueDate || null,
-    startDate: task.startDate || null,
-    endDate: task.endDate || null,
-    description: task.description || '',
+    templateId:   task.templateId || '',
+    dueDate:      task.dueDate || null,
+    startDate:    task.startDate || null,
+    endDate:      task.endDate || null,
+    description:  task.description || '',
     attachmentsJson: task.attachmentsJson || JSON.stringify(task.attachments || []),
+    checklist:    Array.isArray(task.checklist) ? task.checklist : [],
+    links:        Array.isArray(task.links) ? task.links : [],
+    files:        Array.isArray(task.files) ? task.files : []
   };
 }
 
 async function getClientCode(clientId) {
-  const [rows] = await pool.query('SELECT code, name FROM clients WHERE id = ? LIMIT 1', [clientId]);
-  if (!rows.length) return 'CLI';
-  return rows[0].code || 'CLI';
+  const { data } = await supabase
+    .from('clients')
+    .select('code')
+    .eq('id', clientId)
+    .single();
+
+  return data?.code || 'CLI';
 }
 
 async function nextTaskCode(clientId) {
   const prefix = await getClientCode(clientId);
-  const [rows] = await pool.query(
-    'SELECT task_code FROM tasks WHERE client_id = ? ORDER BY created_at DESC',
-    [clientId]
-  );
+
+  const { data } = await supabase
+    .from('tasks')
+    .select('task_code')
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false });
 
   let max = 0;
-  for (const row of rows) {
+  for (const row of (data || [])) {
     const code = String(row.task_code || '');
     const match = code.match(/-(\d+)$/);
     if (match) max = Math.max(max, Number(match[1]));
@@ -54,67 +91,26 @@ async function nextTaskCode(clientId) {
 }
 
 async function listAllTasks() {
-  const [rows] = await pool.query(
-    `SELECT
-      id AS taskId,
-      task_code AS taskCode,
-      client_id AS clientId,
-      task_name AS taskName,
-      owner,
-      status,
-      priority,
-      task_type AS taskType,
-      task_month AS taskMonth,
-      month_status AS monthStatus,
-      template_id AS templateId,
-      due_date AS dueDate,
-      start_date AS startDate,
-      end_date AS endDate,
-      description,
-      attachments_json AS attachmentsJson,
-      created_at AS createdAt,
-      updated_at AS updatedAt
-     FROM tasks
-     ORDER BY due_date IS NULL, due_date ASC, created_at DESC`
-  );
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .order('due_date', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: false });
 
-  return rows.map((row) => ({
-    ...row,
-    attachments: JSON.parse(row.attachmentsJson || '[]')
-  }));
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapTask);
 }
 
 async function listTasksByClient(clientId) {
-  const [rows] = await pool.query(
-    `SELECT
-      id AS taskId,
-      task_code AS taskCode,
-      client_id AS clientId,
-      task_name AS taskName,
-      owner,
-      status,
-      priority,
-      task_type AS taskType,
-      task_month AS taskMonth,
-      month_status AS monthStatus,
-      template_id AS templateId,
-      due_date AS dueDate,
-      start_date AS startDate,
-      end_date AS endDate,
-      description,
-      attachments_json AS attachmentsJson,
-      created_at AS createdAt,
-      updated_at AS updatedAt
-     FROM tasks
-     WHERE client_id = ?
-     ORDER BY due_date IS NULL, due_date ASC, created_at DESC`,
-    [clientId]
-  );
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('client_id', clientId)
+    .order('due_date', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: false });
 
-  return rows.map((row) => ({
-    ...row,
-    attachments: JSON.parse(row.attachmentsJson || '[]')
-  }));
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapTask);
 }
 
 async function upsertTask(payload) {
@@ -123,96 +119,92 @@ async function upsertTask(payload) {
   if (!task.clientId) throw new Error('La tarea necesita clientId.');
   if (!task.taskName) throw new Error('La tarea necesita nombre.');
 
-  const now = new Date();
+  const now = new Date().toISOString();
+
+  let attachmentsArr;
+  try {
+    attachmentsArr = JSON.parse(task.attachmentsJson || '[]');
+  } catch {
+    attachmentsArr = [];
+  }
 
   if (!task.taskId) {
     const taskId = uuidv4();
     const taskCode = await nextTaskCode(task.clientId);
 
-    await pool.query(
-      `INSERT INTO tasks (
-        id, task_code, client_id, task_name, owner, status, priority,
-        task_type, task_month, month_status, template_id,
-        due_date, start_date, end_date, description, attachments_json,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        taskId,
-        taskCode,
-        task.clientId,
-        task.taskName,
-        task.owner,
-        task.status,
-        task.priority,
-        task.taskType,
-        task.taskMonth || null,
-        task.monthStatus || null,
-        task.templateId || null,
-        task.dueDate,
-        task.startDate,
-        task.endDate,
-        task.description,
-        task.attachmentsJson,
-        now,
-        now
-      ]
-    );
-
-    return {
-      ...task,
-      taskId,
-      taskCode,
-      createdAt: now,
-      updatedAt: now,
-      attachments: JSON.parse(task.attachmentsJson || '[]')
+    const row = {
+      id:               taskId,
+      task_code:        taskCode,
+      client_id:        task.clientId,
+      task_name:        task.taskName,
+      owner:            task.owner,
+      status:           task.status,
+      priority:         task.priority,
+      task_type:        task.taskType,
+      task_month:       task.taskMonth || null,
+      month_status:     task.monthStatus || null,
+      template_id:      task.templateId || null,
+      due_date:         task.dueDate,
+      start_date:       task.startDate,
+      end_date:         task.endDate,
+      description:      task.description,
+      attachments_json: attachmentsArr,
+      checklist:        task.checklist,
+      links:            task.links,
+      files:            task.files,
+      created_at:       now,
+      updated_at:       now
     };
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert(row)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return mapTask(data);
   }
 
-  const [result] = await pool.query(
-    `UPDATE tasks
-     SET client_id = ?, task_name = ?, owner = ?, status = ?, priority = ?,
-         task_type = ?, task_month = ?, month_status = ?, template_id = ?,
-         due_date = ?, start_date = ?, end_date = ?, description = ?, attachments_json = ?, updated_at = ?
-     WHERE id = ?`,
-    [
-      task.clientId,
-      task.taskName,
-      task.owner,
-      task.status,
-      task.priority,
-      task.taskType,
-      task.taskMonth || null,
-      task.monthStatus || null,
-      task.templateId || null,
-      task.dueDate,
-      task.startDate,
-      task.endDate,
-      task.description,
-      task.attachmentsJson,
-      now,
-      task.taskId
-    ]
-  );
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({
+      client_id:        task.clientId,
+      task_name:        task.taskName,
+      owner:            task.owner,
+      status:           task.status,
+      priority:         task.priority,
+      task_type:        task.taskType,
+      task_month:       task.taskMonth || null,
+      month_status:     task.monthStatus || null,
+      template_id:      task.templateId || null,
+      due_date:         task.dueDate,
+      start_date:       task.startDate,
+      end_date:         task.endDate,
+      description:      task.description,
+      attachments_json: attachmentsArr,
+      checklist:        task.checklist,
+      links:            task.links,
+      files:            task.files,
+      updated_at:       now
+    })
+    .eq('id', task.taskId)
+    .select()
+    .single();
 
-  if (!result.affectedRows) {
-    throw new Error('Tarea no encontrada.');
-  }
-
-  return {
-    ...task,
-    updatedAt: now,
-    attachments: JSON.parse(task.attachmentsJson || '[]')
-  };
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error('Tarea no encontrada.');
+  return mapTask(data);
 }
 
 async function deleteTask(taskId) {
-  await pool.query('DELETE FROM comments WHERE task_id = ?', [taskId]);
-  const [result] = await pool.query('DELETE FROM tasks WHERE id = ?', [taskId]);
+  // CASCADE on comments handled by FK
+  const { error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', taskId);
 
-  if (!result.affectedRows) {
-    throw new Error('Tarea no encontrada.');
-  }
-
+  if (error) throw new Error(error.message);
   return { ok: true };
 }
 
