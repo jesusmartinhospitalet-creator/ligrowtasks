@@ -1,36 +1,14 @@
-const memoryStore = require('./mock-db');
-const fallback = require('./database-fallback');
+const { createClient } = require('@supabase/supabase-js');
 
-let realPool = null;
-if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres')) {
-  try {
-    const { Pool } = require('pg');
-    realPool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-      max: 2,
-      connectionTimeoutMillis: 3000,
-      idleTimeoutMillis: 10000,
-    });
-    realPool.on('error', (err) => console.error('[pg pool error]', err.message));
-  } catch (e) {
-    console.error('[pg init error]', e.message);
-  }
-}
-
-const pool = {
-  query: async (text, params = []) => {
-    if (realPool) {
-      try {
-        const res = await realPool.query(text, params);
-        return res;
-      } catch (err) {
-        console.warn('[DB query failed, using in-memory store fallback]:', err.message);
-      }
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
     }
-    return fallback.query(text, params, memoryStore);
-  },
-  on: () => {}
-};
+  }
+);
 
-module.exports = pool;
+module.exports = supabase;

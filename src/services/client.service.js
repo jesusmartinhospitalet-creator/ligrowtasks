@@ -1,112 +1,111 @@
-const { randomUUID: uuidv4 } = require('crypto');
-const pool = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
+const supabase = require('../config/database');
 
 function normalizeClientCode(code = '', clientName = '') {
   const source = String(code || clientName || '')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '');
 
   return (source.substring(0, 6) || 'CLI');
 }
 
-async function listClients() {
-  const { rows } = await pool.query(
-    `SELECT
-      id AS "clientId",
-      name AS "clientName",
-      code AS "clientCode",
-      concept,
-      summary,
-      kickoff_date AS "kickoffDate",
-      COALESCE(category, 'personal') AS "category",
-      COALESCE(status, 'activo') AS "status",
-      COALESCE(color_accent, '#6366f1') AS "colorAccent",
-      COALESCE(progress_pct, 0) AS "progressPct",
-      ext_json AS "extJson",
-      created_at AS "createdAt",
-      updated_at AS "updatedAt"
-     FROM clients
-     ORDER BY name ASC`
-  );
+function mapClient(row) {
+  if (!row) return null;
+  return {
+    clientId:    row.id,
+    clientName:  row.name,
+    clientCode:  row.code,
+    concept:     row.concept,
+    summary:     row.summary,
+    kickoffDate: row.kickoff_date,
+    extJson:     row.ext_json,
+    createdAt:   row.created_at,
+    updatedAt:   row.updated_at
+  };
+}
 
-  return rows;
+async function listClients() {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data.map(mapClient);
 }
 
 async function createClient(payload) {
-  const now = new Date();
-  const clientId = uuidv4();
   const clientName = String(payload.clientName || '').trim();
-
-  if (!clientName) {
-    throw new Error('El nombre del cliente/proyecto es obligatorio.');
-  }
+  if (!clientName) throw new Error('El nombre del cliente es obligatorio.');
 
   const clientCode = normalizeClientCode(payload.clientCode, clientName);
-  const concept = payload.concept || '';
-  const summary = payload.summary || '';
-  const kickoffDate = payload.kickoffDate || null;
-  const category = payload.category || 'personal';
-  const status = payload.status || 'activo';
-  const colorAccent = payload.colorAccent || '#6366f1';
-  const progressPct = parseInt(payload.progressPct, 10) || 0;
-  const extJson = payload.extJson || '{}';
+  const now = new Date().toISOString();
 
-  await pool.query(
-    `INSERT INTO clients (
-      id, name, code, concept, summary, kickoff_date, category, status, color_accent, progress_pct, ext_json, created_at, updated_at
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-    [clientId, clientName, clientCode, concept, summary, kickoffDate, category, status, colorAccent, progressPct, extJson, now, now]
-  );
+  const row = {
+    id:           uuidv4(),
+    name:         clientName,
+    code:         clientCode,
+    concept:      payload.concept || '',
+    summary:      payload.summary || '',
+    kickoff_date: payload.kickoffDate || null,
+    ext_json:     payload.extJson || {},
+    created_at:   now,
+    updated_at:   now
+  };
 
-  return { clientId, clientName, clientCode, concept, summary, kickoffDate, category, status, colorAccent, progressPct, extJson, createdAt: now, updatedAt: now };
+  const { data, error } = await supabase
+    .from('clients')
+    .insert(row)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return mapClient(data);
 }
 
 async function updateClient(clientId, payload) {
-  const now = new Date();
   const clientName = String(payload.clientName || '').trim();
-
-  if (!clientName) {
-    throw new Error('El nombre del cliente/proyecto es obligatorio.');
-  }
+  if (!clientName) throw new Error('El nombre del cliente es obligatorio.');
 
   const clientCode = normalizeClientCode(payload.clientCode, clientName);
-  const concept = payload.concept || '';
-  const summary = payload.summary || '';
-  const kickoffDate = payload.kickoffDate || null;
-  const category = payload.category || 'personal';
-  const status = payload.status || 'activo';
-  const colorAccent = payload.colorAccent || '#6366f1';
-  const progressPct = parseInt(payload.progressPct, 10) || 0;
-  const extJson = payload.extJson || '{}';
+  const now = new Date().toISOString();
 
-  const result = await pool.query(
-    `UPDATE clients
-     SET name = $1, code = $2, concept = $3, summary = $4, kickoff_date = $5, category = $6, status = $7, color_accent = $8, progress_pct = $9, ext_json = $10, updated_at = $11
-     WHERE id = $12`,
-    [clientName, clientCode, concept, summary, kickoffDate, category, status, colorAccent, progressPct, extJson, now, clientId]
-  );
+  const { data, error } = await supabase
+    .from('clients')
+    .update({
+      name:         clientName,
+      code:         clientCode,
+      concept:      payload.concept || '',
+      summary:      payload.summary || '',
+      kickoff_date: payload.kickoffDate || null,
+      ext_json:     payload.extJson || {},
+      updated_at:   now
+    })
+    .eq('id', clientId)
+    .select()
+    .single();
 
-  if (!result.rowCount) {
-    throw new Error('Proyecto no encontrado.');
-  }
-
-  return { clientId, clientName, clientCode, concept, summary, kickoffDate, category, status, colorAccent, progressPct, extJson, updatedAt: now };
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error('Cliente no encontrado.');
+  return mapClient(data);
 }
 
 async function deleteClient(clientId) {
-  await pool.query('DELETE FROM comments WHERE task_id IN (SELECT id FROM tasks WHERE client_id = $1)', [clientId]);
-  await pool.query('DELETE FROM tasks WHERE client_id = $1', [clientId]);
-  await pool.query('DELETE FROM templates WHERE client_id = $1', [clientId]);
-  await pool.query('DELETE FROM client_months WHERE client_id = $1', [clientId]);
-  const result = await pool.query('DELETE FROM clients WHERE id = $1', [clientId]);
+  // CASCADE deletes handle comments → tasks, templates, client_months automatically
+  const { error } = await supabase
+    .from('clients')
+    .delete()
+    .eq('id', clientId);
 
-  if (!result.rowCount) {
-    throw new Error('Cliente no encontrado.');
-  }
-
+  if (error) throw new Error(error.message);
   return { ok: true };
 }
 
-module.exports = { listClients, createClient, updateClient, deleteClient };
+module.exports = {
+  listClients,
+  createClient,
+  updateClient,
+  deleteClient
+};

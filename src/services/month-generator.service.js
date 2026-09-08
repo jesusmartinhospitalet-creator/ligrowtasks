@@ -1,5 +1,5 @@
-const { randomUUID: uuidv4 } = require('crypto');
-const pool = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
+const supabase = require('../config/database');
 
 function daysInMonth(year, month) {
   return new Date(year, month, 0).getDate();
@@ -13,65 +13,95 @@ function buildDate(year, month, day) {
   return d.toISOString().slice(0, 10);
 }
 
-async function ensureClientMonth(clientId, taskMonth) {
-  const { rows: existing } = await pool.query(
-    'SELECT id FROM client_months WHERE client_id = $1 AND task_month = $2 LIMIT 1',
-    [clientId, taskMonth]
-  );
-  if (existing.length) return existing[0].id;
+async function ensureClientMonth(clientId, yearMonth) {
+  const now = new Date().toISOString();
 
-  const now = new Date();
+  const { data: existing } = await supabase
+    .from('client_months')
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('task_month', yearMonth)
+    .single();
+
+  if (existing) return existing.id;
+
   const id = uuidv4();
-  await pool.query(
-    `INSERT INTO client_months (id, client_id, task_month, month_status, generated_at, closed_at, created_at, updated_at)
-     VALUES ($1, $2, $3, 'abierto', $4, NULL, $4, $4)`,
-    [id, clientId, taskMonth, now]
-  );
+
+  const { error } = await supabase
+    .from('client_months')
+    .insert({
+      id,
+      client_id:    clientId,
+      task_month:   yearMonth,
+      month_status: 'abierto',
+      generated_at: now,
+      created_at:   now,
+      updated_at:   now
+    });
+
+  if (error) throw new Error(error.message);
   return id;
 }
 
-async function generateMonth(clientId, taskMonth) {
+async function generateMonth(clientId, yearMonth) {
   if (!clientId) throw new Error('clientId requerido');
-  const mk = String(taskMonth || '').trim();
-  if (!/^\d{4}-\d{2}$/.test(mk)) throw new Error('Formato mes inválido (YYYY-MM)');
+  if (!/^\d{4}-\d{2}$/.test(yearMonth)) throw new Error('Formato mes inválido (YYYY-MM)');
 
-  const now = new Date();
-  const [year, month] = mk.split('-').map(Number);
+  const now = new Date().toISOString();
+  const [year, month] = yearMonth.split('-').map(Number);
 
-  const monthId = await ensureClientMonth(clientId, mk);
+  const monthId = await ensureClientMonth(clientId, yearMonth);
 
-  const { rows: templates } = await pool.query(
-    `SELECT id, template_name, owner, priority, status_default, due_day
-     FROM templates
-     WHERE client_id = $1 AND is_active = true`,
-    [clientId]
-  );
+  const { data: templates, error: tErr } = await supabase
+    .from('templates')
+    .select('id, template_name, owner, priority, status_default, due_day')
+    .eq('client_id', clientId)
+    .eq('is_active', true);
+
+  if (tErr) throw new Error(tErr.message);
 
   const created = [];
 
-  for (const tpl of templates) {
+  for (const tpl of (templates || [])) {
     const taskId = uuidv4();
     const dueDate = buildDate(year, month, tpl.due_day);
 
-    await pool.query(
-      `INSERT INTO tasks (
-        id, task_code, client_id, task_name, owner, status, priority,
-        task_type, task_month, month_status, template_id,
-        due_date, description, created_at, updated_at
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,'mensual',$8,'abierto',$9,$10,'',$11,$11)`,
-      [
-        taskId, null, clientId,
-        tpl.template_name, tpl.owner,
-        tpl.status_default || 'En curso',
-        tpl.priority || 'Media',
-        mk, tpl.id, dueDate, now
-      ]
-    );
+    const { error: iErr } = await supabase
+      .from('tasks')
+      .insert({
+        id:           taskId,
+        task_code:    null,
+        client_id:    clientId,
+        task_name:    tpl.template_name,
+        owner:        tpl.owner,
+        status:       tpl.status_default || 'En curso',
+        priority:     tpl.priority || 'Media',
+        task_type:    'mensual',
+        task_month:   yearMonth,
+        month_status: 'abierto',
+        template_id:  tpl.id,
+        due_date:     dueDate,
+        description:  '',
+        checklist:    [],
+        links:        [],
+        files:        [],
+        created_at:   now,
+        updated_at:   now
+      });
 
+    if (iErr) throw new Error(iErr.message);
     created.push({ taskId, name: tpl.template_name });
   }
 
-  return { clientId, taskMonth: mk, createdCount: created.length, tasks: created, monthId };
+  return {
+    clientId,
+    yearMonth,
+    createdCount: created.length,
+    tasks: created,
+    monthId
+  };
 }
 
-module.exports = { generateMonth };
+module.exports = {
+  generateMonth
+};

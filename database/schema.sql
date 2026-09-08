@@ -1,20 +1,16 @@
-CREATE TABLE IF NOT EXISTS clients (
+CREATE TABLE clients (
   id VARCHAR(36) PRIMARY KEY,
   name VARCHAR(255),
   code VARCHAR(10),
   concept TEXT,
   summary TEXT,
   kickoff_date DATE,
-  category VARCHAR(50) DEFAULT 'personal',
-  status VARCHAR(50) DEFAULT 'activo',
-  color_accent VARCHAR(20) DEFAULT '#6366f1',
-  progress_pct INT DEFAULT 0,
-  ext_json JSONB,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
+  ext_json JSON,
+  created_at DATETIME,
+  updated_at DATETIME
 );
 
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE tasks (
   id VARCHAR(36) PRIMARY KEY,
   task_code VARCHAR(20),
   client_id VARCHAR(36),
@@ -22,23 +18,20 @@ CREATE TABLE IF NOT EXISTS tasks (
   owner VARCHAR(50),
   status VARCHAR(50),
   priority VARCHAR(50),
-  task_type VARCHAR(20),
+  task_type ENUM('puntual','mensual'),
   task_month VARCHAR(7),
-  month_status VARCHAR(20),
+  month_status ENUM('abierto','cerrado'),
   template_id VARCHAR(36),
   due_date DATE,
   start_date DATE,
   end_date DATE,
   description TEXT,
-  subtasks_json JSONB DEFAULT '[]'::jsonb,
-  tags_json JSONB DEFAULT '[]'::jsonb,
-  category VARCHAR(50) DEFAULT 'personal',
-  attachments_json JSONB,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
+  attachments_json JSON,
+  created_at DATETIME,
+  updated_at DATETIME
 );
 
-CREATE TABLE IF NOT EXISTS templates (
+CREATE TABLE templates (
   id VARCHAR(36) PRIMARY KEY,
   client_id VARCHAR(36),
   template_name VARCHAR(255),
@@ -48,26 +41,25 @@ CREATE TABLE IF NOT EXISTS templates (
   due_day INT,
   is_active BOOLEAN,
   description TEXT,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
+  created_at DATETIME,
+  updated_at DATETIME
 );
 
-CREATE TABLE IF NOT EXISTS client_months (
+CREATE TABLE client_months (
   id VARCHAR(36) PRIMARY KEY,
   client_id VARCHAR(36),
   task_month VARCHAR(7),
-  month_status VARCHAR(20),
-  generated_at TIMESTAMPTZ,
-  closed_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ
+  month_status ENUM('abierto','cerrado'),
+  generated_at DATETIME,
+  closed_at DATETIME,
+  created_at DATETIME,
+  updated_at DATETIME
 );
 
-CREATE TABLE IF NOT EXISTS comments (
+CREATE TABLE comments (
   id VARCHAR(36) PRIMARY KEY,
   task_id VARCHAR(36),
   author VARCHAR(50),
   text TEXT,
-  created_at TIMESTAMPTZ
+  created_at DATETIME
 );
-

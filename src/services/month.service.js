@@ -1,5 +1,5 @@
-const { randomUUID: uuidv4 } = require('crypto');
-const pool = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
+const supabase = require('../config/database');
 
 function normalizeMonthKey(monthKey) {
   const mk = String(monthKey || '').trim();
@@ -9,45 +9,43 @@ function normalizeMonthKey(monthKey) {
   return mk;
 }
 
-async function listClientMonths(clientId) {
-  const { rows } = await pool.query(
-    `SELECT
-      id AS "monthId",
-      client_id AS "clientId",
-      task_month AS "taskMonth",
-      month_status AS "monthStatus",
-      generated_at AS "generatedAt",
-      closed_at AS "closedAt",
-      created_at AS "createdAt",
-      updated_at AS "updatedAt"
-     FROM client_months
-     WHERE client_id = $1
-     ORDER BY task_month DESC`,
-    [clientId]
-  );
+function mapMonth(row) {
+  if (!row) return null;
+  return {
+    monthId:     row.id,
+    clientId:    row.client_id,
+    taskMonth:   row.task_month,
+    monthStatus: row.month_status,
+    generatedAt: row.generated_at,
+    closedAt:    row.closed_at,
+    createdAt:   row.created_at,
+    updatedAt:   row.updated_at
+  };
+}
 
-  return rows;
+async function listClientMonths(clientId) {
+  const { data, error } = await supabase
+    .from('client_months')
+    .select('*')
+    .eq('client_id', clientId)
+    .order('task_month', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapMonth);
 }
 
 async function getClientMonth(clientId, taskMonth) {
   const mk = normalizeMonthKey(taskMonth);
-  const { rows } = await pool.query(
-    `SELECT
-      id AS "monthId",
-      client_id AS "clientId",
-      task_month AS "taskMonth",
-      month_status AS "monthStatus",
-      generated_at AS "generatedAt",
-      closed_at AS "closedAt",
-      created_at AS "createdAt",
-      updated_at AS "updatedAt"
-     FROM client_months
-     WHERE client_id = $1 AND task_month = $2
-     LIMIT 1`,
-    [clientId, mk]
-  );
 
-  return rows[0] || null;
+  const { data, error } = await supabase
+    .from('client_months')
+    .select('*')
+    .eq('client_id', clientId)
+    .eq('task_month', mk)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw new Error(error.message);
+  return data ? mapMonth(data) : null;
 }
 
 async function createClientMonthIfMissing(clientId, taskMonth, monthStatus = 'abierto') {
@@ -55,63 +53,85 @@ async function createClientMonthIfMissing(clientId, taskMonth, monthStatus = 'ab
   const existing = await getClientMonth(clientId, mk);
   if (existing) return existing;
 
-  const now = new Date();
+  const now = new Date().toISOString();
   const monthId = uuidv4();
 
-  await pool.query(
-    `INSERT INTO client_months (
-      id, client_id, task_month, month_status, generated_at, closed_at, created_at, updated_at
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-    [monthId, clientId, mk, monthStatus, now, null, now, now]
-  );
+  const { data, error } = await supabase
+    .from('client_months')
+    .insert({
+      id:           monthId,
+      client_id:    clientId,
+      task_month:   mk,
+      month_status: monthStatus,
+      generated_at: now,
+      closed_at:    null,
+      created_at:   now,
+      updated_at:   now
+    })
+    .select()
+    .single();
 
-  return { monthId, clientId, taskMonth: mk, monthStatus, generatedAt: now, closedAt: null, createdAt: now, updatedAt: now };
+  if (error) throw new Error(error.message);
+  return mapMonth(data);
 }
 
 async function closeClientMonth(clientId, taskMonth) {
   const mk = normalizeMonthKey(taskMonth);
-  const now = new Date();
+  const now = new Date().toISOString();
 
   await createClientMonthIfMissing(clientId, mk, 'abierto');
 
-  await pool.query(
-    `UPDATE client_months
-     SET month_status = 'cerrado', closed_at = $1, updated_at = $2
-     WHERE client_id = $3 AND task_month = $4`,
-    [now, now, clientId, mk]
-  );
+  const { error: e1 } = await supabase
+    .from('client_months')
+    .update({ month_status: 'cerrado', closed_at: now, updated_at: now })
+    .eq('client_id', clientId)
+    .eq('task_month', mk);
 
-  await pool.query(
-    `UPDATE tasks
-     SET month_status = 'cerrado', updated_at = $1
-     WHERE client_id = $2 AND task_type = 'mensual' AND task_month = $3`,
-    [now, clientId, mk]
-  );
+  if (e1) throw new Error(e1.message);
+
+  const { error: e2 } = await supabase
+    .from('tasks')
+    .update({ month_status: 'cerrado', updated_at: now })
+    .eq('client_id', clientId)
+    .eq('task_type', 'mensual')
+    .eq('task_month', mk);
+
+  if (e2) throw new Error(e2.message);
 
   return { ok: true, clientId, taskMonth: mk, monthStatus: 'cerrado', closedAt: now };
 }
 
 async function reopenClientMonth(clientId, taskMonth) {
   const mk = normalizeMonthKey(taskMonth);
-  const now = new Date();
+  const now = new Date().toISOString();
 
   await createClientMonthIfMissing(clientId, mk, 'abierto');
 
-  await pool.query(
-    `UPDATE client_months
-     SET month_status = 'abierto', closed_at = NULL, updated_at = $1
-     WHERE client_id = $2 AND task_month = $3`,
-    [now, clientId, mk]
-  );
+  const { error: e1 } = await supabase
+    .from('client_months')
+    .update({ month_status: 'abierto', closed_at: null, updated_at: now })
+    .eq('client_id', clientId)
+    .eq('task_month', mk);
 
-  await pool.query(
-    `UPDATE tasks
-     SET month_status = 'abierto', updated_at = $1
-     WHERE client_id = $2 AND task_type = 'mensual' AND task_month = $3`,
-    [now, clientId, mk]
-  );
+  if (e1) throw new Error(e1.message);
+
+  const { error: e2 } = await supabase
+    .from('tasks')
+    .update({ month_status: 'abierto', updated_at: now })
+    .eq('client_id', clientId)
+    .eq('task_type', 'mensual')
+    .eq('task_month', mk);
+
+  if (e2) throw new Error(e2.message);
 
   return { ok: true, clientId, taskMonth: mk, monthStatus: 'abierto' };
 }
 
-module.exports = { normalizeMonthKey, listClientMonths, getClientMonth, createClientMonthIfMissing, closeClientMonth, reopenClientMonth };
+module.exports = {
+  normalizeMonthKey,
+  listClientMonths,
+  getClientMonth,
+  createClientMonthIfMissing,
+  closeClientMonth,
+  reopenClientMonth
+};
