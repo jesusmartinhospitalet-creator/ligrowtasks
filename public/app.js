@@ -7,30 +7,40 @@ activeClient:null
 }
 
 async function api(url,options={}){
-const res=await fetch('/api'+url,{
-headers:{'Content-Type':'application/json'},
-...options
-})
-return res.json()
+  try{
+    const res=await fetch('/api'+url,{
+      headers:{'Content-Type':'application/json'},
+      ...options
+    })
+    if(!res.ok)return null
+    return res.json()
+  }catch(e){
+    return null
+  }
 }
 
 async function loadClients(){
-state.clients=await api('/clients')
-render()
+  const data=await api('/clients')
+  state.clients=Array.isArray(data)?data:[]
+  render()
 }
 
 async function loadTasks(clientId){
-state.tasks=await api('/tasks/client/'+clientId)
-render()
+  const data=await api('/tasks/client/'+clientId)
+  state.tasks=Array.isArray(data)?data:[]
+  render()
 }
 
 function render(){
 app.innerHTML=`
 <div class="sidebar">
 <div class="logo">Ligrow</div>
-${state.clients.map(c=>`
-<div class="client" onclick="selectClient('${c.clientId}')">${c.clientName}</div>
-`).join('')}
+${state.clients.length
+  ? state.clients.map(c=>`
+      <div class="client" onclick="selectClient('${c.clientId}')">${c.clientName}</div>
+    `).join('')
+  : '<div class="client" style="opacity:.4;cursor:default">Sin clientes configurados</div>'
+}
 </div>
 
 <div class="main">
@@ -64,7 +74,7 @@ function renderTasks(status){
 return state.tasks
 .filter(t=>t.status===status)
 .map(t=>`
-<div class="task priority-${t.priority.toLowerCase()}">
+<div class="task priority-${(t.priority||'media').toLowerCase()}">
 ${t.taskName}
 </div>
 `).join('')
@@ -76,6 +86,7 @@ loadTasks(id)
 }
 
 async function newTask(){
+if(!state.activeClient)return
 const name=prompt('Nombre tarea')
 if(!name)return
 
@@ -90,4 +101,7 @@ taskName:name
 loadTasks(state.activeClient.clientId)
 }
 
+// Render skeleton immediately so the page is never blank
+render()
+// Then load real data
 loadClients()
