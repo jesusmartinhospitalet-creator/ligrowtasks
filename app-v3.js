@@ -1,15 +1,15 @@
 /* ── Seed Fallback Data ────────────────────────── */
 const SEED_CLIENTS = [
-  { clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', clientCode: 'PICNEG', concept: 'Marketing Hub V2', summary: 'Gestión integral de campaña nieve y activaciones digitales', kickoffDate: '2026-09-01', category: 'cliente', status: 'activo', colorAccent: '#f97316', progressPct: 65, tasksCount: 4 },
-  { clientId: 'cli-02', clientName: 'Ligrow Hub - Infraestructura', clientCode: 'LIGROW', concept: 'Sistemas Internos', summary: 'Refactorización a Node.js Express y despliegue Vercel', kickoffDate: '2026-08-15', category: 'personal', status: 'activo', colorAccent: '#3b82f6', progressPct: 80, tasksCount: 3 },
-  { clientId: 'cli-03', clientName: 'Andorra Ecommerce - Rediseño', clientCode: 'ANDOEE', concept: 'Rediseño UX/UI Store', summary: 'Optimización de embudo de venta y migración a Shopify Plus', kickoffDate: '2026-09-10', category: 'cliente', status: 'activo', colorAccent: '#10b981', progressPct: 40, tasksCount: 2 }
+  { clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', clientCode: 'PICNEG', concept: 'Marketing Hub V2', summary: 'Gestión integral de campaña nieve y activaciones digitales', kickoffDate: '2026-09-01', category: 'cliente', status: 'activo', colorAccent: '#f97316', trafficLight: 'green', progressPct: 65, tasksCount: 4 },
+  { clientId: 'cli-02', clientName: 'Ligrow Hub - Infraestructura', clientCode: 'LIGROW', concept: 'Sistemas Internos', summary: 'Refactorización a Node.js Express y despliegue Vercel', kickoffDate: '2026-08-15', category: 'personal', status: 'activo', colorAccent: '#3b82f6', trafficLight: 'orange', progressPct: 80, tasksCount: 3 },
+  { clientId: 'cli-03', clientName: 'Andorra Ecommerce - Rediseño', clientCode: 'ANDOEE', concept: 'Rediseño UX/UI Store', summary: 'Optimización de embudo de venta y migración a Shopify Plus', kickoffDate: '2026-09-10', category: 'cliente', status: 'activo', colorAccent: '#10b981', trafficLight: 'red', progressPct: 40, tasksCount: 2 }
 ];
 
 const SEED_TASKS = [
-  { id: 'tsk-01', taskCode: 'PIC-101', clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', taskName: 'Revisión final de copies creativos', owner: 'Jesús', status: 'En curso', priority: 'Alta', taskType: 'Puntual', category: 'Marketing', dueDate: '2026-09-06', description: 'Supervisar copies para redes sociales y soportes impresos.', subtasks: [{ id: 'sub-1', title: 'Banner Google Ads', completed: true }, { id: 'sub-2', title: 'Post Instagram Feed', completed: false }], tags: ['Copywriting', 'Urgente'], attachments: [{ name: 'Briefing_Copies.pdf', url: '#' }] },
-  { id: 'tsk-02', taskCode: 'LIG-201', clientId: 'cli-02', clientName: 'Ligrow Hub - Infraestructura', taskName: 'Despliegue y prueba en Vercel', owner: 'Jesús', status: 'En curso', priority: 'Alta', taskType: 'Puntual', category: 'Desarrollo', dueDate: '2026-09-05', description: 'Verificar despliegue continuo en Vercel preview.', subtasks: [{ id: 'sub-3', title: 'Configurar vercel.json', completed: true }, { id: 'sub-4', title: 'Prueba preview URL', completed: true }], tags: ['Vercel', 'DevOps'], attachments: [{ name: 'Vercel_Config.json', url: '#' }] },
-  { id: 'tsk-03', taskCode: 'PIC-102', clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', taskName: 'Configuración Pixel Meta y TikTok Ads', owner: 'Alejandro', status: 'Detenido', priority: 'Media', taskType: 'Puntual', category: 'Analytics', dueDate: '2026-09-08', description: 'Pendiente acceso a la cuenta publicitaria.', subtasks: [], tags: ['Pixel', 'Paid Media'], attachments: [] },
-  { id: 'tsk-04', taskCode: 'AND-301', clientId: 'cli-03', clientName: 'Andorra Ecommerce - Rediseño', taskName: 'Aprobación Wireframes UX/UI Mobile', owner: 'Blanca', status: 'Listo', priority: 'Media', taskType: 'Puntual', category: 'Diseño', dueDate: '2026-09-04', description: 'Diseños aceptados por cliente.', subtasks: [{ id: 'sub-5', title: 'Figma prototype', completed: true }], tags: ['Figma', 'UI/UX'], attachments: [] }
+  { id: 'tsk-01', taskCode: 'PIC-101', clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', taskName: 'Revisión final de copies creativos', owner: 'Jesús', status: 'En edición', priority: 'Alta', taskType: 'Puntual', category: 'Marketing', dueDate: '2026-09-06', endDate: '2026-09-06', description: 'Supervisar copies para redes sociales y soportes impresos.', subtasks: [{ id: 'sub-1', title: 'Banner Google Ads', completed: true }, { id: 'sub-2', title: 'Post Instagram Feed', completed: false }], tags: ['Copywriting', 'Urgente'], attachments: [{ name: 'Briefing_Copies.pdf', url: '#' }] },
+  { id: 'tsk-02', taskCode: 'LIG-201', clientId: 'cli-02', clientName: 'Ligrow Hub - Infraestructura', taskName: 'Despliegue y prueba en Vercel', owner: 'Jesús', status: 'En producción', priority: 'Alta', taskType: 'Puntual', category: 'Desarrollo', dueDate: '2026-09-05', endDate: '2026-09-05', description: 'Verificar despliegue continuo en Vercel preview.', subtasks: [{ id: 'sub-3', title: 'Configurar vercel.json', completed: true }, { id: 'sub-4', title: 'Prueba preview URL', completed: true }], tags: ['Vercel', 'DevOps'], attachments: [{ name: 'Vercel_Config.json', url: '#' }] },
+  { id: 'tsk-03', taskCode: 'PIC-102', clientId: 'cli-01', clientName: 'Pic Negre - Campaña Invierno', taskName: 'Configuración Pixel Meta y TikTok Ads', owner: 'Alejandro', status: 'Sin empezar', priority: 'Media', taskType: 'Puntual', category: 'Analytics', dueDate: '2026-09-08', endDate: '2026-09-08', description: 'Pendiente acceso a la cuenta publicitaria.', subtasks: [], tags: ['Pixel', 'Paid Media'], attachments: [] },
+  { id: 'tsk-04', taskCode: 'AND-301', clientId: 'cli-03', clientName: 'Andorra Ecommerce - Rediseño', taskName: 'Aprobación Wireframes UX/UI Mobile', owner: 'Blanca', status: 'Finalizada', priority: 'Media', taskType: 'Puntual', category: 'Diseño', dueDate: '2026-09-04', endDate: '2026-09-04', description: 'Diseños aceptados por cliente.', subtasks: [{ id: 'sub-5', title: 'Figma prototype', completed: true }], tags: ['Figma', 'UI/UX'], attachments: [] }
 ];
 
 /* ── State ─────────────────────────────────────── */
@@ -33,7 +33,7 @@ const S = {
 };
 
 const OWNERS        = ['Jesús', 'Blanca', 'Alejandro'];
-const STATUSES      = ['En curso', 'Detenido', 'Listo'];
+const STATUSES      = ['Sin empezar', 'En edición', 'En producción', 'Finalizada'];
 const PRIORITIES    = ['Alta', 'Media', 'Baja'];
 const VIEWS_CLIENT  = ['project', 'kanban', 'table', 'gantt', 'templates', 'months'];
 const VIEWS_GLOBAL  = ['home', 'projects', 'calendar', 'kanban', 'table'];
@@ -59,24 +59,69 @@ function esc(str = '') {
     .replace(/'/g, '&#039;');
 }
 
-/* ── Semáforo de Salud de Proyecto ──────────────── */
-function getProjectHealth(clientId) {
-  const projectTasks = S.allTasks.filter(t => t.clientId === clientId && t.status !== 'Listo');
-  const todayStr = new Date().toISOString().substring(0, 10);
-  const hasOverdue = projectTasks.some(t => t.dueDate && t.dueDate < todayStr);
-  const hasCritical = projectTasks.some(t => t.priority === 'Alta');
+/* ── Semáforo de Proyecto ───────────────────────── */
+const TRAFFIC_LIGHTS = {
+  green:  { label: 'Verde', code: 'traffic-green' },
+  orange: { label: 'Naranja', code: 'traffic-orange' },
+  red:    { label: 'Rojo', code: 'traffic-red' },
+};
 
-  if (hasOverdue || hasCritical) {
-    return { status: 'Atención', code: 'atencion', label: 'Atención', emoji: '🔴' };
+function getProjectHealth(clientId) {
+  const client = S.clients.find(item => item.clientId === clientId);
+  const trafficLight = client?.trafficLight || 'green';
+  return TRAFFIC_LIGHTS[trafficLight] || TRAFFIC_LIGHTS.green;
+}
+
+async function persistProjectClient(client, message = 'Proyecto actualizado') {
+  const index = S.clients.findIndex(item => item.clientId === client.clientId);
+  if (index >= 0) S.clients[index] = client;
+  else S.clients = [client, ...S.clients];
+  if (S.activeClient?.clientId === client.clientId) S.activeClient = client;
+
+  if (IS_PREVIEW) {
+    savePreviewState();
+    toast(message);
+    render();
+    return;
   }
-  if (projectTasks.length >= 3) {
-    return { status: 'Carga alta', code: 'carga-alta', label: 'Carga Alta', emoji: '🟡' };
+
+  try {
+    await api('/clients', { method: 'POST', body: JSON.stringify(client) });
+    toast(message);
+    await loadAll();
+  } catch (error) {
+    toast(error.message || 'No se ha podido guardar el proyecto', 'err');
   }
-  return { status: 'En curso', code: 'en-curso', label: 'En Curso', emoji: '🟢' };
+}
+
+function setProjectTrafficLight(clientId, trafficLight) {
+  const client = S.clients.find(item => item.clientId === clientId);
+  if (!client || !TRAFFIC_LIGHTS[trafficLight]) return;
+  persistProjectClient({ ...client, trafficLight }, `Semáforo ${TRAFFIC_LIGHTS[trafficLight].label.toLowerCase()} seleccionado`);
 }
 
 /* ── API ───────────────────────────────────────── */
 const IS_PREVIEW = typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+const PREVIEW_STATE_KEY = 'ligrow-tasks-preview-state-v1';
+
+function readPreviewState() {
+  if (!IS_PREVIEW) return null;
+  try {
+    const state = JSON.parse(localStorage.getItem(PREVIEW_STATE_KEY) || 'null');
+    return state && Array.isArray(state.clients) && Array.isArray(state.tasks) ? state : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function savePreviewState() {
+  if (!IS_PREVIEW) return;
+  try {
+    localStorage.setItem(PREVIEW_STATE_KEY, JSON.stringify({ clients: S.clients, tasks: S.allTasks }));
+  } catch (_error) {
+    // El almacenamiento local es una mejora de la preview; la interfaz sigue siendo utilizable si falla.
+  }
+}
 
 function getMockForUrl(url = '') {
   if (url.startsWith('/tasks') || url.includes('/tasks/')) return SEED_TASKS;
@@ -172,6 +217,8 @@ function escListener(e) {
 function buildModal(type, data) {
   if (type === 'task')     return modalTask(data);
   if (type === 'client')   return modalClient(data);
+  if (type === 'resource') return modalProjectResource(data);
+  if (type === 'reminder') return modalProjectReminder(data);
   if (type === 'template') return modalTemplate(data);
   if (type === 'confirm')  return modalConfirm(data);
   return '';
@@ -179,145 +226,49 @@ function buildModal(type, data) {
 
 /* ── Modal: Task ───────────────────────────────── */
 function modalTask(d = {}) {
-  const isEdit = !!d.taskId;
-  const opt = (arr, val) => arr.map(o => `<option${o === val ? ' selected' : ''}>${o}</option>`).join('');
-  const val = k => d[k] ? ` value="${esc(d[k])}"` : '';
+  const taskId = d.taskId || d.id || '';
+  const isEdit = !!taskId;
+  const clientId = d.clientId || S.activeClient?.clientId || '';
+  const project = S.clients.find(client => client.clientId === clientId);
 
-  const clientOpts = S.clients.map(c =>
-    `<option value="${c.clientId}"${(d.clientId || S.activeClient?.clientId) === c.clientId ? ' selected' : ''}>${esc(c.clientName)} (${c.category === 'personal' ? 'Personal' : 'Cliente'})</option>`
-  ).join('');
-
-  const subtasks = d.subtasks || [];
-  const tagsStr = (d.tags || []).join(', ');
-  const attachments = d.attachments || [];
-  const comments = (d.taskId && S.comments[d.taskId]) ? S.comments[d.taskId] : [];
+  if (!clientId) {
+    return `
+    <div class="modal modal-compact">
+      <div class="modal-header">
+        <div><div class="modal-kicker">Organización</div><div class="modal-title">Elige un proyecto</div></div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body empty-modal-copy">
+        <p>Las tareas se crean dentro de una carpeta de proyecto para que queden ordenadas desde el inicio.</p>
+        <button class="btn-primary" onclick="closeModal();setView('projects')">Ver proyectos</button>
+      </div>
+    </div>`;
+  }
 
   return `
-  <div class="modal" style="max-width: 680px;">
+  <div class="modal modal-compact" style="max-width: 560px;">
     <div class="modal-header">
-      <div class="modal-title">${isEdit ? 'Editar Tarea ' + (d.taskCode ? `[${d.taskCode}]` : '') : 'Nueva Tarea'}</div>
+      <div><div class="modal-kicker">${esc(project?.clientName || 'Proyecto')}</div><div class="modal-title">${isEdit ? 'Editar tarea' : 'Nueva tarea'}</div></div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
       <form id="task-form" data-type="task">
-        <input type="hidden" name="taskId" value="${d.taskId || ''}">
+        <input type="hidden" name="taskId" value="${taskId}">
+        <input type="hidden" name="clientId" value="${clientId}">
         <div class="form-grid">
           <div class="form-field full">
-            <label class="form-label">Proyecto / Cliente *</label>
-            <select class="form-input" name="clientId" required>${clientOpts}</select>
+            <label class="form-label">Título *</label>
+            <input class="form-input" name="taskName" required placeholder="¿Qué hay que hacer?" value="${esc(d.taskName || '')}">
           </div>
           <div class="form-field full">
-            <label class="form-label">Nombre de la tarea *</label>
-            <input class="form-input" name="taskName" required placeholder="¿Qué hay que hacer?"${val('taskName')}>
+            <label class="form-label">Descripción</label>
+            <textarea class="form-input" name="description" rows="4" placeholder="Añade el contexto necesario para realizarla.">${esc(d.description || '')}</textarea>
           </div>
-          <div class="form-field">
-            <label class="form-label">Responsable</label>
-            <select class="form-input" name="owner">${opt(OWNERS, d.owner || OWNERS[0])}</select>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Estado</label>
-            <select class="form-input" name="status">${opt(STATUSES, d.status || 'En curso')}</select>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Prioridad</label>
-            <select class="form-input" name="priority">${opt(PRIORITIES, d.priority || 'Media')}</select>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Tipo</label>
-            <select class="form-input" name="taskType" onchange="toggleMonthField(this)">
-              <option value="puntual"${d.taskType !== 'mensual' ? ' selected' : ''}>Puntual</option>
-              <option value="mensual"${d.taskType === 'mensual' ? ' selected' : ''}>Mensual</option>
-            </select>
-          </div>
-          <div class="form-field" id="field-taskMonth" style="display:none">
-            <label class="form-label">Mes (YYYY-MM)</label>
-            <input class="form-input" name="taskMonth" type="month"${val('taskMonth')}>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Fecha de entrega / Vencimiento</label>
-            <input class="form-input" name="dueDate" type="date"${val('dueDate')}>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Fecha de inicio</label>
-            <input class="form-input" name="startDate" type="date"${val('startDate')}>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Fecha de fin</label>
-            <input class="form-input" name="endDate" type="date"${val('endDate')}>
-          </div>
-          <div class="form-field full">
-            <label class="form-label">Etiquetas (separadas por comas)</label>
-            <input class="form-input" name="tags" placeholder="#ai, #dev, #diseño" value="${esc(tagsStr)}">
-          </div>
-          <div class="form-field full">
-            <label class="form-label">Descripción / Notas ampliadas</label>
-            <textarea class="form-input" name="description" rows="3" placeholder="Detalles, enlaces e información relevante…">${esc(d.description || '')}</textarea>
-          </div>
-
-          <!-- Subtareas / Checklist -->
-          <div class="form-field full">
-            <label class="form-label">Checklist de Subtareas</label>
-            <div class="subtask-list" id="modal-subtask-list">
-              ${subtasks.map((st, idx) => `
-                <div class="subtask-item ${st.completed ? 'completed' : ''}">
-                  <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="st.completed=this.checked">
-                  <span style="flex:1;">${esc(st.text)}</span>
-                  <button type="button" class="pin-btn" onclick="this.parentElement.remove()">✕</button>
-                </div>
-              `).join('')}
-            </div>
-            <div style="display:flex;gap:8px;margin-top:8px;">
-              <input class="form-input" id="new-subtask-input" placeholder="+ Añadir elemento a la checklist…">
-              <button type="button" class="btn-secondary btn-sm" onclick="addModalSubtask()">Añadir</button>
-            </div>
-          </div>
-
-          <!-- Archivos y Enlaces (PDFs, Docs, Links) -->
-          <div class="form-field full">
-            <label class="form-label">Archivos y Enlaces Adjuntos (PDFs, Docs, URLs)</label>
-            <div class="attachment-list" id="modal-attachment-list">
-              ${attachments.map((att, idx) => `
-                <div class="attachment-chip">
-                  <span>📎</span>
-                  <a href="${esc(att.url || '#')}" target="_blank" style="flex:1;">${esc(att.title || att.url)}</a>
-                  <button type="button" class="pin-btn" onclick="this.parentElement.remove()">✕</button>
-                </div>
-              `).join('')}
-            </div>
-            <div style="display:flex;gap:8px;margin-top:8px;">
-              <input class="form-input" id="new-attachment-title" placeholder="Título o nombre del archivo/enlace" style="flex:1;">
-              <input class="form-input" id="new-attachment-url" placeholder="https://..." style="flex:1;">
-              <button type="button" class="btn-secondary btn-sm" onclick="addModalAttachment()">Adjuntar</button>
-            </div>
-          </div>
-
-          ${isEdit ? `
-          <!-- Comments & Historial -->
-          <div class="form-field full comments-section">
-            <div class="comments-title">Comentarios e Historial</div>
-            <div class="comments-list">
-              ${comments.length ? comments.map(c => `
-                <div class="comment-bubble">
-                  <div class="comment-author">
-                    <span>${esc(c.author)}</span>
-                    <span class="comment-date">${new Date(c.createdAt).toLocaleDateString('es-ES', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}</span>
-                  </div>
-                  <div>${esc(c.text)}</div>
-                </div>
-              `).join('') : '<div style="font-size:12px;color:var(--text4)">No hay comentarios todavía.</div>'}
-            </div>
-            <div class="comment-form">
-              <input class="comment-input" id="new-comment-text" placeholder="Escribe una observación o actualización…">
-              <button type="button" class="btn-primary btn-sm" onclick="submitComment('${d.taskId}')">Comentar</button>
-            </div>
-          </div>
-          ` : ''}
-
         </div>
+        <p class="form-help">La prioridad, el estado y la fecha de fin se definen directamente en la tarea.</p>
         <div class="form-actions" style="margin-top:16px;">
-          ${isEdit ? `<button type="button" class="btn-danger btn-sm" onclick="confirmDelete('task','${d.taskId}')">Eliminar</button>` : ''}
           <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
-          <button type="submit" class="btn-primary">Guardar</button>
+          <button type="submit" class="btn-primary">${isEdit ? 'Guardar cambios' : 'Crear tarea'}</button>
         </div>
       </form>
     </div>
@@ -421,6 +372,14 @@ function modalClient(d = {}) {
             <label class="form-label">Fecha de inicio</label>
             <input class="form-input" name="kickoffDate" type="date"${val('kickoffDate')}>
           </div>
+          <div class="form-field">
+            <label class="form-label">Semáforo</label>
+            <select class="form-input" name="trafficLight">
+              <option value="green"${(d.trafficLight || 'green') === 'green' ? ' selected' : ''}>Verde</option>
+              <option value="orange"${d.trafficLight === 'orange' ? ' selected' : ''}>Naranja</option>
+              <option value="red"${d.trafficLight === 'red' ? ' selected' : ''}>Rojo</option>
+            </select>
+          </div>
           <div class="form-field full">
             <label class="form-label">Concepto / Descripción corta</label>
             <input class="form-input" name="concept" placeholder="ej: Productividad personal y automatizaciones"${val('concept')}>
@@ -435,6 +394,52 @@ function modalClient(d = {}) {
           <button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button>
           <button type="submit" class="btn-primary">Guardar</button>
         </div>
+      </form>
+    </div>
+  </div>`;
+}
+
+function modalProjectResource(d = {}) {
+  const client = S.clients.find(item => item.clientId === (d.clientId || S.activeClient?.clientId));
+  if (!client) return '';
+  return `
+  <div class="modal modal-compact" style="max-width:500px;">
+    <div class="modal-header">
+      <div><div class="modal-kicker">${esc(client.clientName)}</div><div class="modal-title">Añadir recurso</div></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form data-type="project-resource">
+        <input type="hidden" name="clientId" value="${esc(client.clientId)}">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Nombre *</label><input class="form-input" name="title" required placeholder="Ej. Briefing de campaña"></div>
+          <div class="form-field full"><label class="form-label">Enlace o ubicación *</label><input class="form-input" name="url" required placeholder="https://…"></div>
+          <div class="form-field"><label class="form-label">Tipo</label><select class="form-input" name="kind"><option value="file">Archivo</option><option value="link">Enlace</option></select></div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Añadir recurso</button></div>
+      </form>
+    </div>
+  </div>`;
+}
+
+function modalProjectReminder(d = {}) {
+  const client = S.clients.find(item => item.clientId === (d.clientId || S.activeClient?.clientId));
+  if (!client) return '';
+  return `
+  <div class="modal modal-compact" style="max-width:500px;">
+    <div class="modal-header">
+      <div><div class="modal-kicker">${esc(client.clientName)}</div><div class="modal-title">Nuevo recordatorio</div></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form data-type="project-reminder">
+        <input type="hidden" name="clientId" value="${esc(client.clientId)}">
+        <div class="form-grid">
+          <div class="form-field full"><label class="form-label">Recordatorio *</label><input class="form-input" name="title" required placeholder="¿Qué hay que recordar?"></div>
+          <div class="form-field"><label class="form-label">Fecha</label><input class="form-input" name="date" type="date"></div>
+          <div class="form-field"><label class="form-label">Prioridad</label><select class="form-input" name="priority">${PRIORITIES.map(priority => `<option${priority === 'Media' ? ' selected' : ''}>${priority}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="button" class="btn-secondary" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Añadir recordatorio</button></div>
       </form>
     </div>
   </div>`;
@@ -469,7 +474,7 @@ function modalTemplate(d = {}) {
           </div>
           <div class="form-field">
             <label class="form-label">Estado por defecto</label>
-            <select class="form-input" name="statusDefault">${opt(STATUSES, d.statusDefault || 'En curso')}</select>
+            <select class="form-input" name="statusDefault">${opt(STATUSES, d.statusDefault || 'Sin empezar')}</select>
           </div>
           <div class="form-field">
             <label class="form-label">Día del mes (1-28)</label>
@@ -536,36 +541,79 @@ async function handleFormSubmit(e) {
   const form = e.target;
   const type = form.dataset.type;
   const fd = new FormData(form);
-  const data = Object.fromEntries(fd.entries());
+  let data = Object.fromEntries(fd.entries());
 
   if (type === 'task') {
-    // Parse subtasks from DOM
-    const subtaskEls = form.querySelectorAll('#modal-subtask-list .subtask-item');
-    const subtasks = [];
-    subtaskEls.forEach((el, i) => {
-      const text = el.querySelector('span')?.innerText || '';
-      const completed = el.querySelector('input[type="checkbox"]')?.checked || false;
-      if (text.trim()) subtasks.push({ id: `s${i+1}`, text: text.trim(), completed });
-    });
-    data.subtasks = subtasks;
+    const existing = data.taskId ? findTask(data.taskId) : null;
+    data = {
+      ...(existing || {}),
+      ...data,
+      taskId: data.taskId || '',
+      owner: existing?.owner || OWNERS[0],
+      status: existing?.status || 'Sin empezar',
+      priority: existing?.priority || 'Media',
+      taskType: existing?.taskType || 'puntual',
+      category: existing?.category || 'personal',
+      taskMonth: existing?.taskMonth || '',
+      monthStatus: existing?.monthStatus || '',
+      templateId: existing?.templateId || '',
+      dueDate: existing?.dueDate || null,
+      startDate: existing?.startDate || null,
+      endDate: existing?.endDate || existing?.dueDate || null,
+      subtasks: existing?.subtasks || [],
+      tags: existing?.tags || [],
+      attachments: existing?.attachments || [],
+    };
+  }
 
-    // Parse attachments from DOM
-    const attachmentEls = form.querySelectorAll('#modal-attachment-list .attachment-chip');
-    const attachments = [];
-    attachmentEls.forEach((el) => {
-      const a = el.querySelector('a');
-      if (a) {
-        attachments.push({ title: a.innerText, url: a.getAttribute('href') });
-      }
-    });
-    data.attachments = attachments;
+  if (type === 'client') {
+    const existing = data.clientId ? S.clients.find(item => item.clientId === data.clientId) : null;
+    data = {
+      ...(existing || {}),
+      ...data,
+      clientId: data.clientId || `project-${Date.now()}`,
+      trafficLight: data.trafficLight || existing?.trafficLight || 'green',
+      resources: existing?.resources || [],
+      reminders: existing?.reminders || [],
+    };
+  }
 
-    // Parse tags
-    const tagsRaw = data.tags || '';
-    data.tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t.length > 0).map(t => t.startsWith('#') ? t : `#${t}`);
+  if (type === 'project-resource' || type === 'project-reminder') {
+    const client = S.clients.find(item => item.clientId === data.clientId);
+    if (!client) return;
+    const item = type === 'project-resource'
+      ? { id: `resource-${Date.now()}`, title: data.title.trim(), url: data.url.trim(), kind: data.kind || 'file' }
+      : { id: `reminder-${Date.now()}`, title: data.title.trim(), date: data.date || '', priority: data.priority || 'Media' };
+    const updatedClient = type === 'project-resource'
+      ? { ...client, resources: [...(client.resources || []), item] }
+      : { ...client, reminders: [...(client.reminders || []), item] };
+    closeModal();
+    await persistProjectClient(updatedClient, type === 'project-resource' ? 'Recurso añadido' : 'Recordatorio añadido');
+    return;
   }
 
   try {
+    if (type === 'task' && IS_PREVIEW) {
+      const localTask = data.taskId
+        ? { ...findTask(data.taskId), ...data }
+        : { ...data, id: `local-${Date.now()}`, taskCode: 'NUEVA' };
+      const foundIndex = S.allTasks.findIndex(task => (task.taskId || task.id) === (localTask.taskId || localTask.id));
+      if (foundIndex >= 0) S.allTasks[foundIndex] = localTask;
+      else S.allTasks = [localTask, ...S.allTasks];
+      S.tasks = S.activeClient ? S.allTasks.filter(task => task.clientId === S.activeClient.clientId) : S.allTasks;
+      savePreviewState();
+      closeModal();
+      toast(data.taskId ? 'Guardado correctamente' : 'Tarea creada');
+      render();
+      return;
+    }
+
+    if (type === 'client' && IS_PREVIEW) {
+      closeModal();
+      await persistProjectClient(data, data.clientId?.startsWith('project-') ? 'Proyecto creado' : 'Proyecto actualizado');
+      return;
+    }
+
     if (type === 'task')     await api('/tasks',     { method: 'POST', body: JSON.stringify(data) });
     if (type === 'client')   await api('/clients',   { method: 'POST', body: JSON.stringify(data) });
     if (type === 'template') await api('/templates', { method: 'POST', body: JSON.stringify(data) });
@@ -658,6 +706,13 @@ async function loadAll() {
   S.loading = true;
   render();
   try {
+    const previewState = readPreviewState();
+    if (previewState) {
+      S.clients = previewState.clients;
+      S.allTasks = previewState.tasks;
+      if (S.activeClient) S.activeClient = S.clients.find(c => c.clientId === S.activeClient.clientId) || null;
+      return;
+    }
     const [clients, tasks] = await Promise.all([
       api('/clients'),
       api('/tasks'),
@@ -681,6 +736,13 @@ async function loadAll() {
 }
 
 async function loadClientTasks(clientId) {
+  if (IS_PREVIEW) {
+    S.tasks = S.allTasks.filter(task => task.clientId === clientId);
+    S.templates = [];
+    S.months = [];
+    render();
+    return;
+  }
   try {
     const [tasks, templates, months] = await Promise.all([
       api('/tasks/client/' + clientId),
@@ -709,7 +771,7 @@ function render() {
 function renderSidebar() {
   const todayStr = new Date().toISOString().substring(0, 10);
 
-  const activeTasks = S.allTasks.filter(t => t.status !== 'Listo');
+  const activeTasks = S.allTasks.filter(t => t.status !== 'Finalizada');
   const criticalCount = activeTasks.filter(t => t.priority === 'Alta' || (t.dueDate && t.dueDate < todayStr)).length;
   const pendingCount = activeTasks.length;
 
@@ -803,7 +865,7 @@ function renderContent() {
             <span>🔍</span>
             <input placeholder="Buscar tareas, archivos, #tags..." value="${esc(S.searchQuery)}" oninput="S.searchQuery=this.value;render();">
           </div>
-          <button class="btn-primary" onclick="openModal('task')">＋ Nueva tarea</button>
+          ${S.activeClient ? `<button class="btn-primary" onclick="openModal('task',{clientId:'${S.activeClient.clientId}'})">＋ Nueva tarea</button>` : ''}
         </div>
       </div>
       <div class="tabs">${tabs}</div>
@@ -833,7 +895,7 @@ function renderLegacyHome() {
   const todayStr = new Date().toISOString().substring(0, 10);
   const in7Str   = new Date(Date.now() + 7*84600000).toISOString().substring(0, 10);
 
-  const active = tasks.filter(t => t.status !== 'Listo');
+  const active = tasks.filter(t => t.status !== 'Finalizada');
   const overdue = active.filter(t => t.dueDate && t.dueDate < todayStr);
   const critical = active.filter(t => t.priority === 'Alta');
   const thisWeek = active.filter(t => t.dueDate && t.dueDate >= todayStr && t.dueDate <= in7Str);
@@ -855,7 +917,7 @@ function renderLegacyHome() {
         <div class="home-stat-label">Tareas Abiertas</div>
       </div>
       <div class="home-stat-card">
-        <div class="home-stat-num">${tasks.filter(t => t.status === 'Listo').length}</div>
+        <div class="home-stat-num">${tasks.filter(t => t.status === 'Finalizada').length}</div>
         <div class="home-stat-label">Completadas</div>
       </div>
     </div>
@@ -921,19 +983,14 @@ function renderProjectFolders() {
   <div class="home-clients-grid">
     ${filtered.map(c => {
       const clientTasks = S.allTasks.filter(t => t.clientId === c.clientId);
-      const ready = clientTasks.filter(t => t.status === 'Listo').length;
+      const ready = clientTasks.filter(t => t.status === 'Finalizada').length;
       const pct = clientTasks.length ? Math.round((ready / clientTasks.length) * 100) : (c.progressPct || 0);
-      const health = getProjectHealth(c.clientId);
-
       return `
       <div class="home-client-card" onclick="selectClient('${c.clientId}')">
         <div class="home-client-header">
           <div class="client-avatar" style="background:${c.colorAccent || '#6366f1'}">${c.clientCode || 'PROJ'}</div>
           <div style="flex:1;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div class="home-client-name">${esc(c.clientName)}</div>
-              <span class="health-badge ${health.code}">${health.label}</span>
-            </div>
+            <div class="home-client-name">${esc(c.clientName)}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px;">${c.category === 'personal' ? 'Proyecto Personal' : 'Proyecto Cliente'}</div>
           </div>
         </div>
@@ -951,8 +1008,8 @@ function renderProjectFolders() {
             <div class="home-client-label">Total Tareas</div>
           </div>
           <div class="home-client-stat">
-            <div class="home-client-num home-num-warn">${clientTasks.filter(t => t.status === 'En curso').length}</div>
-            <div class="home-client-label">En curso</div>
+            <div class="home-client-num home-num-warn">${clientTasks.filter(t => t.status === 'En edición').length}</div>
+            <div class="home-client-label">En edición</div>
           </div>
           <div class="home-client-stat">
             <div class="home-client-num" style="color:var(--status-listo)">${ready}</div>
@@ -994,14 +1051,29 @@ function formatTaskDate(value) {
   return year && month && day ? `${day}/${month}/${year}` : value;
 }
 
+function getTaskEndDate(task = {}) {
+  return task.endDate || task.dueDate || '';
+}
+
+function taskTone(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, '-');
+}
+
 function getProjectTasks() {
   const status = S.projectFilters.status;
   const priority = S.projectFilters.priority;
+  const query = S.searchQuery.trim().toLowerCase();
   const source = S.activeClient
     ? S.allTasks.filter(task => task.clientId === S.activeClient.clientId)
     : getFilteredTasks();
   return source.filter(task =>
-    (!status || task.status === status) && (!priority || task.priority === priority)
+    (!status || task.status === status) &&
+    (!priority || task.priority === priority) &&
+    (!query || `${task.taskName || ''} ${task.description || ''}`.toLowerCase().includes(query))
   );
 }
 
@@ -1022,6 +1094,7 @@ function findTask(taskId) {
 async function persistInlineTask(task) {
   try {
     await api('/tasks', { method: 'POST', body: JSON.stringify(task) });
+    savePreviewState();
   } catch (error) {
     toast(error.message || 'No se ha podido guardar la tarea', 'err');
   }
@@ -1031,6 +1104,15 @@ async function updateInlineTask(taskId, field, value) {
   const task = findTask(taskId);
   if (!task) return;
   task[field] = value;
+  await persistInlineTask(task);
+  render();
+}
+
+async function updateTaskEndDate(taskId, value) {
+  const task = findTask(taskId);
+  if (!task) return;
+  task.endDate = value || null;
+  task.dueDate = value || null;
   await persistInlineTask(task);
   render();
 }
@@ -1055,15 +1137,24 @@ async function addInlineSubtask(event, taskId) {
   render();
 }
 
-async function addInlineAttachment(event, taskId) {
+async function addInlineAttachment(event, taskId, kind = 'link') {
   event.preventDefault();
   const form = event.currentTarget;
   const [title, url] = form.querySelectorAll('input');
   const task = findTask(taskId);
   if (!task || !url?.value.trim()) return;
-  task.attachments = [...(task.attachments || []), { title: title.value.trim() || url.value.trim(), url: url.value.trim() }];
+  task.attachments = [...(task.attachments || []), { title: title.value.trim() || url.value.trim(), url: url.value.trim(), kind }];
   await persistInlineTask(task);
   render();
+}
+
+function splitTaskAttachments(task = {}) {
+  const attachments = task.attachments || [];
+  const isLink = item => item.kind === 'link' || (!item.kind && /^https?:\/\//i.test(item.url || ''));
+  return {
+    files: attachments.filter(item => !isLink(item)),
+    links: attachments.filter(isLink),
+  };
 }
 
 function renderProjectWorkspace() {
@@ -1073,65 +1164,91 @@ function renderProjectWorkspace() {
   const allTasks = S.allTasks.filter(task => task.clientId === client.clientId);
   const tasks = getProjectTasks();
   const today = new Date().toISOString().slice(0, 10);
-  const open = allTasks.filter(task => task.status !== 'Listo');
-  const overdue = open.filter(task => task.dueDate && task.dueDate < today);
-  const inProgress = open.filter(task => task.status === 'En curso');
-  const resources = allTasks.flatMap(task => (task.attachments || []).map(file => ({ ...file, taskName: task.taskName })));
+  const open = allTasks.filter(task => task.status !== 'Finalizada');
+  const endingSoon = open.filter(task => getTaskEndDate(task) && getTaskEndDate(task) < today);
+  const resources = [
+    ...(client.resources || []).map(resource => ({ ...resource, taskName: 'Proyecto' })),
+    ...allTasks.flatMap(task => (task.attachments || []).map(file => ({ ...file, taskName: task.taskName }))),
+  ];
+  const reminders = [
+    ...(client.reminders || []).map(reminder => ({ ...reminder, source: 'project' })),
+    ...open.map(task => ({ id: task.taskId || task.id, title: task.taskName, date: getTaskEndDate(task), priority: task.priority, source: 'task' })),
+  ];
   const health = getProjectHealth(client.clientId);
 
   return `
-  <div class="project-workspace">
+  <div class="project-workspace minimal-workspace">
     <section class="project-hero">
       <div>
-        <div class="eyebrow">Carpeta de proyecto</div>
-        <div class="project-heading"><span class="project-folder-icon">▣</span><h2>${esc(client.clientName)}</h2></div>
+        <div class="eyebrow">Proyecto</div>
+        <div class="project-heading"><span class="project-folder-icon">⌁</span><h2>${esc(client.clientName)}</h2></div>
         <p>${esc(client.summary || client.concept || 'Centraliza las tareas, documentación y seguimiento del proyecto.')}</p>
       </div>
-      <div class="project-hero-side"><span class="health-badge ${health.code}">${health.label}</span><span class="project-code">${esc(client.clientCode || 'PROY')}</span></div>
+      <div class="project-hero-side"><div class="traffic-light-control" aria-label="Semáforo del proyecto"><span>Semáforo</span>${Object.entries(TRAFFIC_LIGHTS).map(([value, light]) => `<button type="button" class="traffic-light-option ${health.code === light.code ? 'selected' : ''}" title="${light.label}" aria-label="Semáforo ${light.label}" onclick="setProjectTrafficLight('${client.clientId}','${value}')"><i class="${light.code}"></i><b>${light.label}</b></button>`).join('')}</div></div>
     </section>
 
-    <div class="project-overview-grid">
+    <div class="project-state-summary project-state-summary-compact" aria-label="Resumen de tareas">
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','')"><strong>${allTasks.length}</strong><span>Total</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','Sin empezar')"><strong>${allTasks.filter(task => task.status === 'Sin empezar').length}</strong><span>Sin empezar</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','En edición')"><strong>${allTasks.filter(task => task.status === 'En edición').length}</strong><span>Edición</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','En producción')"><strong>${allTasks.filter(task => task.status === 'En producción').length}</strong><span>Producción</span></button>
+      <button type="button" class="project-metric" onclick="setProjectFilter('status','Finalizada')"><strong>${allTasks.filter(task => task.status === 'Finalizada').length}</strong><span>Finalizadas</span></button>
+    </div>
+
+    <div class="project-overview-grid project-context-grid">
       <section class="project-panel resource-panel">
-        <div class="panel-heading"><span>▧</span><h3>Documentos y recursos</h3><button class="text-action" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Añadir</button></div>
-        ${resources.length ? `<div class="resource-list">${resources.slice(0, 4).map(resource => `<a class="resource-item" href="${esc(resource.url || '#')}" target="_blank" onclick="event.stopPropagation()"><span>↗</span><span>${esc(resource.title || resource.name || resource.url || 'Recurso')}</span><small>${esc(resource.taskName)}</small></a>`).join('')}</div>` : '<div class="panel-empty">Todavía no hay recursos vinculados.</div>'}
+        <div class="panel-heading"><span>▧</span><h3>Documentos y recursos</h3><small>${resources.length} vinculados</small><button class="panel-add" type="button" onclick="openModal('resource',{clientId:'${client.clientId}'})" aria-label="Añadir recurso">＋</button></div>
+        ${resources.length ? `<div class="resource-list">${resources.slice(0, 3).map(resource => `<a class="resource-item" href="${esc(resource.url || '#')}" target="_blank" onclick="event.stopPropagation()"><span>${resource.kind === 'link' || /^https?:\/\//i.test(resource.url || '') ? '↗' : '▧'}</span><strong>${esc(resource.title || resource.name || resource.url || 'Recurso')}</strong><small>${esc(resource.taskName)}</small></a>`).join('')}</div>` : '<div class="panel-empty">Los archivos y enlaces de las tareas aparecerán aquí.</div>'}
       </section>
       <section class="project-panel reminders-panel">
-        <div class="panel-heading"><span>◷</span><h3>Recordatorios y pendientes</h3><button class="text-action" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Nueva</button></div>
-        <div class="reminder-list">${open.length ? open.slice(0, 4).map(task => `<button class="reminder-item" onclick="toggleProjectTask('${task.taskId || task.id}')"><span class="priority-dot ${(task.priority || 'Media').toLowerCase()}"></span><strong>${esc(task.taskName)}</strong><small>${formatTaskDate(task.dueDate)}</small></button>`).join('') : '<div class="panel-empty">No hay pendientes abiertos.</div>'}</div>
+        <div class="panel-heading"><span>◷</span><h3>Recordatorios</h3><small>${reminders.length} activos</small><button class="panel-add" type="button" onclick="openModal('reminder',{clientId:'${client.clientId}'})" aria-label="Añadir recordatorio">＋</button></div>
+        <div class="reminder-list">${reminders.length ? reminders.slice(0, 3).map(reminder => reminder.source === 'task' ? `<button class="reminder-item" onclick="toggleProjectTask('${reminder.id}')"><span class="priority-dot ${(reminder.priority || 'Media').toLowerCase()}"></span><strong>${esc(reminder.title)}</strong><small>${formatTaskDate(reminder.date)}</small></button>` : `<div class="reminder-item"><span class="priority-dot ${(reminder.priority || 'Media').toLowerCase()}"></span><strong>${esc(reminder.title)}</strong><small>${formatTaskDate(reminder.date)}</small></div>`).join('') : '<div class="panel-empty">No hay recordatorios activos.</div>'}</div>
       </section>
     </div>
 
     <section class="project-tasks-section">
-      <div class="tasks-section-heading"><div><div class="eyebrow">Seguimiento</div><h3>Tareas del proyecto</h3><p>${open.length} abiertas de ${allTasks.length} tareas totales</p></div><div class="task-view-actions"><button class="btn-primary" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Nueva tarea</button><button class="btn-secondary btn-sm" onclick="setView('kanban')">Kanban</button></div></div>
-      <div class="project-metrics"><div><strong>${open.length}</strong><span>Abiertas</span></div><div><strong>${inProgress.length}</strong><span>En curso</span></div><div><strong>${overdue.length}</strong><span>Vencidas</span></div><div><strong>${allTasks.filter(task => task.status === 'Listo').length}</strong><span>Completadas</span></div><div><strong>${allTasks.length}</strong><span>Total</span></div></div>
+      <div class="tasks-section-heading"><div><div class="eyebrow">Seguimiento</div><h3>Tareas</h3><p>${open.length} activas${endingSoon.length ? ` · ${endingSoon.length} con fecha vencida` : ''}</p></div><div class="task-view-actions"><button class="btn-primary" onclick="openModal('task',{clientId:'${client.clientId}'})">＋ Nueva tarea</button><button class="btn-secondary btn-sm" onclick="setView('kanban')">Ver Kanban</button></div></div>
       <div class="project-filter-bar"><div class="inline-search">⌕<input placeholder="Buscar tareas…" value="${esc(S.searchQuery)}" oninput="S.searchQuery=this.value;render()"></div><select onchange="setProjectFilter('status',this.value)"><option value="">Estado: todos</option>${STATUSES.map(status => `<option value="${status}"${S.projectFilters.status === status ? ' selected' : ''}>${status}</option>`).join('')}</select><select onchange="setProjectFilter('priority',this.value)"><option value="">Prioridad: todas</option>${PRIORITIES.map(priority => `<option value="${priority}"${S.projectFilters.priority === priority ? ' selected' : ''}>${priority}</option>`).join('')}</select></div>
-      <div class="project-task-list">${tasks.length ? tasks.map(renderProjectTask).join('') : '<div class="panel-empty">No hay tareas que coincidan con los filtros.</div>'}</div>
+      ${tasks.length ? `<div class="project-task-groups">${renderProjectTaskGroup('Por completar', tasks.filter(task => task.status !== 'Finalizada'), 'open')}${renderProjectTaskGroup('Completadas', tasks.filter(task => task.status === 'Finalizada'), 'done')}</div>` : '<div class="project-task-list"><div class="panel-empty">No hay tareas que coincidan con los filtros.</div></div>'}
     </section>
   </div>`;
+}
+
+function renderProjectTaskGroup(title, tasks, tone) {
+  if (!tasks.length) return '';
+  return `<section class="project-task-group project-task-group-${tone}"><div class="task-group-heading"><span>${title}</span><small>${tasks.length}</small></div><div class="project-task-list"><div class="project-task-list-head"><span>Tarea</span><span>Fecha de fin</span><span>Prioridad</span><span>Estado</span></div>${tasks.map(renderProjectTask).join('')}</div></section>`;
 }
 
 function renderProjectTask(task) {
   const taskId = task.taskId || task.id;
   const isExpanded = S.expandedTaskId === taskId;
+  const endDate = getTaskEndDate(task);
+  const statusTone = taskTone(task.status);
+  const priorityTone = taskTone(task.priority);
   const subtasks = task.subtasks || [];
-  const attachments = task.attachments || [];
+  const completedSubtasks = subtasks.filter(item => item.completed).length;
+  const { files, links } = splitTaskAttachments(task);
   return `
   <article class="project-task ${isExpanded ? 'expanded' : ''}">
     <div class="project-task-row">
       <button class="task-expand" aria-label="Desplegar tarea" onclick="toggleProjectTask('${taskId}')">${isExpanded ? '⌃' : '⌄'}</button>
-      <span class="project-task-code">${esc(task.taskCode || 'TSK')}</span>
-      <button class="project-task-name" onclick="toggleProjectTask('${taskId}')">${esc(task.taskName)}</button>
-      <span class="project-task-date">${formatTaskDate(task.dueDate)}</span>
-      <select class="task-inline-select" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','priority',this.value)">${PRIORITIES.map(priority => `<option${task.priority === priority ? ' selected' : ''}>${priority}</option>`).join('')}</select>
-      <select class="task-inline-select" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','status',this.value)">${STATUSES.map(status => `<option${task.status === status ? ' selected' : ''}>${status}</option>`).join('')}</select>
-      <div class="task-elements"><span>☑ Checklist ${taskCount(task, true)}/${taskCount(task)}</span><span>↗ Enlaces ${attachments.length}</span><span>▧ Archivos ${attachments.length}</span></div>
-      <button class="task-edit" onclick="openModal('task',${JSON.stringify(task).replace(/"/g,'&quot;')})" title="Editar tarea">✎</button>
+      <div class="project-task-main">
+        <button class="project-task-name" onclick="toggleProjectTask('${taskId}')"><strong>${esc(task.taskName)}</strong><span>${esc(task.description || 'Añade una breve descripción para dar contexto a la tarea.')}</span></button>
+        <div class="task-elements" aria-label="Elementos de la tarea">
+          <button type="button" onclick="toggleProjectTask('${taskId}')">☑ Checklist ${completedSubtasks}/${subtasks.length}</button>
+          <button type="button" onclick="toggleProjectTask('${taskId}')">↗ Enlaces ${links.length}</button>
+          <button type="button" onclick="toggleProjectTask('${taskId}')">▧ Archivos ${files.length}</button>
+        </div>
+      </div>
+      <label class="task-date-control"><span>Fecha de fin</span><input type="date" value="${esc(endDate)}" onchange="updateTaskEndDate('${taskId}',this.value)"></label>
+      <select class="task-inline-select priority-select priority-${priorityTone}" aria-label="Prioridad" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','priority',this.value)">${PRIORITIES.map(priority => `<option${task.priority === priority ? ' selected' : ''}>${priority}</option>`).join('')}</select>
+      <select class="task-inline-select status-select status-${statusTone}" aria-label="Estado" onclick="event.stopPropagation()" onchange="updateInlineTask('${taskId}','status',this.value)">${STATUSES.map(status => `<option${task.status === status ? ' selected' : ''}>${status}</option>`).join('')}</select>
     </div>
-    ${isExpanded ? `<div class="project-task-detail">
-      <div class="task-detail-card"><h4>Descripción</h4><textarea placeholder="Explica el objetivo y los detalles de esta tarea." onchange="updateInlineTask('${taskId}','description',this.value)">${esc(task.description || '')}</textarea><label>Fecha de vencimiento<input type="date" value="${esc(task.dueDate || '')}" onchange="updateInlineTask('${taskId}','dueDate',this.value)"></label></div>
-      <div class="task-detail-card"><h4>Checklist</h4><div class="inline-checklist">${subtasks.length ? subtasks.map(item => `<label><input type="checkbox"${item.completed ? ' checked' : ''} onchange="toggleInlineSubtask('${taskId}','${item.id}')"><span>${esc(item.text || item.title || '')}</span></label>`).join('') : '<p>Sin elementos todavía.</p>'}</div><form class="inline-add" onsubmit="addInlineSubtask(event,'${taskId}')"><input placeholder="Añadir elemento…"><button type="submit">＋</button></form></div>
-      <div class="task-detail-card"><h4>Archivos</h4>${attachments.length ? `<div class="inline-resource-list">${attachments.map(file => `<a href="${esc(file.url || '#')}" target="_blank">▧ ${esc(file.title || file.name || file.url)}</a>`).join('')}</div>` : '<p>Sin archivos vinculados.</p>'}<form class="inline-link-form" onsubmit="addInlineAttachment(event,'${taskId}')"><input placeholder="Nombre del archivo"><input placeholder="https://…"><button type="submit">＋</button></form></div>
-      <div class="task-detail-card"><h4>Enlaces</h4>${attachments.length ? `<div class="inline-resource-list">${attachments.map(file => `<a href="${esc(file.url || '#')}" target="_blank">↗ ${esc(file.title || file.name || file.url)}</a>`).join('')}</div>` : '<p>Sin enlaces vinculados.</p>'}<button class="detail-edit-button" onclick="openModal('task',${JSON.stringify(task).replace(/"/g,'&quot;')})">Gestionar tarea completa</button></div>
+    ${isExpanded ? `<div class="project-task-detail project-task-detail-rich">
+      <div class="task-detail-card"><h4>Descripción</h4><textarea placeholder="Explica el objetivo y el resultado esperado." onchange="updateInlineTask('${taskId}','description',this.value)">${esc(task.description || '')}</textarea><p>Los cambios se guardan al salir del campo.</p></div>
+      <div class="task-detail-card"><h4>Checklist</h4><div class="inline-checklist">${subtasks.length ? subtasks.map(item => `<label><input type="checkbox"${item.completed ? ' checked' : ''} onchange="toggleInlineSubtask('${taskId}','${item.id}')"><span>${esc(item.text || item.title || '')}</span></label>`).join('') : '<p>Sin elementos todavía.</p>'}</div><form class="inline-add" onsubmit="addInlineSubtask(event,'${taskId}')"><input placeholder="Añadir elemento…"><button type="submit" aria-label="Añadir elemento">＋</button></form></div>
+      <div class="task-detail-card"><h4>Archivos</h4>${files.length ? `<div class="inline-resource-list">${files.map(file => `<a href="${esc(file.url || '#')}" target="_blank">▧ ${esc(file.title || file.name || file.url)}</a>`).join('')}</div>` : '<p>Sin archivos vinculados.</p>'}<form class="inline-link-form" onsubmit="addInlineAttachment(event,'${taskId}','file')"><input placeholder="Nombre del archivo"><input placeholder="URL del archivo"><button type="submit" aria-label="Añadir archivo">＋</button></form></div>
+      <div class="task-detail-card"><h4>Enlaces</h4>${links.length ? `<div class="inline-resource-list">${links.map(link => `<a href="${esc(link.url || '#')}" target="_blank">↗ ${esc(link.title || link.name || link.url)}</a>`).join('')}</div>` : '<p>Sin enlaces vinculados.</p>'}<form class="inline-link-form" onsubmit="addInlineAttachment(event,'${taskId}','link')"><input placeholder="Nombre del enlace"><input placeholder="https://…"><button type="submit" aria-label="Añadir enlace">＋</button></form></div>
     </div>` : ''}
   </article>`;
 }
@@ -1221,7 +1338,7 @@ function renderKanban() {
 function renderKanbanCol(status) {
   const allTasks = getFilteredTasks();
   const tasks = allTasks.filter(t => t.status === status);
-  const colClass = { 'En curso': 'col-curso', 'Detenido': 'col-detenido', 'Listo': 'col-listo' }[status] || '';
+  const colClass = { 'Sin empezar': 'col-sin-empezar', 'En edición': 'col-edicion', 'En producción': 'col-produccion', 'Finalizada': 'col-finalizada' }[status] || '';
   return `
   <div class="kanban-col ${colClass}">
     <div class="kanban-col-header">
