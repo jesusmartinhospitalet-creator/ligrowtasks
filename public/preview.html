@@ -3,380 +3,541 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Ligrow Tasks – Preview</title>
+  <title>Ligrow Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Space Grotesk',sans-serif;background:#0f1115;color:#1a1a1a;height:100vh;overflow:hidden}
-    #app{display:grid;grid-template-columns:260px 1fr;height:100vh}
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+button{font-family:inherit;cursor:pointer}
+a{text-decoration:none}
 
-    /* ─── Sidebar ─────────────────────────────────────────────── */
-    .sidebar{background:#111318;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.06);overflow:hidden}
-    .sidebar-top{padding:20px 16px 16px;flex-shrink:0}
-    .logo{font-weight:900;font-size:19px;background:linear-gradient(90deg,#ff6b2b,#ff4500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
-    .logo-sub{font-size:10px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,.25);text-transform:uppercase;margin-top:1px}
-    .filter-row{display:flex;gap:4px;margin-top:14px}
-    .fchip{flex:1;padding:5px 0;border-radius:6px;border:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,.35);transition:all .15s}
-    .fchip.active{background:linear-gradient(90deg,#ff6b2b,#ff4500);color:#fff}
-    .sidebar-nav{padding:16px 10px 8px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.05)}
-    .nav-item{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:500;color:rgba(255,255,255,.45);transition:all .15s;margin-bottom:1px}
-    .nav-item:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.7)}
-    .nav-item.active{background:rgba(255,107,43,.1);color:#ff6b2b}
-    .nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:#ff6b2b;color:#fff;border-radius:20px;padding:1px 6px;min-width:18px;text-align:center}
-    .nav-count{margin-left:auto;font-size:11px;color:rgba(255,255,255,.2)}
-    .sidebar-projects{flex:1;overflow-y:auto;padding:8px 10px 16px}
-    .section-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:10px 8px 6px}
-    .proj-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:1px}
-    .proj-item:hover{background:rgba(255,255,255,.05)}
-    .proj-item.active{background:rgba(255,107,43,.1)}
-    .proj-avatar{width:28px;height:28px;border-radius:7px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
-    .proj-info{flex:1;overflow:hidden}
-    .proj-name{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .proj-item.active .proj-name{color:#ff6b2b}
-    .proj-sub{font-size:10.5px;color:rgba(255,255,255,.28);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-    .type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-left:2px}
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+:root{
+  --ink:        #131210;
+  --paper:      #F7F6F3;
+  --surface:    #FFFFFF;
+  --surface-2:  #FAFAF8;
+  --border:     #E4E2DC;
+  --border-2:   #EDECE8;
+  --text-1:     #1A1916;
+  --text-2:     #5C5A55;
+  --text-3:     #9A9890;
+  --sidebar-bg: #131210;
+  --sidebar-border: rgba(255,255,255,.07);
+  --sidebar-text: rgba(255,255,255,.45);
+  --sidebar-text-hover: rgba(255,255,255,.8);
+  --sidebar-active-bg: rgba(255,255,255,.08);
+  /* accent shifts per project type — set via JS */
+  --accent:       #F04E23;
+  --accent-light: #FFF1EC;
+  --accent-text:  #F04E23;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:      #1C1B18;
+    --surface:    #232220;
+    --surface-2:  #1A1916;
+    --border:     #33312A;
+    --border-2:   #2B2925;
+    --text-1:     #F0EDE7;
+    --text-2:     #A09D97;
+    --text-3:     #605E58;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:      #1C1B18;
+  --surface:    #232220;
+  --surface-2:  #1A1916;
+  --border:     #33312A;
+  --border-2:   #2B2925;
+  --text-1:     #F0EDE7;
+  --text-2:     #A09D97;
+  --text-3:     #605E58;
+}
 
-    /* ─── Main ────────────────────────────────────────────────── */
-    .main{display:flex;flex-direction:column;background:#f4f4f5;overflow:hidden}
-    .topbar{background:#fff;border-bottom:1px solid #e8e8ea;padding:16px 28px 0;flex-shrink:0}
-    .topbar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-    .proj-title-row{display:flex;align-items:center;gap:12px}
-    .proj-icon-lg{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
-    .proj-title-info h2{font-size:18px;font-weight:800;color:#111;letter-spacing:-.3px}
-    .proj-title-info p{font-size:12px;color:#888;margin-top:1px}
-    .type-badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
-    .type-cliente{background:#fff0ea;color:#ff6b2b}
-    .type-app{background:#eef0ff;color:#5b6ef5}
-    .type-proveedor{background:#edfff5;color:#00a86b}
-    .tabs{display:flex;gap:0}
-    .tab{padding:8px 16px;border-radius:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:#999;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
-    .tab:hover{color:#444}
-    .tab.active{color:#ff6b2b;border-bottom-color:#ff6b2b}
-    .btn-primary{padding:8px 16px;border-radius:8px;background:linear-gradient(90deg,#ff6b2b,#ff4500);border:none;color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
-    .content{flex:1;overflow-y:auto;padding:24px 28px}
+/* ── Layout shell ────────────────────────────────────────────────────────── */
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:var(--sidebar-bg);
+  color:var(--text-1);
+  height:100vh;
+  overflow:hidden;
+  font-size:14px;
+  line-height:1.5;
+}
+#app{display:grid;grid-template-columns:244px 1fr;height:100vh}
 
-    /* ─── Resumen view ────────────────────────────────────────── */
-    .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
-    .stat-card{background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #e8e8ea}
-    .stat-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa;margin-bottom:6px}
-    .stat-val{font-size:22px;font-weight:800;color:#111}
-    .stat-val.orange{color:#ff6b2b}
-    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .info-card{background:#fff;border-radius:12px;padding:18px;border:1px solid #e8e8ea}
-    .info-card-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-    .info-card-title svg{opacity:.5}
-    .empty-box{border:1.5px dashed #e0e0e0;border-radius:8px;padding:20px;text-align:center;color:#ccc;font-size:12px}
-    .task-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0}
-    .task-row:last-child{border-bottom:none}
-    .task-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-    .task-row-name{font-size:13px;font-weight:500;color:#333;flex:1}
-    .task-row-owner{font-size:11px;color:#bbb}
-    .status-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
-    .s-en-curso{background:#fffbe6;color:#d4a000}
-    .s-listo{background:#edfff5;color:#00a86b}
-    .s-detenido{background:#fff0f0;color:#e53e3e}
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sb{
+  background:var(--sidebar-bg);
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--sidebar-border);
+  overflow:hidden;
+  position:relative;
+}
+.sb-head{padding:20px 16px 14px;flex-shrink:0}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff;letter-spacing:-.5px}
+.logo-sub{font-size:9px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:2px}
+.filter-strip{display:flex;gap:3px;margin-top:14px;background:rgba(255,255,255,.04);border-radius:7px;padding:3px}
+.fc{flex:1;padding:5px 2px;border:none;background:transparent;color:rgba(255,255,255,.35);font-size:10.5px;font-weight:600;border-radius:5px;transition:all .15s;letter-spacing:.2px}
+.fc.on{background:rgba(255,255,255,.1);color:#fff}
+.fc:hover:not(.on){color:rgba(255,255,255,.6)}
 
-    /* ─── Kanban ──────────────────────────────────────────────── */
-    .kanban-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-    .kanban-col{background:#fff;border-radius:12px;padding:16px;border:1px solid #e8e8ea}
-    .kanban-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-    .kanban-col-head h3{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#aaa}
-    .kanban-count{font-size:11px;font-weight:700;background:#f4f4f5;border-radius:20px;padding:1px 8px;color:#bbb}
-    .kcard{background:#f9f9f9;border:1px solid #eeeeee;border-radius:9px;padding:12px 13px;margin-bottom:8px;border-left:3px solid #ddd}
-    .kcard.alta{border-left-color:#e53e3e}
-    .kcard.media{border-left-color:#ff9f1c}
-    .kcard.baja{border-left-color:#00a86b}
-    .kcard-code{font-size:10px;font-weight:700;color:#ccc;margin-bottom:3px}
-    .kcard-name{font-size:13px;font-weight:600;color:#222;margin-bottom:8px;line-height:1.35}
-    .kcard-foot{display:flex;justify-content:space-between;align-items:center}
-    .kcard-owner{font-size:11px;color:#bbb}
-    .pri-badge{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px}
-    .pri-alta{background:#fff0f0;color:#e53e3e}
-    .pri-media{background:#fff8ec;color:#d48000}
-    .pri-baja{background:#edfff5;color:#00a86b}
+.sb-nav{padding:10px 8px;border-bottom:1px solid var(--sidebar-border);flex-shrink:0}
+.nv{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;color:var(--sidebar-text);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s}
+.nv:hover{background:rgba(255,255,255,.05);color:var(--sidebar-text-hover)}
+.nv.on{color:#fff;background:rgba(255,255,255,.07)}
+.nv-icon{width:16px;flex-shrink:0;opacity:.6}
+.nv.on .nv-icon{opacity:1}
+.nv-tail{margin-left:auto;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.2)}
+.nv-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:1px 6px;min-width:18px;text-align:center;transition:background .3s}
 
-    /* ─── APP ficha técnica ───────────────────────────────────── */
-    .app-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .app-card{background:#fff;border-radius:12px;border:1px solid #e8e8ea;padding:20px}
-    .app-card-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;margin-bottom:14px}
-    .conn-list{display:flex;flex-direction:column;gap:8px}
-    .conn-row{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:9px;background:#fafafa;border:1px solid #f0f0f0}
-    .conn-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-    .conn-info{flex:1}
-    .conn-name{font-size:13px;font-weight:700;color:#222}
-    .conn-detail{font-size:11px;color:#aaa;margin-top:1px}
-    .conn-status{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700}
-    .conn-ok{color:#00a86b}
-    .conn-warn{color:#d4a000}
-    .conn-off{color:#e53e3e}
-    .conn-link{font-size:11px;color:#5b6ef5;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:3px}
-    .app-stack{display:flex;flex-wrap:wrap;gap:6px}
-    .stack-tag{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:#f0f0f5;color:#555}
-    .app-doc-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f0f0f0}
-    .app-doc-row:last-child{border-bottom:none}
-    .app-doc-name{font-size:13px;color:#333;font-weight:500}
-    .app-doc-link{font-size:11px;font-weight:600;color:#5b6ef5;cursor:pointer}
-    .app-env-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f8f8f8}
-    .app-env-key{font-size:12px;font-family:monospace;color:#555;font-weight:600}
-    .app-env-val{font-size:11px;font-family:monospace;color:#bbb;background:#f5f5f5;padding:2px 7px;border-radius:5px}
+.sb-list{flex:1;overflow-y:auto;padding:6px 8px 16px}
+.sb-list::-webkit-scrollbar{width:0}
+.sl-label{font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:12px 8px 5px}
+.pi{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:1px}
+.pi:hover{background:rgba(255,255,255,.05)}
+.pi.on{background:rgba(255,255,255,.08)}
+.pi-av{width:28px;height:28px;border-radius:7px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;letter-spacing:.5px}
+.pi-info{flex:1;overflow:hidden}
+.pi-name{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
+.pi.on .pi-name{color:#fff}
+.pi-sub{font-size:10.5px;color:rgba(255,255,255,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.5px}
+.pi-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;opacity:.6}
 
-    /* ─── Proveedores catálogo ────────────────────────────────── */
-    .prov-layout{display:flex;gap:16px}
-    .prov-sidebar{width:200px;flex-shrink:0}
-    .prov-main{flex:1}
-    .cat-list{background:#fff;border-radius:12px;border:1px solid #e8e8ea;overflow:hidden}
-    .cat-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #f4f4f4;transition:all .15s}
-    .cat-item:last-child{border-bottom:none}
-    .cat-item:hover{background:#fafafa}
-    .cat-item.active{background:#fff8f5}
-    .cat-icon{font-size:18px;width:32px;text-align:center}
-    .cat-name{font-size:13px;font-weight:600;color:#333}
-    .cat-item.active .cat-name{color:#ff6b2b}
-    .cat-count{margin-left:auto;font-size:10px;font-weight:700;color:#ccc}
-    .prov-folder-head{background:#fff;border-radius:12px;border:1px solid #e8e8ea;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
-    .folder-icon-big{font-size:28px}
-    .folder-title{font-size:16px;font-weight:800;color:#111}
-    .folder-sub{font-size:12px;color:#aaa;margin-top:1px}
-    .prov-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .prov-card{background:#fff;border-radius:12px;border:1px solid #e8e8ea;overflow:hidden}
-    .prov-card-head{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-    .prov-card-name{font-size:14px;font-weight:700;color:#111}
-    .prov-card-type{font-size:10px;font-weight:600;color:#bbb}
-    .chevron{font-size:12px;color:#ccc;transition:transform .2s}
-    .chevron.open{transform:rotate(180deg)}
-    .prov-card-body{display:none;padding:14px 16px;border-top:1px solid #f5f5f5}
-    .prov-card-body.open{display:block}
-    .prov-field{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;font-size:12.5px;border-bottom:1px solid #f9f9f9}
-    .prov-field:last-child{border-bottom:none}
-    .prov-field-key{color:#aaa;font-weight:600;flex-shrink:0;width:80px}
-    .prov-field-val{color:#333;font-weight:500;text-align:right;word-break:break-word}
-    .prov-field-val a{color:#5b6ef5;text-decoration:none;font-weight:600}
-    .price-table{width:100%;border-collapse:collapse;margin-top:4px;font-size:12px}
-    .price-table th{text-align:left;padding:4px 6px;font-weight:700;color:#aaa;border-bottom:1px solid #f0f0f0}
-    .price-table td{padding:5px 6px;border-bottom:1px solid #f9f9f9;color:#333}
-    .price-table tr:last-child td{border-bottom:none}
-    .price-highlight{font-weight:700;color:#ff6b2b}
+/* ── Main ────────────────────────────────────────────────────────────────── */
+.mn{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
 
-    /* ─── Tabla ───────────────────────────────────────────────── */
-    .grid-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e8e8ea}
-    .grid-table th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#bbb;border-bottom:1px solid #e8e8ea;background:#fafafa}
-    .grid-table td{padding:11px 14px;border-bottom:1px solid #f3f3f3;color:#333}
-    .grid-table tr:last-child td{border-bottom:none}
-    .grid-table tr:hover td{background:#fafafa}
+/* topbar */
+.tb{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  flex-shrink:0;
+}
+.tb-row1{display:flex;align-items:center;gap:14px;padding:16px 0 12px}
+.proj-av-lg{
+  width:38px;height:38px;border-radius:9px;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;letter-spacing:.5px
+}
+.proj-title-wrap{flex:1}
+.proj-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--text-1);letter-spacing:-.3px;line-height:1.2}
+.proj-sub-text{font-size:12px;color:var(--text-3);margin-top:2px}
+.type-pill{padding:3px 9px;border-radius:20px;font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:var(--accent-light);color:var(--accent-text);transition:all .3s}
+.tb-action{padding:8px 15px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;transition:background .3s;white-space:nowrap}
+.tb-action:hover{opacity:.9}
 
-    /* ─── Scrollbar ───────────────────────────────────────────── */
-    ::-webkit-scrollbar{width:5px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:10px}
+/* tabs */
+.tabs{display:flex;gap:0;margin:0 -28px;padding:0 28px}
+.tab{
+  padding:9px 16px;border:none;background:transparent;
+  font-size:12.5px;font-weight:500;color:var(--text-3);
+  border-bottom:2px solid transparent;
+  transition:all .15s;white-space:nowrap
+}
+.tab:hover{color:var(--text-2)}
+.tab.on{color:var(--accent-text);border-bottom-color:var(--accent);font-weight:600}
+
+/* content area */
+.ct{flex:1;overflow-y:auto;padding:22px 28px 28px}
+.ct::-webkit-scrollbar{width:4px}
+.ct::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ── Shared content components ───────────────────────────────────────────── */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3)}
+
+/* stats row */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:13px 15px}
+.stat-lbl{font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+.stat-val{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-1);line-height:1}
+.stat-val.accent{color:var(--accent)}
+.stat-val.green{color:#0F9460}
+
+/* two-col info grid */
+.info-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:18px 20px}
+.card-head{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:14px}
+.dashed-box{border:1.5px dashed var(--border);border-radius:7px;padding:18px;text-align:center;color:var(--text-3);font-size:12px}
+
+/* task rows inside cards */
+.t-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-2)}
+.t-row:last-child{border-bottom:none}
+.t-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.t-name{font-size:13px;font-weight:500;color:var(--text-1);flex:1;line-height:1.3}
+.t-owner{font-size:11px;color:var(--text-3)}
+.chip{font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.chip-orange{background:#FFF0EB;color:#D63A0F}
+.chip-amber{background:#FFFBEC;color:#B07B00}
+.chip-green{background:#EDFAF2;color:#0F9460}
+.chip-red{background:#FFF0F0;color:#C53030}
+
+/* ── Kanban ──────────────────────────────────────────────────────────────── */
+.kanban{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.k-col{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px}
+.k-col-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.k-col-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)}
+.k-count{font-size:10.5px;font-weight:600;background:var(--surface-2);border-radius:20px;padding:1px 7px;color:var(--text-3);border:1px solid var(--border-2)}
+.kc{
+  background:var(--surface-2);border:1px solid var(--border-2);
+  border-radius:8px;padding:11px 13px;margin-bottom:7px;
+  border-left-width:3px;border-left-style:solid;border-left-color:var(--border)
+}
+.kc.alta{border-left-color:#D63A0F}
+.kc.media{border-left-color:#D48000}
+.kc.baja{border-left-color:#0F9460}
+.kc-code{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text-3);margin-bottom:4px}
+.kc-name{font-size:13px;font-weight:500;color:var(--text-1);margin-bottom:9px;line-height:1.35}
+.kc-foot{display:flex;align-items:center;justify-content:space-between}
+.kc-owner{font-size:11px;color:var(--text-3)}
+.pri{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:20px}
+.pri.alta{background:#FFF0EB;color:#D63A0F}
+.pri.media{background:#FFFBEC;color:#B07B00}
+.pri.baja{background:#EDFAF2;color:#0F9460}
+.k-empty{font-size:12px;color:var(--text-3);padding:6px 0 2px}
+
+/* ── Tabla ───────────────────────────────────────────────────────────────── */
+.gtable{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.gtable th{
+  text-align:left;padding:9px 14px;font-size:9.5px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;color:var(--text-3);
+  border-bottom:1px solid var(--border);background:var(--surface-2)
+}
+.gtable td{padding:11px 14px;border-bottom:1px solid var(--border-2);color:var(--text-1)}
+.gtable tr:last-child td{border-bottom:none}
+.gtable tbody tr:hover td{background:var(--surface-2)}
+.tc{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-3)}
+
+/* ── App: overview + conexiones ──────────────────────────────────────────── */
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.app-stack-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.stack-tag{padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:500;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border-2)}
+.repo-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:8px;margin-top:14px}
+.repo-name{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--text-1)}
+.repo-link{font-size:11px;font-weight:600;color:var(--accent);margin-top:1px}
+
+.conn-list{display:flex;flex-direction:column;gap:7px}
+.conn-row{display:flex;align-items:center;gap:11px;padding:10px 13px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:8px}
+.conn-ico{width:32px;height:32px;border-radius:7px;font-size:18px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border-2);flex-shrink:0}
+.conn-body{flex:1;min-width:0}
+.conn-name{font-size:13px;font-weight:600;color:var(--text-1)}
+.conn-detail{font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conn-s{font-size:10.5px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.conn-s.ok{color:#0F9460}
+.conn-s.warn{color:#B07B00}
+.conn-s.off{color:#C53030}
+.conn-link{font-size:10.5px;font-weight:600;color:var(--accent);margin-top:2px;cursor:pointer}
+
+/* App: docs */
+.doc-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-2)}
+.doc-row:last-child{border-bottom:none}
+.doc-name{font-size:13px;font-weight:500;color:var(--text-1)}
+.doc-link{font-size:11.5px;font-weight:600;color:var(--accent);cursor:pointer}
+
+/* App: env vars */
+.env-table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace}
+.env-table td{padding:8px 12px;border-bottom:1px solid var(--border-2);font-size:12px;vertical-align:middle}
+.env-table tr:last-child td{border-bottom:none}
+.env-key{color:var(--text-1);font-weight:500;width:50%}
+.env-val{color:var(--text-3);background:var(--surface-2);border-radius:4px;padding:3px 8px;font-size:11px}
+.env-note{font-size:11.5px;color:var(--text-3);margin-top:12px;font-family:'DM Sans',sans-serif;line-height:1.5}
+
+/* ── Proveedores ─────────────────────────────────────────────────────────── */
+.prov-layout{display:flex;gap:16px;height:100%;min-height:0}
+.prov-cats{width:188px;flex-shrink:0}
+.cat-list-wrap{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.cat-item{
+  display:flex;align-items:center;gap:9px;padding:10px 13px;
+  cursor:pointer;border-bottom:1px solid var(--border-2);transition:all .15s
+}
+.cat-item:last-child{border-bottom:none}
+.cat-item:hover{background:var(--surface-2)}
+.cat-item.on{background:var(--accent-light)}
+.cat-ico{font-size:17px;width:24px;text-align:center}
+.cat-name{font-size:13px;font-weight:500;color:var(--text-2)}
+.cat-item.on .cat-name{color:var(--accent-text);font-weight:600}
+.cat-n{margin-left:auto;font-size:10px;font-weight:600;color:var(--text-3)}
+.cat-item.on .cat-n{color:var(--accent-text);opacity:.7}
+
+.prov-content{flex:1;overflow-y:auto;min-width:0}
+.prov-content::-webkit-scrollbar{width:4px}
+.prov-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.prov-folder-bar{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:11px;
+  padding:14px 18px;margin-bottom:12px
+}
+.folder-ico{font-size:24px}
+.folder-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text-1)}
+.folder-sub{font-size:11.5px;color:var(--text-3);margin-top:1px}
+.add-btn{margin-left:auto;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:12px;font-weight:600;transition:all .15s}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.prov-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.prov-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.prov-card-h{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;cursor:pointer;transition:background .15s;user-select:none
+}
+.prov-card-h:hover{background:var(--surface-2)}
+.prov-card-h.open{background:var(--surface-2)}
+.prov-card-name{font-size:13.5px;font-weight:600;color:var(--text-1)}
+.prov-card-type{font-size:11px;color:var(--text-3);margin-top:1px}
+.chev{font-size:11px;color:var(--text-3);transition:transform .2s}
+.chev.open{transform:rotate(180deg)}
+.prov-card-body{display:none;padding:0 16px 14px;border-top:1px solid var(--border-2)}
+.prov-card-body.open{display:block}
+.pf-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border-2);font-size:12.5px}
+.pf-row:last-child{border-bottom:none}
+.pf-k{color:var(--text-3);font-weight:500;flex-shrink:0;width:76px}
+.pf-v{color:var(--text-1);text-align:right;word-break:break-word}
+.pf-v a{color:var(--accent);font-weight:600}
+.price-head{font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);margin:12px 0 6px}
+.ptable{width:100%;border-collapse:collapse;font-size:12px}
+.ptable th{text-align:left;padding:4px 6px;color:var(--text-3);font-weight:600;border-bottom:1px solid var(--border-2)}
+.ptable td{padding:6px 6px;border-bottom:1px solid var(--border-2);color:var(--text-1)}
+.ptable tr:last-child td{border-bottom:none}
+.price-val{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
   </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// ─── Mock Data ──────────────────────────────────────────────────────────────
-const PROJECTS = [
-  // CLIENTES
-  { id:'ae', type:'cliente', name:'Andorra Ecommerce', sub:'Rediseño UX/UI Store', color:'#e74c3c', initials:'AE',
+// ── Data ────────────────────────────────────────────────────────────────────
+const DATA = [
+  // ─ CLIENTES
+  {
+    id:'ae', type:'cliente', color:'#C0392B', initials:'AE',
+    name:'Andorra Ecommerce', sub:'Rediseño UX/UI · Shopify Plus',
     tasks:[
-      {code:'AE-001',name:'Auditoría UX del checkout',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-20'},
+      {code:'AE-001',name:'Auditoría completa del checkout',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-20'},
       {code:'AE-002',name:'Migración a Shopify Plus',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-09-30'},
-      {code:'AE-003',name:'Integración pasarela pagos',owner:'Alejandro',status:'En curso',priority:'Media',due:'2026-09-25'},
-      {code:'AE-004',name:'Optimizar velocidad mobile',owner:'Jesús',status:'Detenido',priority:'Media',due:'2026-09-18'},
-      {code:'AE-005',name:'Copy fichas de producto',owner:'Blanca',status:'Listo',priority:'Baja',due:'2026-09-10'},
+      {code:'AE-003',name:'Integración pasarela de pagos',owner:'Alejandro',status:'En curso',priority:'Media',due:'2026-09-25'},
+      {code:'AE-004',name:'Optimización velocidad mobile',owner:'Jesús',status:'Detenido',priority:'Media',due:'2026-09-18'},
+      {code:'AE-005',name:'Copy fichas de producto (es/fr/ca)',owner:'Blanca',status:'Detenido',priority:'Baja',due:'2026-09-22'},
       {code:'AE-006',name:'Setup Google Analytics 4',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-08'},
+      {code:'AE-007',name:'Briefing estrategia Q4',owner:'Jesús',status:'Listo',priority:'Alta',due:'2026-09-05'},
     ]
   },
-  { id:'pn', type:'cliente', name:'Pic Negre', sub:'Campaña Invierno 2026', color:'#e67e22', initials:'PN',
+  {
+    id:'pn', type:'cliente', color:'#D35400', initials:'PN',
+    name:'Pic Negre', sub:'Campaña Invierno 2026',
     tasks:[
       {code:'PN-001',name:'Campaña Meta Ads Octubre',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-10-01'},
-      {code:'PN-002',name:'Diseño creatividades',owner:'Jesús',status:'En curso',priority:'Media',due:'2026-09-28'},
-      {code:'PN-003',name:'Informe resultados Septiembre',owner:'Alejandro',status:'Detenido',priority:'Media',due:'2026-09-30'},
+      {code:'PN-002',name:'Creatividades temporada esquí',owner:'Jesús',status:'En curso',priority:'Media',due:'2026-09-28'},
+      {code:'PN-003',name:'Informe resultados Sept.',owner:'Alejandro',status:'Detenido',priority:'Media',due:'2026-09-30'},
       {code:'PN-004',name:'Newsletter lanzamiento',owner:'Blanca',status:'Listo',priority:'Alta',due:'2026-09-05'},
     ]
   },
-  { id:'lh', type:'cliente', name:'Ligrow Hub', sub:'Infraestructura & Operaciones', color:'#8e44ad', initials:'LH',
+  {
+    id:'lhc', type:'cliente', color:'#7D3C98', initials:'LH',
+    name:'Ligrow Hub', sub:'Infraestructura & Operaciones',
     tasks:[
-      {code:'LH-001',name:'Renovar contrato hosting',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-15'},
-      {code:'LH-002',name:'Backup automatizado',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-07'},
+      {code:'LH-001',name:'Renovar contrato hosting anual',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-15'},
+      {code:'LH-002',name:'Backup automatizado MySQL',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-07'},
     ]
   },
-  // APPS
-  { id:'lt', type:'app', name:'Ligrow Tasks', sub:'Task & Project Hub', color:'#5b6ef5', initials:'LT',
-    stack:['Node.js','Express','MySQL','Vercel'],
+  // ─ APPS
+  {
+    id:'lt', type:'app', color:'#3D51E8', initials:'LT',
+    name:'Ligrow Tasks', sub:'Task & Project Hub · Node.js + MySQL',
+    stack:['Node.js 20','Express 4','MySQL 2','Vercel'],
     repo:'jesusmartinhospitalet-creator/ligrowtasks',
-    connections:[
-      {icon:'🤖', name:'Claude Code', detail:'claude.ai/code · Sonnet 4.6', status:'ok', label:'Conectado', link:'https://claude.ai/code'},
-      {icon:'🐙', name:'GitHub', detail:'jesusmartinhospitalet-creator/ligrowtasks', status:'ok', label:'Conectado', link:'https://github.com/jesusmartinhospitalet-creator/ligrowtasks'},
-      {icon:'▲', name:'Vercel', detail:'ligrowtasks.vercel.app · Producción', status:'warn', label:'Config pendiente', link:'https://vercel.com'},
-      {icon:'🟩', name:'Supabase', detail:'No configurado', status:'off', label:'Sin conectar', link:null},
+    conns:[
+      {ico:'🤖',name:'Claude Code',detail:'claude.ai/code · Sonnet 4.6',status:'ok',href:'https://claude.ai/code'},
+      {ico:'🐙',name:'GitHub',detail:'ligrowtasks · rama main + claude/*',status:'ok',href:'#'},
+      {ico:'▲', name:'Vercel',detail:'ligrowtasks.vercel.app · Config pendiente',status:'warn',href:'https://vercel.com'},
+      {ico:'🟩',name:'Supabase',detail:'No configurado',status:'off',href:null},
     ],
     docs:[
-      {name:'README.md', link:'github.com/…/README.md'},
-      {name:'Schema SQL', link:'github.com/…/database/schema.sql'},
-      {name:'Vercel config', link:'github.com/…/vercel.json'},
+      {name:'README.md',href:'github.com/…/README.md'},
+      {name:'Schema SQL',href:'github.com/…/database/schema.sql'},
+      {name:'vercel.json',href:'github.com/…/vercel.json'},
     ],
     envs:[
-      {key:'DB_HOST', val:'mysql.ligrow.app'},
-      {key:'DB_NAME', val:'ligrowtasks'},
-      {key:'APP_PASSWORD_HASH', val:'$2b$10$…'},
-      {key:'PORT', val:'3000'},
+      {key:'DB_HOST',val:'mysql.ligrow.app'},
+      {key:'DB_NAME',val:'ligrowtasks'},
+      {key:'DB_USER',val:'ligrow_user'},
+      {key:'APP_PASSWORD_HASH',val:'$2b$10$wX…'},
+      {key:'PORT',val:'3000'},
     ]
   },
-  { id:'lb', type:'app', name:'Ligrow Bot', sub:'Asistente Claude en Slack', color:'#00a86b', initials:'LB',
+  {
+    id:'lb', type:'app', color:'#0EA371', initials:'LB',
+    name:'Ligrow Bot', sub:'Asistente Claude en Slack',
     stack:['Claude API','Slack SDK','Node.js','Railway'],
     repo:'jesusmartinhospitalet-creator/ligrow-bot',
-    connections:[
-      {icon:'🤖', name:'Claude API', detail:'claude-opus-5 · Anthropic', status:'ok', label:'Conectado', link:'https://console.anthropic.com'},
-      {icon:'💬', name:'Slack', detail:'workspace: Ligrow', status:'ok', label:'Conectado', link:'https://slack.com'},
-      {icon:'🐙', name:'GitHub', detail:'jesusmartinhospitalet-creator/ligrow-bot', status:'ok', label:'Conectado', link:'#'},
-      {icon:'🚂', name:'Railway', detail:'ligrow-bot · prod', status:'ok', label:'Desplegado', link:'https://railway.app'},
+    conns:[
+      {ico:'🤖',name:'Claude API',detail:'claude-opus-5 · Anthropic Console',status:'ok',href:'https://console.anthropic.com'},
+      {ico:'💬',name:'Slack',detail:'Workspace: Ligrow · Bot token activo',status:'ok',href:'https://slack.com'},
+      {ico:'🐙',name:'GitHub',detail:'ligrow-bot · rama main',status:'ok',href:'#'},
+      {ico:'🚂',name:'Railway',detail:'ligrow-bot · producción activa',status:'ok',href:'https://railway.app'},
     ],
     docs:[
-      {name:'Guía de configuración', link:'notion.so/ligrow/bot-setup'},
-      {name:'Slash commands', link:'notion.so/ligrow/bot-commands'},
+      {name:'Guía de configuración',href:'notion.so/…/bot-setup'},
+      {name:'Slash commands disponibles',href:'notion.so/…/bot-commands'},
+      {name:'Logs Railway',href:'railway.app/project/…'},
     ],
     envs:[
-      {key:'ANTHROPIC_API_KEY', val:'sk-ant-…'},
-      {key:'SLACK_BOT_TOKEN', val:'xoxb-…'},
-      {key:'SLACK_SIGNING_SECRET', val:'a1b2c3…'},
+      {key:'ANTHROPIC_API_KEY',val:'sk-ant-api03-…'},
+      {key:'SLACK_BOT_TOKEN',val:'xoxb-…'},
+      {key:'SLACK_SIGNING_SECRET',val:'a1b2c3d4…'},
+      {key:'NODE_ENV',val:'production'},
     ]
   },
-  { id:'la', type:'app', name:'Ligrow Analytics', sub:'Dashboard SEO & Ads', color:'#e67e22', initials:'LA',
-    stack:['Next.js','Supabase','Vercel','Ahrefs API'],
+  {
+    id:'la', type:'app', color:'#D46B00', initials:'LA',
+    name:'Ligrow Analytics', sub:'Dashboard SEO & Ads · Next.js + Supabase',
+    stack:['Next.js 14','Supabase','Vercel','Ahrefs API v3'],
     repo:'jesusmartinhospitalet-creator/ligrow-analytics',
-    connections:[
-      {icon:'▲', name:'Vercel', detail:'analytics.ligrow.app', status:'ok', label:'Desplegado', link:'https://vercel.com'},
-      {icon:'🟩', name:'Supabase', detail:'ligrow-analytics · PostgreSQL', status:'ok', label:'Conectado', link:'https://supabase.com'},
-      {icon:'🐙', name:'GitHub', detail:'jesusmartinhospitalet-creator/ligrow-analytics', status:'ok', label:'Conectado', link:'#'},
-      {icon:'📊', name:'Ahrefs API', detail:'v3 · Plan Agency', status:'ok', label:'Conectado', link:'https://ahrefs.com'},
+    conns:[
+      {ico:'▲', name:'Vercel',detail:'analytics.ligrow.app · Desplegado',status:'ok',href:'https://vercel.com'},
+      {ico:'🟩',name:'Supabase',detail:'ligrow-analytics · PostgreSQL 15',status:'ok',href:'https://supabase.com'},
+      {ico:'🐙',name:'GitHub',detail:'ligrow-analytics · rama main',status:'ok',href:'#'},
+      {ico:'📊',name:'Ahrefs API',detail:'v3 · Plan Agency · 10 000 req/mes',status:'ok',href:'https://ahrefs.com'},
     ],
     docs:[
-      {name:'Documentación API', link:'ahrefs.com/api/docs'},
-      {name:'Supabase schema', link:'supabase.com/…/schema'},
+      {name:'Documentación Ahrefs API',href:'ahrefs.com/api/docs'},
+      {name:'Schema Supabase',href:'supabase.com/…/schema'},
     ],
     envs:[
-      {key:'NEXT_PUBLIC_SUPABASE_URL', val:'https://…supabase.co'},
-      {key:'AHREFS_API_KEY', val:'ahrefs_…'},
-      {key:'NEXT_PUBLIC_APP_URL', val:'analytics.ligrow.app'},
+      {key:'NEXT_PUBLIC_SUPABASE_URL',val:'https://xxx.supabase.co'},
+      {key:'SUPABASE_SERVICE_KEY',val:'eyJhbGciOi…'},
+      {key:'AHREFS_API_KEY',val:'ahrefs_api_…'},
     ]
   },
-  // PROVEEDORES
-  { id:'pv', type:'proveedor', name:'Proveedores', sub:'Catálogo de servicios externos', color:'#2ecc71', initials:'PR',
-    categories:[
-      { id:'print', icon:'🖨️', name:'Impresión', count:3,
-        providers:[
-          { name:'PrintOnDemand BCN', type:'Imprenta digital',
+  // ─ PROVEEDORES
+  {
+    id:'pv', type:'proveedor', color:'#0F9460', initials:'PR',
+    name:'Proveedores', sub:'Catálogo de servicios externos',
+    cats:[
+      {
+        id:'print', ico:'🖨️', name:'Impresión', n:3,
+        provs:[
+          {
+            name:'PrintOnDemand BCN', type:'Imprenta digital',
             fields:[
-              {k:'Contacto', v:'info@printondemand.es'},
-              {k:'Teléfono', v:'+34 93 123 45 67'},
-              {k:'Web', v:'<a href="#">printondemand.es</a>'},
-              {k:'Pago', v:'Tarjeta / Transferencia'},
-              {k:'Plazo', v:'3–5 días laborables'},
+              {k:'Email',   v:'info@printondemand.es'},
+              {k:'Tfno.',   v:'+34 93 123 45 67'},
+              {k:'Web',     v:'<a href="#">printondemand.es</a>'},
+              {k:'Pago',    v:'Tarjeta / Transferencia'},
+              {k:'Plazo',   v:'3–5 días laborables'},
             ],
             prices:[
-              {prod:'Flyer A5 (2 caras)', qty:'500 uds', price:'€38'},
-              {prod:'Flyer A5 (2 caras)', qty:'1.000 uds', price:'€55'},
-              {prod:'Díptico A4', qty:'500 uds', price:'€72'},
-              {prod:'Tarjeta 9x5 cm', qty:'500 uds', price:'€29'},
+              {prod:'Flyer A5 / 2 caras',qty:'500 uds',  price:'€38'},
+              {prod:'Flyer A5 / 2 caras',qty:'1.000 uds',price:'€55'},
+              {prod:'Díptico A4',         qty:'500 uds',  price:'€72'},
+              {prod:'Tarjeta 9×5 cm',    qty:'500 uds',  price:'€29'},
             ]
           },
-          { name:'Grafisant', type:'Imprenta offset + gran formato',
+          {
+            name:'Grafisant', type:'Imprenta offset + gran formato',
             fields:[
-              {k:'Contacto', v:'ventas@grafisant.com'},
-              {k:'Teléfono', v:'+34 93 987 65 43'},
-              {k:'Web', v:'<a href="#">grafisant.com</a>'},
-              {k:'Pago', v:'30 días / Contado −5%'},
-              {k:'Plazo', v:'5–8 días laborables'},
+              {k:'Email',   v:'ventas@grafisant.com'},
+              {k:'Tfno.',   v:'+34 93 987 65 43'},
+              {k:'Pago',    v:'30 días / Contado −5%'},
+              {k:'Plazo',   v:'5–8 días laborables'},
             ],
             prices:[
-              {prod:'Banner lona 150x60', qty:'1 ud', price:'€45'},
-              {prod:'Roll-up 85x200', qty:'1 ud', price:'€89'},
-              {prod:'Catálogo A4 (12 pag)', qty:'200 uds', price:'€210'},
+              {prod:'Banner lona 150×60', qty:'1 ud',    price:'€45'},
+              {prod:'Roll-up 85×200',     qty:'1 ud',    price:'€89'},
+              {prod:'Catálogo A4 12 pág', qty:'200 uds', price:'€210'},
             ]
           },
-          { name:'Vistaprint', type:'Online · Pequeñas tiradas',
+          {
+            name:'Vistaprint', type:'Online · Pequeñas tiradas',
             fields:[
-              {k:'Web', v:'<a href="#">vistaprint.es</a>'},
-              {k:'Pago', v:'Tarjeta online'},
+              {k:'Web',   v:'<a href="#">vistaprint.es</a>'},
+              {k:'Pago',  v:'Tarjeta online'},
               {k:'Plazo', v:'5–10 días'},
             ],
             prices:[
               {prod:'Tarjeta premium', qty:'250 uds', price:'€19'},
-              {prod:'Flyer A6', qty:'500 uds', price:'€32'},
+              {prod:'Flyer A6',        qty:'500 uds', price:'€32'},
             ]
           },
         ]
       },
-      { id:'design', icon:'🎨', name:'Diseño', count:2,
-        providers:[
-          { name:'Estudi Forma', type:'Agencia de diseño gráfico',
+      {
+        id:'design', ico:'🎨', name:'Diseño', n:2,
+        provs:[
+          {
+            name:'Estudi Forma', type:'Agencia diseño gráfico',
             fields:[
-              {k:'Contacto', v:'hola@estudiform.es'},
-              {k:'Teléfono', v:'+34 609 123 456'},
-              {k:'Tarifa', v:'€65 / hora'},
-              {k:'Mínimo', v:'8 horas'},
+              {k:'Email',   v:'hola@estudiform.es'},
+              {k:'Tfno.',   v:'+34 609 123 456'},
+              {k:'Tarifa',  v:'€65 / hora'},
+              {k:'Mínimo',  v:'8 horas'},
             ],
             prices:[
-              {prod:'Identidad corporativa', qty:'Completa', price:'€1.200'},
-              {prod:'Diseño flyer', qty:'1 cara', price:'€180'},
-              {prod:'Diseño díptico', qty:'2 caras', price:'€280'},
+              {prod:'Identidad corporativa', qty:'completa',  price:'€1.200'},
+              {prod:'Diseño flyer',          qty:'1 cara',    price:'€180'},
+              {prod:'Diseño díptico',        qty:'2 caras',   price:'€280'},
             ]
           },
-          { name:'Freelance · María G.', type:'Diseñadora independiente',
+          {
+            name:'María G. — Freelance', type:'Diseñadora independiente',
             fields:[
-              {k:'Contacto', v:'mg.design@gmail.com'},
-              {k:'WhatsApp', v:'+34 612 345 678'},
-              {k:'Tarifa', v:'€40 / hora'},
-              {k:'Especialidad', v:'Social media, branding'},
+              {k:'Email',   v:'mg.design@gmail.com'},
+              {k:'WhatsApp',v:'+34 612 345 678'},
+              {k:'Tarifa',  v:'€40 / hora'},
+              {k:'Esp.',    v:'Social media · Branding'},
             ],
             prices:[
-              {prod:'Pack 10 posts Instagram', qty:'', price:'€150'},
-              {prod:'Diseño portada newsletter', qty:'', price:'€60'},
+              {prod:'Pack 10 posts Instagram', qty:'',price:'€150'},
+              {prod:'Portada newsletter',       qty:'',price:'€60'},
             ]
           },
         ]
       },
-      { id:'dev', icon:'💻', name:'Desarrollo', count:2,
-        providers:[
-          { name:'TechCraft Studio', type:'Agencia desarrollo web',
+      {
+        id:'dev', ico:'💻', name:'Desarrollo', n:2,
+        provs:[
+          {
+            name:'TechCraft Studio', type:'Agencia desarrollo web',
             fields:[
-              {k:'Contacto', v:'hello@techcraft.io'},
+              {k:'Email',  v:'hello@techcraft.io'},
               {k:'Tarifa', v:'€85 / hora'},
-              {k:'Stack', v:'React, Node.js, Shopify'},
+              {k:'Stack',  v:'React · Node.js · Shopify'},
             ],
             prices:[
-              {prod:'Landing page', qty:'', price:'desde €800'},
-              {prod:'Ecommerce Shopify', qty:'', price:'desde €2.500'},
-              {prod:'Integración API', qty:'', price:'desde €400'},
+              {prod:'Landing page',      qty:'',price:'desde €800'},
+              {prod:'Ecommerce Shopify', qty:'',price:'desde €2.500'},
+              {prod:'Integración API',   qty:'',price:'desde €400'},
             ]
           },
-          { name:'Freelance · Carlos M.', type:'Desarrollador Shopify',
+          {
+            name:'Carlos M. — Freelance', type:'Desarrollador Shopify',
             fields:[
-              {k:'Contacto', v:'carlos@dev.me'},
+              {k:'Email',  v:'carlos@dev.me'},
               {k:'Tarifa', v:'€50 / hora'},
-              {k:'Especialidad', v:'Shopify Plus, Liquid'},
+              {k:'Esp.',   v:'Shopify Plus · Liquid'},
             ],
             prices:[
-              {prod:'Custom theme', qty:'', price:'€600–1.200'},
-              {prod:'App integration', qty:'', price:'€200–500'},
+              {prod:'Custom theme',    qty:'',price:'€600–1.200'},
+              {prod:'App integration', qty:'',price:'€200–500'},
             ]
           },
         ]
       },
-      { id:'photo', icon:'📷', name:'Fotografía', count:1,
-        providers:[
-          { name:'Laia Fotografia', type:'Fotografía producto & lifestyle',
+      {
+        id:'photo', ico:'📷', name:'Fotografía', n:1,
+        provs:[
+          {
+            name:'Laia Fotografia', type:'Producto & lifestyle',
             fields:[
-              {k:'Contacto', v:'info@laiafoto.es'},
-              {k:'Teléfono', v:'+34 655 432 100'},
-              {k:'Web', v:'<a href="#">laiafoto.es</a>'},
+              {k:'Email', v:'info@laiafoto.es'},
+              {k:'Tfno.', v:'+34 655 432 100'},
+              {k:'Web',   v:'<a href="#">laiafoto.es</a>'},
             ],
             prices:[
-              {prod:'Sesión producto (1/2 día)', qty:'hasta 30 productos', price:'€350'},
-              {prod:'Sesión lifestyle (día)', qty:'', price:'€750'},
-              {prod:'Retoque fotográfico', qty:'por imagen', price:'€8'},
+              {prod:'Sesión producto ½ día', qty:'hasta 30 productos', price:'€350'},
+              {prod:'Sesión lifestyle 1 día',qty:'',                   price:'€750'},
+              {prod:'Retoque fotográfico',   qty:'por imagen',         price:'€8'},
             ]
           },
         ]
@@ -385,378 +546,384 @@ const PROJECTS = [
   },
 ]
 
-// ─── State ──────────────────────────────────────────────────────────────────
-let state = {
-  filter: 'todos',
-  active: PROJECTS[0],
-  view: 'resumen',
-  provCat: null,  // categoria activa en proveedores
-  openCards: {},  // qué proveedor cards están abiertas
+// ── Accent palette by type ───────────────────────────────────────────────────
+const ACCENT = {
+  cliente:  {main:'#F04E23', light:'rgba(240,78,35,.09)',  text:'#D63A0F'},
+  app:      {main:'#3D51E8', light:'rgba(61,81,232,.09)',  text:'#3045D0'},
+  proveedor:{main:'#0F9460', light:'rgba(15,148,96,.09)',  text:'#0A7A4E'},
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-function filtered() {
-  if (state.filter === 'todos') return PROJECTS
-  if (state.filter === 'clientes') return PROJECTS.filter(p => p.type === 'cliente')
-  if (state.filter === 'apps') return PROJECTS.filter(p => p.type === 'app')
-  if (state.filter === 'proveedores') return PROJECTS.filter(p => p.type === 'proveedor')
-  return PROJECTS
+// ── State ────────────────────────────────────────────────────────────────────
+let S = {
+  filter: 'todos',
+  proj:   DATA[0],
+  view:   'resumen',
+  provCat: null,
+  open:   {},
 }
-function typeBadge(t) {
-  if (t==='cliente') return '<span class="type-badge type-cliente">Cliente</span>'
-  if (t==='app') return '<span class="type-badge type-app">App</span>'
-  return '<span class="type-badge type-proveedor">Proveedor</span>'
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function filtered(){
+  if(S.filter==='todos')return DATA
+  if(S.filter==='clientes')return DATA.filter(p=>p.type==='cliente')
+  if(S.filter==='apps')return DATA.filter(p=>p.type==='app')
+  if(S.filter==='proveedores')return DATA.filter(p=>p.type==='proveedor')
+  return DATA
 }
-function tabsFor(p) {
-  if (p.type==='cliente') return ['resumen','kanban','tabla','plantillas','meses']
-  if (p.type==='app') return ['overview','conexiones','docs','variables']
+function defaultView(p){ return p.type==='cliente'?'resumen': p.type==='app'?'overview':'catalogo' }
+function tabsFor(p){
+  if(p.type==='cliente') return ['resumen','kanban','tabla','plantillas','meses']
+  if(p.type==='app')     return ['overview','conexiones','docs','variables']
   return ['catalogo']
 }
-function labelTab(v) {
-  return {resumen:'Resumen',kanban:'Kanban',tabla:'Tabla',plantillas:'Plantillas',meses:'Meses',
-          overview:'Overview',conexiones:'Conexiones',docs:'Docs',variables:'Variables Entorno',
-          catalogo:'Catálogo'}[v]||v
-}
-function statusIcon(s) {
-  if (s==='ok')   return '<span class="conn-status conn-ok">✓ Conectado</span>'
-  if (s==='warn') return '<span class="conn-status conn-warn">⚠ Pendiente</span>'
-  return '<span class="conn-status conn-off">✗ Sin conectar</span>'
+const TAB_LABELS = {resumen:'Resumen',kanban:'Kanban',tabla:'Tabla',plantillas:'Plantillas',meses:'Meses',
+                    overview:'Overview',conexiones:'Conexiones',docs:'Docs',variables:'Variables',catalogo:'Catálogo'}
+
+function applyAccent(type){
+  const a = ACCENT[type]
+  const r = document.documentElement
+  r.style.setProperty('--accent',a.main)
+  r.style.setProperty('--accent-light',a.light)
+  r.style.setProperty('--accent-text',a.text)
 }
 
-// ─── Render sidebar ─────────────────────────────────────────────────────────
-function renderSidebar() {
-  const filt = filtered()
-  const clientes = filt.filter(p=>p.type==='cliente')
-  const apps     = filt.filter(p=>p.type==='app')
-  const provs    = filt.filter(p=>p.type==='proveedor')
-  const total = PROJECTS.reduce((a,p)=> p.type==='cliente'? a+(p.tasks?.filter(t=>t.status==='En curso').length||0):a, 0)
+// ── Event handlers ────────────────────────────────────────────────────────────
+function setFilter(f){ S.filter=f; const fl=filtered(); if(!fl.find(p=>p.id===S.proj?.id)) S.proj=fl[0]; render() }
+function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.view=defaultView(S.proj); S.provCat=null; S.open={}; render() }
+function setView(v){ S.view=v; render() }
+function setProvCat(id){ S.provCat=id; S.open={}; render() }
+function toggleCard(k){ S.open[k]=!S.open[k]; render() }
 
-  return `
-  <div class="sidebar">
-    <div class="sidebar-top">
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){
+  applyAccent(S.proj?.type||'cliente')
+  document.getElementById('app').innerHTML = sidebar() + main()
+}
+
+// ─ Sidebar
+function sidebar(){
+  const fl = filtered()
+  const cl = fl.filter(p=>p.type==='cliente')
+  const ap = fl.filter(p=>p.type==='app')
+  const pr = fl.filter(p=>p.type==='proveedor')
+  const activeTasks = DATA.filter(p=>p.type==='cliente').reduce((a,p)=>a+(p.tasks?.filter(t=>t.status==='En curso').length||0),0)
+  return `<div class="sb">
+    <div class="sb-head">
       <div class="logo">LIGROW</div>
       <div class="logo-sub">Task &amp; Project Hub</div>
-      <div class="filter-row">
+      <div class="filter-strip">
         ${['todos','clientes','apps','proveedores'].map(f=>`
-          <button class="fchip ${state.filter===f?'active':''}" onclick="setFilter('${f}')">
-            ${f.charAt(0).toUpperCase()+f.slice(1)}
-          </button>
+          <button class="fc ${S.filter===f?'on':''}" onclick="setFilter('${f}')">${f.charAt(0).toUpperCase()+f.slice(1)}</button>
         `).join('')}
       </div>
     </div>
-    <div class="sidebar-nav">
-      <div class="nav-item active">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard <span class="nav-badge">${total}</span>
+    <div class="sb-nav">
+      <div class="nv on">
+        <svg class="nv-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Dashboard <span class="nv-badge">${activeTasks}</span>
       </div>
-      <div class="nav-item">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Proyectos <span class="nav-count">${PROJECTS.length}</span>
+      <div class="nv">
+        <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M14 12.667a1.333 1.333 0 0 1-1.333 1.333H3.333A1.333 1.333 0 0 1 2 12.667V3.333A1.333 1.333 0 0 1 3.333 2h3.334L8 4h6v8.667z"/></svg>
+        Proyectos <span class="nv-tail">${DATA.length}</span>
       </div>
-      <div class="nav-item">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Calendario <span class="nav-count">3</span>
+      <div class="nv">
+        <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2.667" width="12" height="12" rx="1.333"/><path d="M10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12"/></svg>
+        Calendario <span class="nv-tail">3</span>
       </div>
     </div>
-    <div class="sidebar-projects">
-      ${clientes.length?`<div class="section-label">Clientes</div>${clientes.map(p=>projItem(p)).join('')}`:''}
-      ${apps.length?`<div class="section-label">Apps</div>${apps.map(p=>projItem(p)).join('')}`:''}
-      ${provs.length?`<div class="section-label">Proveedores</div>${provs.map(p=>projItem(p)).join('')}`:''}
+    <div class="sb-list">
+      ${cl.length?`<div class="sl-label">Clientes</div>${cl.map(pi).join('')}`:''}
+      ${ap.length?`<div class="sl-label">Apps</div>${ap.map(pi).join('')}`:''}
+      ${pr.length?`<div class="sl-label">Proveedores</div>${pr.map(pi).join('')}`:''}
     </div>
   </div>`
 }
-function projItem(p) {
-  return `<div class="proj-item ${state.active?.id===p.id?'active':''}" onclick="selectProj('${p.id}')">
-    <div class="proj-avatar" style="background:${p.color}">${p.initials}</div>
-    <div class="proj-info">
-      <div class="proj-name">${p.name}</div>
-      <div class="proj-sub">${p.sub}</div>
+function pi(p){
+  const a = ACCENT[p.type]
+  return `<div class="pi ${S.proj?.id===p.id?'on':''}" onclick="selectProj('${p.id}')">
+    <div class="pi-av" style="background:${p.color}">${p.initials}</div>
+    <div class="pi-info">
+      <div class="pi-name">${p.name}</div>
+      <div class="pi-sub">${p.sub}</div>
     </div>
-    <div class="type-dot" style="background:${p.type==='cliente'?'#ff6b2b':p.type==='app'?'#5b6ef5':'#2ecc71'}"></div>
+    <div class="pi-dot" style="background:${a.main}"></div>
   </div>`
 }
 
-// ─── Render main ────────────────────────────────────────────────────────────
-function renderMain() {
-  const p = state.active
-  if (!p) return '<div class="main"><div class="content"><p style="color:#aaa">Selecciona un proyecto</p></div></div>'
-
+// ─ Main
+function main(){
+  const p = S.proj
+  if(!p) return `<div class="mn"><div class="ct"><p style="color:var(--text-3)">Selecciona un proyecto</p></div></div>`
   const tabs = tabsFor(p)
-  if (!tabs.includes(state.view)) state.view = tabs[0]
-
-  return `
-  <div class="main">
-    <div class="topbar">
-      <div class="topbar-head">
-        <div class="proj-title-row">
-          <div class="proj-icon-lg" style="background:${p.color}">${p.initials}</div>
-          <div class="proj-title-info">
-            <h2>${p.name}</h2>
-            <p>${p.sub}</p>
-          </div>
-          ${typeBadge(p.type)}
+  if(!tabs.includes(S.view)) S.view = tabs[0]
+  const typeName = {cliente:'Cliente',app:'App',proveedor:'Proveedor'}[p.type]
+  const btnLabel = p.type==='proveedor'?'+ Proveedor':p.type==='app'?'Abrir app':'+ Nueva tarea'
+  return `<div class="mn">
+    <div class="tb">
+      <div class="tb-row1">
+        <div class="proj-av-lg" style="background:${p.color}">${p.initials}</div>
+        <div class="proj-title-wrap">
+          <div class="proj-title">${p.name}</div>
+          <div class="proj-sub-text">${p.sub}</div>
         </div>
-        <button class="btn-primary">${p.type==='proveedor'?'+ Proveedor':p.type==='app'?'Abrir app':'+ Nueva tarea'}</button>
+        <span class="type-pill">${typeName}</span>
+        <button class="tb-action">${btnLabel}</button>
       </div>
       <div class="tabs">
-        ${tabs.map(t=>`<button class="tab ${state.view===t?'active':''}" onclick="setView('${t}')">${labelTab(t)}</button>`).join('')}
+        ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
       </div>
     </div>
-    <div class="content">
-      ${renderContent(p)}
-    </div>
+    <div class="ct">${content(p)}</div>
   </div>`
 }
 
-function renderContent(p) {
-  if (p.type==='cliente') return renderCliente(p)
-  if (p.type==='app') return renderApp(p)
-  return renderProveedor(p)
+// ─ Content router
+function content(p){
+  if(p.type==='cliente') return clienteContent(p)
+  if(p.type==='app')     return appContent(p)
+  return provContent(p)
 }
 
-// ─── CLIENTE views ──────────────────────────────────────────────────────────
-function renderCliente(p) {
-  if (state.view==='kanban')     return renderKanban(p)
-  if (state.view==='tabla')      return renderTabla(p)
-  if (state.view==='plantillas') return renderPlantillas(p)
-  if (state.view==='meses')      return renderMeses(p)
-  return renderResumen(p)
+// ─ CLIENTE ──────────────────────────────────────────────────────────────────
+function clienteContent(p){
+  if(S.view==='kanban')     return kanban(p)
+  if(S.view==='tabla')      return tabla(p)
+  if(S.view==='plantillas') return `<div class="card"><div class="card-head">Plantillas mensuales</div><div class="dashed-box">Las plantillas de tareas recurrentes aparecerán aquí.</div></div>`
+  if(S.view==='meses')      return `<div class="card"><div class="card-head">Ciclos mensuales</div><div class="dashed-box">Generación y cierre de meses aquí.</div></div>`
+  return resumen(p)
 }
-function renderResumen(p) {
-  const t = p.tasks||[]
-  const en = t.filter(x=>x.status==='En curso').length
-  const det= t.filter(x=>x.status==='Detenido').length
-  const ok = t.filter(x=>x.status==='Listo').length
+
+function resumen(p){
+  const t=p.tasks||[]
+  const en=t.filter(x=>x.status==='En curso').length
+  const det=t.filter(x=>x.status==='Detenido').length
+  const ok=t.filter(x=>x.status==='Listo').length
+  const recentTasks = t.filter(x=>x.status==='En curso').slice(0,4)
   return `
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val">${t.length}</div></div>
-    <div class="stat-card"><div class="stat-label">Sin empezar</div><div class="stat-val">0</div></div>
-    <div class="stat-card"><div class="stat-label">En edición</div><div class="stat-val orange">${en}</div></div>
-    <div class="stat-card"><div class="stat-label">Detenido</div><div class="stat-val">${det}</div></div>
-    <div class="stat-card"><div class="stat-label">Finalizadas</div><div class="stat-val" style="color:#00a86b">${ok}</div></div>
+  <div class="stats">
+    <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val">${t.length}</div></div>
+    <div class="stat"><div class="stat-lbl">Sin empezar</div><div class="stat-val">0</div></div>
+    <div class="stat"><div class="stat-lbl">En edición</div><div class="stat-val accent">${en}</div></div>
+    <div class="stat"><div class="stat-lbl">Detenidas</div><div class="stat-val">${det}</div></div>
+    <div class="stat"><div class="stat-lbl">Finalizadas</div><div class="stat-val green">${ok}</div></div>
   </div>
-  <div class="info-grid">
-    <div class="info-card">
-      <div class="info-card-title">📎 Documentos y recursos &nbsp;<span style="margin-left:auto;font-size:11px;color:#bbb">0 vinculados</span></div>
-      <div class="empty-box">Los archivos y enlaces de las tareas aparecerán aquí.</div>
+  <div class="info-2">
+    <div class="card">
+      <div class="card-head">Documentos y recursos · <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">0 vinculados</span></div>
+      <div class="dashed-box">Los archivos y enlaces de las tareas aparecerán aquí.</div>
     </div>
-    <div class="info-card">
-      <div class="info-card-title">⏰ Recordatorios próximos</div>
-      ${t.slice(0,3).map(x=>`
-        <div class="task-row">
-          <div class="task-dot" style="background:${x.priority==='Alta'?'#e53e3e':x.priority==='Media'?'#ff9f1c':'#00a86b'}"></div>
-          <div class="task-row-name">${x.name}</div>
-          <div class="task-row-owner">${x.owner}</div>
-          <span class="status-chip ${x.status==='En curso'?'s-en-curso':x.status==='Listo'?'s-listo':'s-detenido'}">${x.status}</span>
+    <div class="card">
+      <div class="card-head">En curso ahora</div>
+      ${recentTasks.map(x=>`
+        <div class="t-row">
+          <div class="t-dot" style="background:${x.priority==='Alta'?'#D63A0F':x.priority==='Media'?'#D48000':'#0F9460'}"></div>
+          <div class="t-name">${x.name}</div>
+          <div class="t-owner">${x.owner}</div>
+          <span class="chip chip-orange">En curso</span>
         </div>
-      `).join('')}
+      `).join('')||`<div class="dashed-box">Sin tareas activas</div>`}
     </div>
   </div>`
 }
-function renderKanban(p) {
-  const t = p.tasks||[]
-  return `<div class="kanban-cols">${['En curso','Detenido','Listo'].map(s=>{
+
+function kanban(p){
+  const t=p.tasks||[]
+  return `<div class="kanban">${['En curso','Detenido','Listo'].map(s=>{
     const col=t.filter(x=>x.status===s)
-    return `<div class="kanban-col">
-      <div class="kanban-col-head"><h3>${s}</h3><span class="kanban-count">${col.length}</span></div>
-      ${col.map(x=>`<div class="kcard ${x.priority.toLowerCase()}">
-        <div class="kcard-code">${x.code}</div>
-        <div class="kcard-name">${x.name}</div>
-        <div class="kcard-foot"><span class="kcard-owner">${x.owner}</span><span class="pri-badge pri-${x.priority.toLowerCase()}">${x.priority}</span></div>
-      </div>`).join('')||`<div style="color:#ccc;font-size:12px;padding:8px 0">Sin tareas</div>`}
+    const chipClass = s==='En curso'?'chip-orange':s==='Listo'?'chip-green':'chip-red'
+    return `<div class="k-col">
+      <div class="k-col-h">
+        <span class="k-col-title">${s}</span>
+        <span class="k-count">${col.length}</span>
+      </div>
+      ${col.map(x=>`<div class="kc ${x.priority.toLowerCase()}">
+        <div class="kc-code">${x.code}</div>
+        <div class="kc-name">${x.name}</div>
+        <div class="kc-foot">
+          <span class="kc-owner">${x.owner}</span>
+          <span class="pri ${x.priority.toLowerCase()}">${x.priority}</span>
+        </div>
+      </div>`).join('')||`<div class="k-empty">Sin tareas</div>`}
     </div>`
   }).join('')}</div>`
 }
-function renderTabla(p) {
-  const t = p.tasks||[]
-  return `<table class="grid-table">
-    <thead><tr><th>Código</th><th>Tarea</th><th>Responsable</th><th>Estado</th><th>Prioridad</th><th>Vence</th></tr></thead>
+
+function tabla(p){
+  const t=p.tasks||[]
+  const chipOf=s=>s==='En curso'?'chip chip-orange':s==='Listo'?'chip chip-green':'chip chip-red'
+  return `<table class="gtable">
+    <thead><tr>
+      <th>Código</th><th>Tarea</th><th>Responsable</th><th>Estado</th><th>Prioridad</th><th>Vence</th>
+    </tr></thead>
     <tbody>${t.map(x=>`<tr>
-      <td style="color:#ccc;font-size:11px">${x.code}</td>
-      <td style="font-weight:600">${x.name}</td>
+      <td class="tc">${x.code}</td>
+      <td style="font-weight:500">${x.name}</td>
       <td>${x.owner}</td>
-      <td><span class="status-chip ${x.status==='En curso'?'s-en-curso':x.status==='Listo'?'s-listo':'s-detenido'}">${x.status}</span></td>
-      <td><span class="pri-badge pri-${x.priority.toLowerCase()}">${x.priority}</span></td>
-      <td style="color:#aaa">${x.due}</td>
+      <td><span class="${chipOf(x.status)}">${x.status}</span></td>
+      <td><span class="pri ${x.priority.toLowerCase()}">${x.priority}</span></td>
+      <td style="color:var(--text-3);font-variant-numeric:tabular-nums">${x.due}</td>
     </tr>`).join('')}</tbody>
   </table>`
 }
-function renderPlantillas(p) {
-  return `<div class="info-card"><div class="info-card-title">Plantillas mensuales</div>
-    <div class="empty-box">Plantillas automáticas de tareas recurrentes</div></div>`
-}
-function renderMeses(p) {
-  return `<div class="info-card"><div class="info-card-title">Ciclos mensuales</div>
-    <div class="empty-box">Generación y cierre de meses</div></div>`
+
+// ─ APP ──────────────────────────────────────────────────────────────────────
+function appContent(p){
+  if(S.view==='conexiones') return appConexiones(p)
+  if(S.view==='docs')       return appDocs(p)
+  if(S.view==='variables')  return appVars(p)
+  return appOverview(p)
 }
 
-// ─── APP views ──────────────────────────────────────────────────────────────
-function renderApp(p) {
-  if (state.view==='conexiones') return renderConexiones(p)
-  if (state.view==='docs')       return renderDocs(p)
-  if (state.view==='variables')  return renderVars(p)
-  return renderAppOverview(p)
-}
-function renderAppOverview(p) {
-  return `
-  <div class="app-grid">
-    <div class="app-card">
-      <div class="app-card-title">Stack tecnológico</div>
-      <div class="app-stack">${(p.stack||[]).map(s=>`<span class="stack-tag">${s}</span>`).join('')}</div>
-      <div style="height:16px"></div>
-      <div class="app-card-title">Repositorio</div>
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fafafa;border:1px solid #eee;border-radius:8px">
-        <span style="font-size:18px">🐙</span>
+function appOverview(p){
+  return `<div class="app-grid">
+    <div class="card">
+      <div class="card-head">Stack tecnológico</div>
+      <div class="app-stack-wrap">${(p.stack||[]).map(s=>`<span class="stack-tag">${s}</span>`).join('')}</div>
+      <div class="repo-row" style="margin-top:14px">
+        <span style="font-size:20px">🐙</span>
         <div>
-          <div style="font-size:13px;font-weight:700;color:#222">${p.repo||'—'}</div>
-          <a style="font-size:11px;color:#5b6ef5;font-weight:600;cursor:pointer">github.com/${p.repo}</a>
+          <div class="repo-name">${p.repo}</div>
+          <div class="repo-link">github.com/${p.repo}</div>
         </div>
       </div>
     </div>
-    <div class="app-card">
-      <div class="app-card-title">Estado de conexiones</div>
-      <div class="conn-list" style="gap:6px">
-        ${(p.connections||[]).map(c=>`
+    <div class="card">
+      <div class="card-head">Estado de conexiones</div>
+      <div class="conn-list">
+        ${(p.conns||[]).map(c=>`
           <div class="conn-row">
-            <div class="conn-icon" style="background:#f5f5f5">${c.icon}</div>
-            <div class="conn-info">
+            <div class="conn-ico">${c.ico}</div>
+            <div class="conn-body">
               <div class="conn-name">${c.name}</div>
               <div class="conn-detail">${c.detail}</div>
             </div>
-            ${statusIcon(c.status)}
+            ${connStatus(c.status)}
           </div>
         `).join('')}
       </div>
     </div>
   </div>`
 }
-function renderConexiones(p) {
-  return `<div class="app-card" style="max-width:700px">
-    <div class="app-card-title">Conexiones &amp; Integraciones</div>
+
+function connStatus(s){
+  if(s==='ok')   return `<span class="conn-s ok">✓ Conectado</span>`
+  if(s==='warn') return `<span class="conn-s warn">⚠ Pendiente</span>`
+  return `<span class="conn-s off">✗ Sin conectar</span>`
+}
+
+function appConexiones(p){
+  return `<div class="card" style="max-width:640px">
+    <div class="card-head">Conexiones &amp; Integraciones</div>
     <div class="conn-list">
-      ${(p.connections||[]).map(c=>`
+      ${(p.conns||[]).map(c=>`
         <div class="conn-row">
-          <div class="conn-icon" style="background:#f0f0f5;font-size:20px">${c.icon}</div>
-          <div class="conn-info">
+          <div class="conn-ico" style="font-size:20px">${c.ico}</div>
+          <div class="conn-body">
             <div class="conn-name">${c.name}</div>
             <div class="conn-detail">${c.detail}</div>
+            ${c.href?`<div class="conn-link">Abrir ↗</div>`:``}
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-            ${statusIcon(c.status)}
-            ${c.link?`<a class="conn-link" href="${c.link}" target="_blank">Abrir ↗</a>`:''}
-          </div>
+          ${connStatus(c.status)}
         </div>
       `).join('')}
     </div>
   </div>`
 }
-function renderDocs(p) {
-  return `<div class="app-card" style="max-width:560px">
-    <div class="app-card-title">Documentación &amp; Recursos</div>
+
+function appDocs(p){
+  return `<div class="card" style="max-width:520px">
+    <div class="card-head">Documentación &amp; Recursos</div>
     ${(p.docs||[]).map(d=>`
-      <div class="app-doc-row">
-        <div style="display:flex;align-items:center;gap:8px">
+      <div class="doc-row">
+        <div style="display:flex;align-items:center;gap:9px">
           <span style="font-size:16px">📄</span>
-          <span class="app-doc-name">${d.name}</span>
+          <span class="doc-name">${d.name}</span>
         </div>
-        <a class="app-doc-link">Ver ↗</a>
+        <span class="doc-link">Ver ↗</span>
       </div>
     `).join('')}
   </div>`
 }
-function renderVars(p) {
-  return `<div class="app-card" style="max-width:560px">
-    <div class="app-card-title">Variables de entorno · Producción</div>
-    <div style="background:#f9f9fb;border-radius:8px;padding:12px 14px;border:1px solid #eee">
-      ${(p.envs||[]).map(e=>`
-        <div class="app-env-row">
-          <span class="app-env-key">${e.key}</span>
-          <span class="app-env-val">${e.val}</span>
-        </div>
-      `).join('')}
+
+function appVars(p){
+  return `<div class="card" style="max-width:560px">
+    <div class="card-head">Variables de entorno · Producción</div>
+    <div style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:8px;overflow:hidden">
+      <table class="env-table">
+        <tbody>${(p.envs||[]).map(e=>`<tr>
+          <td class="env-key">${e.key}</td>
+          <td><span class="env-val">${e.val}</span></td>
+        </tr>`).join('')}</tbody>
+      </table>
     </div>
-    <p style="font-size:11px;color:#bbb;margin-top:10px">Configura estas variables en el panel de Vercel o Railway antes del despliegue.</p>
+    <p class="env-note">Configura estas variables en el panel de Vercel o Railway antes del despliegue. Nunca las comitees al repositorio.</p>
   </div>`
 }
 
-// ─── PROVEEDOR views ────────────────────────────────────────────────────────
-function renderProveedor(p) {
-  const cats = p.categories||[]
-  if (!state.provCat) state.provCat = cats[0]?.id
-  const activeCat = cats.find(c=>c.id===state.provCat)||cats[0]
-
+// ─ PROVEEDOR ────────────────────────────────────────────────────────────────
+function provContent(p){
+  const cats=p.cats||[]
+  if(!S.provCat) S.provCat=cats[0]?.id
+  const cat=cats.find(c=>c.id===S.provCat)||cats[0]
   return `<div class="prov-layout">
-    <div class="prov-sidebar">
-      <div class="cat-list">
+    <div class="prov-cats">
+      <div class="cat-list-wrap">
         ${cats.map(c=>`
-          <div class="cat-item ${c.id===state.provCat?'active':''}" onclick="setProvCat('${c.id}')">
-            <span class="cat-icon">${c.icon}</span>
+          <div class="cat-item ${c.id===S.provCat?'on':''}" onclick="setProvCat('${c.id}')">
+            <span class="cat-ico">${c.ico}</span>
             <span class="cat-name">${c.name}</span>
-            <span class="cat-count">${c.count}</span>
+            <span class="cat-n">${c.n}</span>
           </div>
         `).join('')}
       </div>
     </div>
-    <div class="prov-main">
-      <div class="prov-folder-head">
-        <span class="folder-icon-big">${activeCat?.icon||'📁'}</span>
+    <div class="prov-content">
+      <div class="prov-folder-bar">
+        <span class="folder-ico">${cat?.ico||'📁'}</span>
         <div>
-          <div class="folder-title">${activeCat?.name||''}</div>
-          <div class="folder-sub">${activeCat?.providers?.length||0} proveedores disponibles</div>
+          <div class="folder-title">${cat?.name||''}</div>
+          <div class="folder-sub">${cat?.provs?.length||0} proveedores</div>
         </div>
-        <button class="btn-primary" style="margin-left:auto">+ Añadir proveedor</button>
+        <button class="add-btn">+ Añadir proveedor</button>
       </div>
       <div class="prov-cards">
-        ${(activeCat?.providers||[]).map((prov,i)=>`
-          <div class="prov-card">
-            <div class="prov-card-head" onclick="toggleCard('${activeCat.id}_${i}')">
+        ${(cat?.provs||[]).map((pv,i)=>{
+          const k=`${cat.id}_${i}`
+          const isOpen=!!S.open[k]
+          return `<div class="prov-card">
+            <div class="prov-card-h ${isOpen?'open':''}" onclick="toggleCard('${k}')">
               <div>
-                <div class="prov-card-name">${prov.name}</div>
-                <div class="prov-card-type">${prov.type}</div>
+                <div class="prov-card-name">${pv.name}</div>
+                <div class="prov-card-type">${pv.type}</div>
               </div>
-              <span class="chevron ${state.openCards[activeCat.id+'_'+i]?'open':''}">▼</span>
+              <span class="chev ${isOpen?'open':''}">▼</span>
             </div>
-            <div class="prov-card-body ${state.openCards[activeCat.id+'_'+i]?'open':''}">
-              <div style="margin-bottom:12px">
-                ${(prov.fields||[]).map(f=>`
-                  <div class="prov-field">
-                    <span class="prov-field-key">${f.k}</span>
-                    <span class="prov-field-val">${f.v}</span>
-                  </div>
-                `).join('')}
-              </div>
-              ${prov.prices?.length?`
-                <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;margin-bottom:6px">Tarifas</div>
-                <table class="price-table">
+            <div class="prov-card-body ${isOpen?'open':''}">
+              ${(pv.fields||[]).map(f=>`
+                <div class="pf-row">
+                  <span class="pf-k">${f.k}</span>
+                  <span class="pf-v">${f.v}</span>
+                </div>
+              `).join('')}
+              ${pv.prices?.length?`
+                <div class="price-head">Tarifas</div>
+                <table class="ptable">
                   <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr></thead>
-                  <tbody>
-                    ${prov.prices.map(r=>`<tr>
-                      <td>${r.prod}</td>
-                      <td style="color:#aaa">${r.qty}</td>
-                      <td class="price-highlight">${r.price}</td>
-                    </tr>`).join('')}
-                  </tbody>
+                  <tbody>${pv.prices.map(r=>`<tr>
+                    <td>${r.prod}</td>
+                    <td style="color:var(--text-3)">${r.qty}</td>
+                    <td class="price-val">${r.price}</td>
+                  </tr>`).join('')}</tbody>
                 </table>
               `:''}
             </div>
-          </div>
-        `).join('')}
+          </div>`
+        }).join('')}
       </div>
     </div>
   </div>`
 }
 
-// ─── Event handlers ─────────────────────────────────────────────────────────
-function setFilter(f)    { state.filter=f; const filt=filtered(); if(!filt.find(p=>p.id===state.active?.id)) state.active=filt[0]; render() }
-function selectProj(id)  { state.active=PROJECTS.find(p=>p.id===id); state.view=tabsFor(state.active)[0]; state.provCat=null; render() }
-function setView(v)      { state.view=v; render() }
-function setProvCat(id)  { state.provCat=id; state.openCards={}; render() }
-function toggleCard(key) { state.openCards[key]=!state.openCards[key]; render() }
-
-// ─── Main render ─────────────────────────────────────────────────────────────
-function render() {
-  document.getElementById('app').innerHTML = renderSidebar() + renderMain()
-}
 render()
 </script>
 </body>
