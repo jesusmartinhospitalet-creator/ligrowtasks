@@ -104,12 +104,21 @@ body{
 .sl-add-btn{width:18px;height:18px;border-radius:5px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
 .sl-add-btn:hover{background:rgba(255,255,255,.18);color:#fff}
 .sl-empty{padding:4px 8px 10px;font-size:11px;color:rgba(255,255,255,.22)}
-.pi{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:1px}
+.pi{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:background .15s,opacity .15s;margin-bottom:1px;position:relative}
 .pi:hover{background:rgba(255,255,255,.05)}
 .pi.on{background:rgba(255,255,255,.08)}
 .pi-del{opacity:0;flex-shrink:0;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .pi:hover .pi-del{opacity:1}
 .pi-del:hover{color:#EF4444;background:rgba(239,68,68,.14)}
+/* Drag & drop reordering */
+.pi-grip{flex-shrink:0;width:12px;font-size:12px;line-height:1;color:rgba(255,255,255,.16);opacity:0;cursor:grab;transition:opacity .15s;text-align:center}
+.pi:hover .pi-grip{opacity:1}
+.pi.dragging{opacity:.35}
+.pi.drag-over-top::before,.pi.drag-over-bottom::after{
+  content:'';position:absolute;left:6px;right:6px;height:2px;border-radius:2px;background:var(--accent)
+}
+.pi.drag-over-top::before{top:-1px}
+.pi.drag-over-bottom::after{bottom:-1px}
 
 /* Avatar wrappers — shape differs by type */
 .pi-av-wrap{position:relative;flex-shrink:0;width:30px;height:30px}
@@ -1035,6 +1044,61 @@ function deleteClient(id,e){
   render()
 }
 
+// ── Reordenar proyectos (drag & drop) ───────────────────────────────────────
+// Items are only reorderable within their own section (clientes / apps /
+// proveedores) — dragState.type must match the item being dragged over.
+const dragState = { id:null, type:null, overId:null, before:true }
+
+function clearDragMarkers(){
+  document.querySelectorAll('.pi.dragging').forEach(el=>el.classList.remove('dragging'))
+  document.querySelectorAll('.pi.drag-over-top,.pi.drag-over-bottom').forEach(el=>el.classList.remove('drag-over-top','drag-over-bottom'))
+}
+function onProjDragStart(e,id,type){
+  dragState.id=id
+  dragState.type=type
+  e.dataTransfer.effectAllowed='move'
+  try{ e.dataTransfer.setData('text/plain',id) }catch(err){}
+  e.currentTarget.classList.add('dragging')
+}
+function onProjDragOver(e,id,type){
+  if(dragState.type!==type || dragState.id===id) return
+  e.preventDefault()
+  e.dataTransfer.dropEffect='move'
+  const el=e.currentTarget
+  const rect=el.getBoundingClientRect()
+  const before=(e.clientY-rect.top) < rect.height/2
+  if(dragState.overId!==id || dragState.before!==before){
+    document.querySelectorAll('.pi.drag-over-top,.pi.drag-over-bottom').forEach(x=>x.classList.remove('drag-over-top','drag-over-bottom'))
+    el.classList.add(before?'drag-over-top':'drag-over-bottom')
+    dragState.overId=id
+    dragState.before=before
+  }
+}
+function onProjDragLeave(e){
+  e.currentTarget.classList.remove('drag-over-top','drag-over-bottom')
+}
+function onProjDrop(e,id,type){
+  e.preventDefault()
+  clearDragMarkers()
+  if(dragState.type===type && dragState.id && dragState.id!==id){
+    moveProject(dragState.id,id,dragState.before)
+  }
+  dragState.id=null; dragState.type=null; dragState.overId=null
+  render()
+}
+function onProjDragEnd(e){
+  clearDragMarkers()
+  dragState.id=null; dragState.type=null; dragState.overId=null
+}
+function moveProject(sourceId,targetId,before){
+  const fromIdx=DATA.findIndex(x=>x.id===sourceId)
+  if(fromIdx===-1)return
+  const [item]=DATA.splice(fromIdx,1)
+  const toIdx=DATA.findIndex(x=>x.id===targetId)
+  if(toIdx===-1){ DATA.push(item); return }
+  DATA.splice(before?toIdx:toIdx+1,0,item)
+}
+
 // ── Documentos ────────────────────────────────────────────────────────────
 function openAddDoc(pid){ S.modal='addDoc'; S._docPid=pid; S._docTab='link'; render(); setTimeout(()=>document.getElementById('doc-name-in')?.focus(),50) }
 function switchDocTab(tab){ S._docTab=tab; render() }
@@ -1321,7 +1385,15 @@ function pi(p){
   const avStyle = p.type==='proveedor' ? `color:${p.color}` : `background:${p.color}`
   const semCls = p.type==='cliente' && p.semaforo ? `sem-${p.semaforo}` : ''
   const isOn   = S.proj?.id===p.id ? 'on' : ''
-  return `<div class="pi ${isOn} ${semCls}" onclick="selectProj('${p.id}')">
+  return `<div class="pi ${isOn} ${semCls}" data-id="${p.id}" data-type="${p.type}"
+    draggable="true"
+    onclick="selectProj('${p.id}')"
+    ondragstart="onProjDragStart(event,'${p.id}','${p.type}')"
+    ondragover="onProjDragOver(event,'${p.id}','${p.type}')"
+    ondragleave="onProjDragLeave(event)"
+    ondrop="onProjDrop(event,'${p.id}','${p.type}')"
+    ondragend="onProjDragEnd(event)">
+    <span class="pi-grip" title="Arrastra para reordenar">⠿</span>
     <div class="pi-av-wrap">
       <div class="pi-av ${shape}" style="${avStyle}">${p.type==='proveedor'?badge:p.initials}</div>
       <div class="pi-badge">${badge}</div>
