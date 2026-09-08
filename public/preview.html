@@ -29,7 +29,9 @@ a{text-decoration:none}
   --sidebar-text: rgba(255,255,255,.45);
   --sidebar-text-hover: rgba(255,255,255,.8);
   --sidebar-active-bg: rgba(255,255,255,.08);
-  /* accent shifts per project type — set via JS */
+  /* brand color — always Ligrow orange, never changes */
+  --brand:        #F04E23;
+  /* accent shifts per project type in main area only */
   --accent:       #F04E23;
   --accent-light: #FFF1EC;
   --accent-text:  #F04E23;
@@ -92,7 +94,8 @@ body{
 .nv-icon{width:16px;flex-shrink:0;opacity:.6}
 .nv.on .nv-icon{opacity:1}
 .nv-tail{margin-left:auto;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.2)}
-.nv-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:1px 6px;min-width:18px;text-align:center;transition:background .3s}
+.nv-badge{margin-left:auto;background:var(--brand);color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:1px 6px;min-width:18px;text-align:center}
+.nv.on{color:#fff !important;background:rgba(255,255,255,.07)}
 
 .sb-list{flex:1;overflow-y:auto;padding:6px 8px 16px}
 .sb-list::-webkit-scrollbar{width:0}
@@ -628,12 +631,13 @@ const TYPE_ICON   = {cliente:'🏢', app:'⚡', proveedor:'🗂️'}
 
 // ── State ────────────────────────────────────────────────────────────────────
 let S = {
+  navView: 'dashboard', // dashboard | proyectos | calendario | null (= project view)
   filter: 'todos',
   proj:   DATA[0],
   view:   'resumen',
   provCat: null,
   open:   {},
-  addingCat: false,   // show inline add-category form
+  addingCat: false,
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -662,8 +666,9 @@ function applyAccent(type){
 }
 
 // ── Event handlers ────────────────────────────────────────────────────────────
+function setNavView(v){ S.navView=v; applyAccent('cliente'); render() }
 function setFilter(f){ S.filter=f; const fl=filtered(); if(!fl.find(p=>p.id===S.proj?.id)) S.proj=fl[0]; render() }
-function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.view=defaultView(S.proj); S.provCat=null; S.open={}; S.addingCat=false; render() }
+function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.navView=null; S.view=defaultView(S.proj); S.provCat=null; S.open={}; S.addingCat=false; render() }
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
@@ -712,15 +717,15 @@ function sidebar(){
       </div>
     </div>
     <div class="sb-nav">
-      <div class="nv on">
+      <div class="nv ${S.navView==='dashboard'?'on':''}" onclick="setNavView('dashboard')">
         <svg class="nv-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
         Dashboard <span class="nv-badge">${activeTasks}</span>
       </div>
-      <div class="nv">
+      <div class="nv ${S.navView==='proyectos'?'on':''}" onclick="setNavView('proyectos')">
         <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M14 12.667a1.333 1.333 0 0 1-1.333 1.333H3.333A1.333 1.333 0 0 1 2 12.667V3.333A1.333 1.333 0 0 1 3.333 2h3.334L8 4h6v8.667z"/></svg>
         Proyectos <span class="nv-tail">${DATA.length}</span>
       </div>
-      <div class="nv">
+      <div class="nv ${S.navView==='calendario'?'on':''}" onclick="setNavView('calendario')">
         <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2.667" width="12" height="12" rx="1.333"/><path d="M10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12"/></svg>
         Calendario <span class="nv-tail">3</span>
       </div>
@@ -752,6 +757,9 @@ function pi(p){
 
 // ─ Main
 function main(){
+  if(S.navView==='dashboard')  return navDashboard()
+  if(S.navView==='proyectos')  return navProyectos()
+  if(S.navView==='calendario') return navCalendario()
   const p = S.proj
   if(!p) return `<div class="mn"><div class="ct"><p style="color:var(--text-3)">Selecciona un proyecto</p></div></div>`
   const tabs = tabsFor(p)
@@ -1041,6 +1049,145 @@ function provContent(p){
   </div>`
 }
 
+// ─ NAV: Dashboard ────────────────────────────────────────────────────────────
+function navDashboard(){
+  const clientes = DATA.filter(p=>p.type==='cliente')
+  const allTasks = clientes.flatMap(p=>(p.tasks||[]).map(t=>({...t,clientName:p.name,clientColor:p.color})))
+  const enCurso  = allTasks.filter(t=>t.status==='En curso')
+  const detenido = allTasks.filter(t=>t.status==='Detenido')
+  const listo    = allTasks.filter(t=>t.status==='Listo')
+  return `<div class="mn">
+    <div class="tb" style="padding-bottom:0">
+      <div class="tb-row1">
+        <div style="flex:1">
+          <div class="proj-title" style="font-family:'Syne',sans-serif;font-weight:800;font-size:19px">Dashboard</div>
+          <div class="proj-sub-text">Vista general · ${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+        </div>
+      </div>
+    </div>
+    <div class="ct">
+      <div class="stats" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat"><div class="stat-lbl">Clientes activos</div><div class="stat-val">${clientes.length}</div></div>
+        <div class="stat"><div class="stat-lbl">En curso</div><div class="stat-val accent">${enCurso.length}</div></div>
+        <div class="stat"><div class="stat-lbl">Detenidas</div><div class="stat-val">${detenido.length}</div></div>
+        <div class="stat"><div class="stat-lbl">Completadas</div><div class="stat-val green">${listo.length}</div></div>
+      </div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:12px">Tareas activas por cliente</div>
+      ${clientes.map(p=>{
+        const t=p.tasks||[]
+        const en=t.filter(x=>x.status==='En curso')
+        const det=t.filter(x=>x.status==='Detenido')
+        if(!t.length)return''
+        return `<div class="card" style="margin-bottom:12px;padding:14px 18px;cursor:pointer" onclick="selectProj('${p.id}')">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div style="width:26px;height:26px;border-radius:6px;background:${p.color};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:#fff">${p.initials}</div>
+            <div style="font-weight:700;font-size:14px;color:var(--text-1)">${p.name}</div>
+            <span style="margin-left:auto;font-size:11px;color:var(--text-3)">${p.sub}</span>
+            <span class="chip chip-orange" style="margin-left:8px">${en.length} en curso</span>
+            ${det.length?`<span class="chip chip-red">${det.length} detenida${det.length>1?'s':''}</span>`:''}
+          </div>
+          ${en.slice(0,3).map(x=>`<div class="t-row">
+            <div class="t-dot" style="background:${x.priority==='Alta'?'#D63A0F':x.priority==='Media'?'#D48000':'#0F9460'}"></div>
+            <div class="t-name">${x.name}</div>
+            <div class="t-owner">${x.owner}</div>
+            <span style="font-size:11px;color:var(--text-3)">${x.due}</span>
+          </div>`).join('')}
+          ${en.length>3?`<div style="font-size:11px;color:var(--text-3);padding:6px 0">+${en.length-3} más...</div>`:''}
+        </div>`
+      }).join('')}
+    </div>
+  </div>`
+}
+
+// ─ NAV: Proyectos ─────────────────────────────────────────────────────────────
+function navProyectos(){
+  const typeLabel={cliente:'Cliente',app:'App',proveedor:'Proveedor'}
+  const groups=[
+    {label:'Clientes', items:DATA.filter(p=>p.type==='cliente')},
+    {label:'Apps',     items:DATA.filter(p=>p.type==='app')},
+    {label:'Proveedores', items:DATA.filter(p=>p.type==='proveedor')},
+  ]
+  return `<div class="mn">
+    <div class="tb" style="padding-bottom:0">
+      <div class="tb-row1">
+        <div style="flex:1">
+          <div class="proj-title" style="font-family:'Syne',sans-serif;font-weight:800;font-size:19px">Todos los proyectos</div>
+          <div class="proj-sub-text">${DATA.length} proyectos · ${DATA.filter(p=>p.type==='cliente').length} clientes · ${DATA.filter(p=>p.type==='app').length} apps</div>
+        </div>
+        <button class="tb-action" style="background:var(--brand)">+ Nuevo proyecto</button>
+      </div>
+    </div>
+    <div class="ct">
+      ${groups.map(g=>`
+        <div style="margin-bottom:24px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px">${g.label}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            ${g.items.map(p=>{
+              const a=ACCENT[p.type]
+              const t=p.tasks||[]
+              const en=t.filter(x=>x.status==='En curso').length
+              return `<div class="card" style="padding:14px 16px;cursor:pointer;transition:box-shadow .15s" onclick="selectProj('${p.id}')">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
+                  <div style="width:32px;height:32px;border-radius:${p.type==='app'?'50%':'8px'};background:${p.color};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${p.initials}</div>
+                  <div>
+                    <div style="font-weight:700;font-size:13px;color:var(--text-1)">${p.name}</div>
+                    <span style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:${a.light};color:${a.text}">${typeLabel[p.type]}</span>
+                  </div>
+                </div>
+                <div style="font-size:11.5px;color:var(--text-3);line-height:1.4">${p.sub}</div>
+                ${t.length?`<div style="margin-top:10px;font-size:11px;color:var(--text-3)"><span style="color:var(--brand);font-weight:700">${en}</span> en curso · ${t.length} total</div>`:''}
+              </div>`
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`
+}
+
+// ─ NAV: Calendario ────────────────────────────────────────────────────────────
+function navCalendario(){
+  const allTasks = DATA.filter(p=>p.type==='cliente')
+    .flatMap(p=>(p.tasks||[]).filter(t=>t.due).map(t=>({...t,clientName:p.name,clientColor:p.color})))
+    .sort((a,b)=>a.due.localeCompare(b.due))
+  const byDate={}
+  allTasks.forEach(t=>{if(!byDate[t.due])byDate[t.due]=[];byDate[t.due].push(t)})
+  const formatDate=d=>{const[y,m,day]=d.split('-');const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return`${parseInt(day)} ${months[parseInt(m)-1]}`}
+  return `<div class="mn">
+    <div class="tb" style="padding-bottom:0">
+      <div class="tb-row1">
+        <div style="flex:1">
+          <div class="proj-title" style="font-family:'Syne',sans-serif;font-weight:800;font-size:19px">Calendario</div>
+          <div class="proj-sub-text">Tareas ordenadas por fecha de vencimiento</div>
+        </div>
+      </div>
+    </div>
+    <div class="ct">
+      ${Object.entries(byDate).map(([date,tasks])=>`
+        <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start">
+          <div style="width:52px;text-align:center;flex-shrink:0;padding-top:2px">
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--text-1);line-height:1">${formatDate(date).split(' ')[0]}</div>
+            <div style="font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">${formatDate(date).split(' ')[1]}</div>
+          </div>
+          <div style="flex:1;border-left:2px solid var(--border-2);padding-left:16px">
+            ${tasks.map(t=>`<div class="card" style="padding:10px 14px;margin-bottom:7px;display:flex;align-items:center;gap:10px">
+              <div style="width:8px;height:8px;border-radius:50%;background:${t.clientColor};flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500;color:var(--text-1)">${t.name}</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:1px">${t.clientName} · ${t.owner}</div>
+              </div>
+              <span class="pri ${t.priority.toLowerCase()}">${t.priority}</span>
+              <span class="chip ${t.status==='En curso'?'chip-orange':t.status==='Listo'?'chip-green':'chip-red'}">${t.status}</span>
+            </div>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`
+}
+
+// Start on Dashboard with brand orange
+applyAccent('cliente')
 render()
 </script>
 </body>
