@@ -612,6 +612,7 @@ body{
 .ov-concept-term{font-size:11.5px;font-weight:700;color:var(--text-1);margin-bottom:4px;display:flex;align-items:center;gap:6px}
 .ov-concept-def{font-size:11px;color:var(--text-3);line-height:1.5}
 .ov-concept-tag{font-size:8.5px;font-weight:700;letter-spacing:.5px;padding:1px 6px;border-radius:20px;background:var(--accent-light);color:var(--accent-text)}
+.doc-row:hover .doc-del{opacity:1!important}
   </style>
 </head>
 <body>
@@ -850,7 +851,7 @@ function filtered(){
 }
 function defaultView(p){ return p.type==='cliente'?'resumen': p.type==='app'?'overview':'catalogo' }
 function tabsFor(p){
-  if(p.type==='cliente') return ['resumen','kanban','tabla','plantillas','meses']
+  if(p.type==='cliente') return ['resumen','kanban']
   if(p.type==='app')     return ['overview','conexiones','docs','variables']
   return ['catalogo']
 }
@@ -971,6 +972,25 @@ function deleteTask(pid,code,e){
 // ── Nueva tarea modal ─────────────────────────────────────────────────────
 function openNewTask(){ S.modal='newTask'; S._chkItems=['','']; render(); setTimeout(()=>document.getElementById('nt-name')?.focus(),50) }
 function closeModal(){ S.modal=null; render() }
+
+// ── Documentos ────────────────────────────────────────────────────────────
+function openAddDoc(pid){ S.modal='addDoc'; S._docPid=pid; S._docTab='link'; render(); setTimeout(()=>document.getElementById('doc-name-in')?.focus(),50) }
+function switchDocTab(tab){ S._docTab=tab; render() }
+function confirmAddDoc(){
+  const pid=S._docPid
+  const name=(document.getElementById('doc-name-in')?.value||'').trim()
+  if(!name)return
+  const href=(document.getElementById('doc-href-in')?.value||'').trim()
+  const desc=(document.getElementById('doc-desc-in')?.value||'').trim()
+  const p=DATA.find(x=>x.id===pid)
+  if(p){if(!p.docs)p.docs=[];p.docs.push({id:'doc_'+Date.now(),name,href:href||'#',desc,type:'link'})}
+  S.modal=null;render()
+}
+function deleteDoc(pid,idx){
+  const p=DATA.find(x=>x.id===pid)
+  if(p?.docs)p.docs.splice(idx,1)
+  render()
+}
 function addChkItem(){ S._chkItems.push(''); render(); setTimeout(()=>{const inputs=document.querySelectorAll('.modal-chk-in');inputs[inputs.length-1]?.focus()},30) }
 function submitNewTask(){
   const name=(document.getElementById('nt-name')?.value||'').trim()
@@ -1024,6 +1044,7 @@ function save(){
       semaforo:p.semaforo,
       recordatorios:p.recordatorios||[],
       tasks:p.tasks||[],
+      docs:p.docs||[],
       ...(p.cats!==undefined?{cats:p.cats}:{})
     }))
     localStorage.setItem('ligrow_data',JSON.stringify(mutable))
@@ -1041,15 +1062,62 @@ function render(){
   save()
   applyAccent(S.proj?.type||'cliente')
   document.getElementById('app').innerHTML = sidebar() + main()
-  if(S.modal==='newTask'){
-    // Append modal overlay after #app
-    let ov=document.getElementById('modal-root')
-    if(!ov){ov=document.createElement('div');ov.id='modal-root';document.body.appendChild(ov)}
-    ov.innerHTML=newTaskModal()
-  } else {
-    const ov=document.getElementById('modal-root')
-    if(ov)ov.innerHTML=''
-  }
+  let ov=document.getElementById('modal-root')
+  if(!ov){ov=document.createElement('div');ov.id='modal-root';document.body.appendChild(ov)}
+  if(S.modal==='newTask') ov.innerHTML=newTaskModal()
+  else if(S.modal==='addDoc') ov.innerHTML=addDocModal()
+  else ov.innerHTML=''
+}
+
+function addDocModal(){
+  const tab=S._docTab||'link'
+  return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">DOCUMENTOS &amp; RECURSOS</div>
+          <div class="modal-title">Añadir Recurso al Proyecto</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:1px solid var(--border);padding:0 22px">
+        <button onclick="switchDocTab('link')" style="padding:10px 16px;border:none;background:transparent;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;border-bottom:2px solid ${tab==='link'?'var(--accent)':'transparent'};color:${tab==='link'?'var(--accent-text)':'var(--text-3)'};margin-bottom:-1px;display:flex;align-items:center;gap:6px">
+          🔗 Enlace externo
+        </button>
+        <button onclick="switchDocTab('file')" style="padding:10px 16px;border:none;background:transparent;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;border-bottom:2px solid ${tab==='file'?'var(--accent)':'transparent'};color:${tab==='file'?'var(--accent-text)':'var(--text-3)'};margin-bottom:-1px;display:flex;align-items:center;gap:6px">
+          📎 Subir fichero
+        </button>
+      </div>
+      <div class="modal-body">
+        ${tab==='link'?`
+          <div class="modal-field">
+            <div class="modal-lbl">URL del documento</div>
+            <input id="doc-href-in" class="modal-in" placeholder="https://drive.google.com/… · notion.so/… · figma.com/…"/>
+          </div>
+        `:`
+          <div style="border:1.5px dashed var(--border);border-radius:9px;padding:28px 16px;text-align:center;margin-bottom:15px;color:var(--text-3)">
+            <div style="font-size:24px;margin-bottom:8px">📁</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:4px">Arrastra aquí tu fichero</div>
+            <div style="font-size:11.5px">O pega la URL del documento en el campo de abajo</div>
+            <input id="doc-href-in" class="modal-in" placeholder="https://…" style="margin-top:12px;text-align:left"/>
+          </div>
+        `}
+        <div class="modal-field">
+          <div class="modal-lbl">Título del documento</div>
+          <input id="doc-name-in" class="modal-in" placeholder="Ej. Plan de producción final.pdf" onkeydown="if(event.key==='Enter')confirmAddDoc()"/>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Descripción / Notas</div>
+          <input id="doc-desc-in" class="modal-in" placeholder="Detalles sobre este recurso…"/>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="modal-ok" onclick="confirmAddDoc()">Guardar Documento</button>
+      </div>
+    </div>
+  </div>`
 }
 
 function newTaskModal(){
@@ -1225,20 +1293,65 @@ function content(p){
 
 // ─ CLIENTE ──────────────────────────────────────────────────────────────────
 function clienteContent(p){
-  if(S.view==='kanban')     return kanban(p)
-  if(S.view==='tabla')      return tablaRich(p)
-  if(S.view==='plantillas') return `<div class="card"><div class="card-head">Plantillas mensuales</div><div class="dashed-box">Las plantillas de tareas recurrentes aparecerán aquí.</div></div>`
-  if(S.view==='meses')      return `<div class="card"><div class="card-head">Ciclos mensuales</div><div class="dashed-box">Generación y cierre de meses aquí.</div></div>`
+  if(S.view==='kanban') return kanban(p)
   return resumen(p)
 }
 
 function resumen(p){
-  // New resumen: stats bar + recordatorios + rich task table
-  const t=p.tasks||[]
-  const en=t.filter(x=>x.status==='En curso').length
-  const det=t.filter(x=>x.status==='Detenido').length
-  const ok=t.filter(x=>x.status==='Listo').length
-  return recordatoriosSection(p) + taskTableView(p)
+  const tasks=p.tasks||[]
+  const recs=p.recordatorios||[]
+  const docs=p.docs||[]
+  const pendingTasks=tasks.filter(x=>x.status!=='Listo').length
+  const pendingRecs=recs.filter(x=>!x.done).length
+  const totalTasks=tasks.length
+  const doneTasks=tasks.filter(x=>x.status==='Listo').length
+
+  // ── Stats bar ──
+  const statsBar=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+    <div class="stat">
+      <div class="stat-lbl">Tareas pendientes</div>
+      <div class="stat-val ${pendingTasks>0?'accent':'green'}">${pendingTasks}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Completadas</div>
+      <div class="stat-val green">${doneTasks}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Recordatorios activos</div>
+      <div class="stat-val ${pendingRecs>0?'accent':'green'}">${pendingRecs}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Documentos</div>
+      <div class="stat-val">${docs.length}</div>
+    </div>
+  </div>`
+
+  // ── Docs section ──
+  const docsSection=`<div class="card" style="display:flex;flex-direction:column;gap:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-1)">
+        <span style="font-size:16px">📄</span> Documentos &amp; Recursos
+      </div>
+      <button onclick="openAddDoc('${p.id}')" style="padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;font-family:inherit;cursor:pointer">+ Añadir recurso</button>
+    </div>
+    ${docs.length?`<div style="display:flex;flex-direction:column;gap:0">
+      ${docs.map((d,i)=>`
+        <div class="doc-row" style="display:flex;align-items:center;gap:9px">
+          <span style="font-size:15px">${d.type==='file'?'📎':'🔗'}</span>
+          <div style="flex:1;min-width:0">
+            <div class="doc-name">${d.name}</div>
+            ${d.desc?`<div style="font-size:11px;color:var(--text-3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.desc}</div>`:''}
+          </div>
+          ${d.href&&d.href!=='#'?`<a href="${d.href}" target="_blank" rel="noopener" class="doc-link">Abrir ↗</a>`:''}
+          <button onclick="deleteDoc('${p.id}',${i})" style="background:transparent;border:none;color:var(--text-3);font-size:13px;cursor:pointer;padding:0 2px;opacity:0;transition:opacity .15s" class="doc-del">🗑</button>
+        </div>`).join('')}
+    </div>`:`<div class="dashed-box">Sin documentos vinculados.<br><span style="font-size:11px;color:var(--text-3)">Añade PDFs, links de Drive, Notion, Figma…</span></div>`}
+  </div>`
+
+  // ── Recordatorios ──
+  const recsSection=recordatoriosSection(p)
+
+  return statsBar + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">${docsSection}${recsSection}</div>`
 }
 
 // ── Recordatorios section ──────────────────────────────────────────────────
@@ -1276,7 +1389,9 @@ function recordatoriosSection(p){
       </div>
     `:''}
   `
-  return `<div class="rec-wrap">${inner}</div>`
+  return `<div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 18px 0">${inner}</div>
+  </div>`
 }
 
 // ── Rich task table view ───────────────────────────────────────────────────
@@ -1852,7 +1967,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v2'
+const STORE_VERSION='v3'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
@@ -1866,6 +1981,7 @@ try{
     if(s.semaforo!==undefined)p.semaforo=s.semaforo
     if(Array.isArray(s.recordatorios))p.recordatorios=s.recordatorios
     if(Array.isArray(s.tasks))p.tasks=s.tasks
+    if(Array.isArray(s.docs))p.docs=s.docs
     if(Array.isArray(s.cats))p.cats=s.cats
   })
   const st=JSON.parse(localStorage.getItem('ligrow_state')||'{}')
