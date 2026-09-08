@@ -10,6 +10,7 @@
   <style>
 /* ── Reset ─────────────────────────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;overflow:hidden} /* without this, some mobile browsers scroll the whole document instead of just the inner panels */
 button{font-family:inherit;cursor:pointer}
 a{text-decoration:none}
 
@@ -649,7 +650,7 @@ body{
 }
 @media (max-width:760px){
   #app{grid-template-columns:1fr;height:auto;min-height:100vh;min-height:100dvh}
-  body{overflow:auto}
+  html,body{overflow:auto}
   .sb{
     border-right:none;border-bottom:1px solid var(--sidebar-border);
     max-height:46vh;
