@@ -373,6 +373,44 @@ body{
 .ptable td{padding:6px 6px;border-bottom:1px solid var(--border-2);color:var(--text-1)}
 .ptable tr:last-child td{border-bottom:none}
 .price-val{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── Kanban card extras ──────────────────────────────────────────────────── */
+.kc-extras{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+.kc-prog-wrap{display:flex;align-items:center;gap:5px;flex:1;min-width:80px}
+.kc-prog-bar{flex:1;height:3px;background:var(--border-2);border-radius:2px;overflow:hidden}
+.kc-prog-fill{height:100%;border-radius:2px;background:var(--accent)}
+.kc-prog-txt{font-size:9.5px;color:var(--text-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.kc-att{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text-3);background:var(--border-2);padding:2px 5px;border-radius:4px;white-space:nowrap}
+.kc-link{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--accent-text);background:var(--accent-light);padding:2px 6px;border-radius:4px;white-space:nowrap;cursor:pointer}
+.kc-chklist{margin-top:8px;display:flex;flex-direction:column;gap:3px}
+.kc-chk-item{display:flex;align-items:flex-start;gap:6px;font-size:11.5px;color:var(--text-2);line-height:1.35}
+.kc-chk-item.done{color:var(--text-3);text-decoration:line-through}
+.kc-chk-box{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:8px}
+.kc-chk-box.done{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ── Nueva tarea panel ───────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:stretch;justify-content:flex-end}
+.modal-panel{width:360px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700;color:var(--text-1)}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:18px;line-height:1;cursor:pointer;font-family:inherit}
+.modal-body{flex:1;overflow-y:auto;padding:20px 22px}
+.modal-body::-webkit-scrollbar{width:0}
+.modal-field{margin-bottom:15px}
+.modal-lbl{font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:5px}
+.modal-in{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:13.5px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none;box-sizing:border-box}
+.modal-in:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-light)}
+.modal-sel{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:13.5px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none;appearance:none;cursor:pointer}
+.modal-foot{padding:14px 22px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.modal-ok{flex:1;padding:9px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.modal-ok:hover{opacity:.9}
+.modal-cancel{padding:9px 16px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.modal-cancel:hover{border-color:var(--text-2)}
+.modal-chk-list{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.modal-chk-row{display:flex;align-items:center;gap:7px}
+.modal-chk-in{flex:1;border:1px solid var(--border-2);border-radius:5px;padding:5px 8px;font-size:12.5px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none}
+.modal-add-chk{font-size:12px;font-weight:600;color:var(--accent-text);background:transparent;border:none;padding:0;cursor:pointer;font-family:inherit;margin-top:4px}
   </style>
 </head>
 <body>
@@ -385,13 +423,23 @@ const DATA = [
     id:'ae', type:'cliente', color:'#C0392B', initials:'AE',
     name:'Andorra Ecommerce', sub:'Rediseño UX/UI · Shopify Plus',
     tasks:[
-      {code:'AE-001',name:'Auditoría completa del checkout',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-20'},
-      {code:'AE-002',name:'Migración a Shopify Plus',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-09-30'},
-      {code:'AE-003',name:'Integración pasarela de pagos',owner:'Alejandro',status:'En curso',priority:'Media',due:'2026-09-25'},
-      {code:'AE-004',name:'Optimización velocidad mobile',owner:'Jesús',status:'Detenido',priority:'Media',due:'2026-09-18'},
-      {code:'AE-005',name:'Copy fichas de producto (es/fr/ca)',owner:'Blanca',status:'Detenido',priority:'Baja',due:'2026-09-22'},
-      {code:'AE-006',name:'Setup Google Analytics 4',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-08'},
-      {code:'AE-007',name:'Briefing estrategia Q4',owner:'Jesús',status:'Listo',priority:'Alta',due:'2026-09-05'},
+      {code:'AE-001',name:'Auditoría completa del checkout',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-20',
+       checklist:[{text:'Revisar flujo de pago desktop',done:true},{text:'Revisar flujo mobile',done:true},{text:'Test pasarela Stripe',done:false},{text:'Documentar incidencias',done:false}],
+       link:{label:'Notion · Brief checkout',href:'#'}},
+      {code:'AE-002',name:'Migración a Shopify Plus',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-09-30',
+       attachment:{name:'plan-migracion-v2.pdf',size:'1.2 MB'},
+       checklist:[{text:'Exportar productos y clientes',done:true},{text:'Configurar plan Plus',done:false},{text:'Migrar temas personalizados',done:false}]},
+      {code:'AE-003',name:'Integración pasarela de pagos',owner:'Alejandro',status:'En curso',priority:'Media',due:'2026-09-25',
+       link:{label:'Stripe Dashboard',href:'#'},
+       attachment:{name:'stripe-keys.txt',size:'2 KB'}},
+      {code:'AE-004',name:'Optimización velocidad mobile',owner:'Jesús',status:'Detenido',priority:'Media',due:'2026-09-18',
+       attachment:{name:'lighthouse-report.pdf',size:'480 KB'}},
+      {code:'AE-005',name:'Copy fichas de producto (es/fr/ca)',owner:'Blanca',status:'Detenido',priority:'Baja',due:'2026-09-22',
+       link:{label:'Google Sheets · Copy master',href:'#'}},
+      {code:'AE-006',name:'Setup Google Analytics 4',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-08',
+       checklist:[{text:'Crear propiedad GA4',done:true},{text:'Instalar gtag en theme',done:true},{text:'Verificar eventos clave',done:true}]},
+      {code:'AE-007',name:'Briefing estrategia Q4',owner:'Jesús',status:'Listo',priority:'Alta',due:'2026-09-05',
+       attachment:{name:'briefing-Q4-2026.pdf',size:'890 KB'}},
     ]
   },
   {
@@ -638,6 +686,8 @@ let S = {
   provCat: null,
   open:   {},
   addingCat: false,
+  modal: null,  // null | 'newTask'
+  _chkItems: ['',''],  // checklist items draft
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -672,6 +722,35 @@ function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.navView=null; S.view=
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
+
+// ── Nueva tarea modal ─────────────────────────────────────────────────────
+function openNewTask(){ S.modal='newTask'; S._chkItems=['','']; render(); setTimeout(()=>document.getElementById('nt-name')?.focus(),50) }
+function closeModal(){ S.modal=null; render() }
+function addChkItem(){ S._chkItems.push(''); render(); setTimeout(()=>{const inputs=document.querySelectorAll('.modal-chk-in');inputs[inputs.length-1]?.focus()},30) }
+function submitNewTask(){
+  const name=(document.getElementById('nt-name')?.value||'').trim()
+  if(!name)return
+  const priority=document.getElementById('nt-priority')?.value||'Media'
+  const owner=(document.getElementById('nt-owner')?.value||'').trim()||'—'
+  const due=document.getElementById('nt-due')?.value||''
+  const link=(document.getElementById('nt-link')?.value||'').trim()
+  const attach=(document.getElementById('nt-attach')?.value||'').trim()
+  const chkInputs=[...document.querySelectorAll('.modal-chk-in')].map(i=>i.value.trim()).filter(Boolean)
+  const p=S.proj
+  if(!p||p.type!=='cliente')return
+  const nextCode=p.id.toUpperCase()+'-'+(String((p.tasks?.length||0)+1).padStart(3,'0'))
+  const task={
+    code:nextCode, name, owner, status:'En curso', priority, due,
+    ...(chkInputs.length?{checklist:chkInputs.map(t=>({text:t,done:false}))}:{}),
+    ...(link?{link:{label:link.replace(/https?:\/\//,'').split('/')[0],href:link}}:{}),
+    ...(attach?{attachment:{name:attach,size:'—'}}:{})
+  }
+  if(!p.tasks)p.tasks=[]
+  p.tasks.push(task)
+  S.view='kanban'
+  S.modal=null
+  render()
+}
 function startAddCat(){ S.addingCat=true; render(); setTimeout(()=>document.getElementById('cat-input')?.focus(),50) }
 function cancelAddCat(){ S.addingCat=false; render() }
 function confirmAddCat(){
@@ -697,6 +776,71 @@ function confirmAddCat(){
 function render(){
   applyAccent(S.proj?.type||'cliente')
   document.getElementById('app').innerHTML = sidebar() + main()
+  if(S.modal==='newTask'){
+    // Append modal overlay after #app
+    let ov=document.getElementById('modal-root')
+    if(!ov){ov=document.createElement('div');ov.id='modal-root';document.body.appendChild(ov)}
+    ov.innerHTML=newTaskModal()
+  } else {
+    const ov=document.getElementById('modal-root')
+    if(ov)ov.innerHTML=''
+  }
+}
+
+function newTaskModal(){
+  const chkItems=S._chkItems||['','']
+  return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div class="modal-title">+ Nueva tarea · ${S.proj?.name||''}</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <div class="modal-lbl">Nombre de la tarea</div>
+          <input id="nt-name" class="modal-in" placeholder="Ej. Diseñar banner campaña…" onkeydown="if(event.key==='Enter')submitNewTask()"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="modal-field">
+            <div class="modal-lbl">Prioridad</div>
+            <select id="nt-priority" class="modal-sel">
+              <option>Alta</option><option selected>Media</option><option>Baja</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <div class="modal-lbl">Vence</div>
+            <input id="nt-due" type="date" class="modal-in" value="${new Date(Date.now()+7*864e5).toISOString().slice(0,10)}"/>
+          </div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Responsable</div>
+          <input id="nt-owner" class="modal-in" placeholder="Nombre del responsable"/>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Enlace (opcional)</div>
+          <input id="nt-link" class="modal-in" placeholder="https://notion.so/…"/>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Adjunto — nombre de archivo (opcional)</div>
+          <input id="nt-attach" class="modal-in" placeholder="brief-campaña.pdf"/>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Checklist</div>
+          <div class="modal-chk-list">
+            ${chkItems.map((v,i)=>`<div class="modal-chk-row">
+              <div style="width:13px;height:13px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0"></div>
+              <input class="modal-chk-in" placeholder="Subtarea ${i+1}…" value="${v}"/>
+            </div>`).join('')}
+          </div>
+          <button class="modal-add-chk" onclick="addChkItem()">+ Añadir subtarea</button>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="modal-ok" onclick="submitNewTask()">Crear tarea</button>
+      </div>
+    </div>
+  </div>`
 }
 
 // ─ Sidebar
@@ -766,6 +910,7 @@ function main(){
   if(!tabs.includes(S.view)) S.view = tabs[0]
   const typeName = {cliente:'Cliente',app:'App',proveedor:'Proveedor'}[p.type]
   const btnLabel = p.type==='proveedor'?'+ Proveedor':p.type==='app'?'Abrir app':'+ Nueva tarea'
+  const btnClick = p.type==='cliente'?`openNewTask()`:`console.log('action')`
   const shape    = TYPE_SHAPE[p.type]
   const badge    = TYPE_BADGE[p.type]
   const lgStyle  = p.type==='proveedor'?`color:${p.color}`:`background:${p.color}`
@@ -782,7 +927,7 @@ function main(){
           <div class="proj-sub-text">${p.sub}</div>
         </div>
         <span class="type-pill">${typeName}</span>
-        <button class="tb-action">${btnLabel}</button>
+        <button class="tb-action" onclick="${btnClick}">${btnLabel}</button>
       </div>
       <div class="tabs">
         ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
@@ -851,14 +996,31 @@ function kanban(p){
         <span class="k-col-title">${s}</span>
         <span class="k-count">${col.length}</span>
       </div>
-      ${col.map(x=>`<div class="kc ${x.priority.toLowerCase()}">
+      ${col.map(x=>{
+        const cl=x.checklist||[]
+        const done=cl.filter(c=>c.done).length
+        const hasExtras=cl.length||x.link||x.attachment
+        return `<div class="kc ${x.priority.toLowerCase()}">
         <div class="kc-code">${x.code}</div>
         <div class="kc-name">${x.name}</div>
+        ${cl.length?`<div class="kc-chklist">${cl.map(c=>`
+          <div class="kc-chk-item ${c.done?'done':''}">
+            <div class="kc-chk-box ${c.done?'done':''}">${c.done?'✓':''}</div>
+            ${c.text}
+          </div>`).join('')}</div>`:''}
+        ${hasExtras?`<div class="kc-extras">
+          ${cl.length?`<div class="kc-prog-wrap">
+            <div class="kc-prog-bar"><div class="kc-prog-fill" style="width:${Math.round(done/cl.length*100)}%"></div></div>
+            <span class="kc-prog-txt">${done}/${cl.length}</span>
+          </div>`:''}
+          ${x.link?`<span class="kc-link">🔗 ${x.link.label}</span>`:''}
+          ${x.attachment?`<span class="kc-att">📎 ${x.attachment.name}</span>`:''}
+        </div>`:''}
         <div class="kc-foot">
           <span class="kc-owner">${x.owner}</span>
           <span class="pri ${x.priority.toLowerCase()}">${x.priority}</span>
         </div>
-      </div>`).join('')||`<div class="k-empty">Sin tareas</div>`}
+      </div>`}).join('')||`<div class="k-empty">Sin tareas</div>`}
     </div>`
   }).join('')}</div>`
 }
