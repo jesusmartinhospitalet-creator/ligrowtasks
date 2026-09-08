@@ -108,7 +108,7 @@ body{
 .pi-av-wrap{position:relative;flex-shrink:0;width:30px;height:30px}
 .pi-av{
   width:30px;height:30px;
-  font-family:'Syne',sans-serif;font-size:10px;font-weight:700;
+  font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
   color:#fff;letter-spacing:.5px;
   position:absolute;inset:0;transition:filter .15s
@@ -152,7 +152,7 @@ body{
 .proj-av-lg-wrap{position:relative;flex-shrink:0;width:40px;height:40px}
 .proj-av-lg{
   position:absolute;inset:0;
-  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
   display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.5px
 }
 .proj-av-lg.shape-cliente{border-radius:9px}
@@ -169,7 +169,7 @@ body{
   display:flex;align-items:center;justify-content:center;font-size:8px;line-height:1
 }
 .proj-title-wrap{flex:1}
-.proj-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--text-1);letter-spacing:-.3px;line-height:1.2}
+.proj-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;color:var(--text-1);letter-spacing:-.1px;line-height:1.2}
 .proj-sub-text{font-size:12px;color:var(--text-3);margin-top:2px}
 .type-pill{padding:3px 9px;border-radius:20px;font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:var(--accent-light);color:var(--accent-text);transition:all .3s}
 .tb-action{padding:8px 15px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;transition:background .3s;white-space:nowrap}
@@ -343,7 +343,7 @@ body{
   padding:14px 18px;margin-bottom:12px
 }
 .folder-ico{font-size:24px}
-.folder-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text-1)}
+.folder-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;color:var(--text-1)}
 .folder-sub{font-size:11.5px;color:var(--text-3);margin-top:1px}
 .add-btn{margin-left:auto;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:12px;font-weight:600;transition:all .15s}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -1060,7 +1060,7 @@ function navDashboard(){
     <div class="tb" style="padding-bottom:0">
       <div class="tb-row1">
         <div style="flex:1">
-          <div class="proj-title" style="font-family:'Syne',sans-serif;font-weight:800;font-size:19px">Dashboard</div>
+          <div class="proj-title" style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px">Dashboard</div>
           <div class="proj-sub-text">Vista general · ${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
         </div>
       </div>
@@ -1080,7 +1080,7 @@ function navDashboard(){
         if(!t.length)return''
         return `<div class="card" style="margin-bottom:12px;padding:14px 18px;cursor:pointer" onclick="selectProj('${p.id}')">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-            <div style="width:26px;height:26px;border-radius:6px;background:${p.color};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:#fff">${p.initials}</div>
+            <div style="width:26px;height:26px;border-radius:6px;background:${p.color};display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:#fff">${p.initials}</div>
             <div style="font-weight:700;font-size:14px;color:var(--text-1)">${p.name}</div>
             <span style="margin-left:auto;font-size:11px;color:var(--text-3)">${p.sub}</span>
             <span class="chip chip-orange" style="margin-left:8px">${en.length} en curso</span>
@@ -1111,7 +1111,7 @@ function navProyectos(){
     <div class="tb" style="padding-bottom:0">
       <div class="tb-row1">
         <div style="flex:1">
-          <div class="proj-title" style="font-family:'Syne',sans-serif;font-weight:800;font-size:19px">Todos los proyectos</div>
+          <div class="proj-title" style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px">Todos los proyectos</div>
           <div class="proj-sub-text">${DATA.length} proyectos · ${DATA.filter(p=>p.type==='cliente').length} clientes · ${DATA.filter(p=>p.type==='app').length} apps</div>
         </div>
         <button class="tb-action" style="background:var(--brand)">+ Nuevo proyecto</button>
@@ -1128,7 +1128,7 @@ function navProyectos(){
               const en=t.filter(x=>x.status==='En curso').length
               return `<div class="card" style="padding:14px 16px;cursor:pointer;transition:box-shadow .15s" onclick="selectProj('${p.id}')">
                 <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
-                  <div style="width:32px;height:32px;border-radius:${p.type==='app'?'50%':'8px'};background:${p.color};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${p.initials}</div>
+                  <div style="width:32px;height:32px;border-radius:${p.type==='app'?'50%':'8px'};background:${p.color};display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${p.initials}</div>
                   <div>
                     <div style="font-weight:700;font-size:13px;color:var(--text-1)">${p.name}</div>
                     <span style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:${a.light};color:${a.text}">${typeLabel[p.type]}</span>
@@ -1157,7 +1157,7 @@ function navCalendario(){
     <div class="tb" style="padding-bottom:0">
       <div class="tb-row1">
         <div style="flex:1">
-          <div class="proj-title" style="font-family:'Syne',sans-serif;font-weight:800;font-size:19px">Calendario</div>
+          <div class="proj-title" style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px">Calendario</div>
           <div class="proj-sub-text">Tareas ordenadas por fecha de vencimiento</div>
         </div>
       </div>
@@ -1166,7 +1166,7 @@ function navCalendario(){
       ${Object.entries(byDate).map(([date,tasks])=>`
         <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-start">
           <div style="width:52px;text-align:center;flex-shrink:0;padding-top:2px">
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--text-1);line-height:1">${formatDate(date).split(' ')[0]}</div>
+            <div style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:18px;color:var(--text-1);line-height:1">${formatDate(date).split(' ')[0]}</div>
             <div style="font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3)">${formatDate(date).split(' ')[1]}</div>
           </div>
           <div style="flex:1;border-left:2px solid var(--border-2);padding-left:16px">
