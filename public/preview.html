@@ -137,6 +137,16 @@ body{
 .pi.on .pi-name{color:#fff}
 .pi-sub{font-size:10.5px;color:rgba(255,255,255,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.5px}
 .pi-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;opacity:.6}
+.pi.sem-verde {background:rgba(34,197,94,.13)}
+.pi.sem-verde.on{background:rgba(34,197,94,.22)}
+.pi.sem-naranja{background:rgba(245,158,11,.13)}
+.pi.sem-naranja.on{background:rgba(245,158,11,.22)}
+.pi.sem-rojo   {background:rgba(239,68,68,.13)}
+.pi.sem-rojo.on{background:rgba(239,68,68,.22)}
+/* sidebar legend */
+.sb-legend{padding:10px 8px 12px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.sb-legend-row{display:flex;align-items:center;gap:7px;padding:3px 8px;font-size:10.5px;color:rgba(255,255,255,.32);line-height:1.4}
+.sb-legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
 /* ── Main ────────────────────────────────────────────────────────────────── */
 .mn{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
@@ -424,6 +434,17 @@ body{
 
 /* ── Recordatorios section ───────────────────────────────────────────────── */
 .rec-section{margin-bottom:20px}
+.rec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.rec-title{font-size:13px;font-weight:600;color:var(--text-1)}
+.rec-new-btn{padding:4px 11px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.rec-new-btn:hover{border-color:var(--accent);color:var(--accent-text)}
+.rec-date{font-size:10.5px;color:var(--text-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rec-del-btn{background:transparent;border:none;color:var(--text-3);font-size:13px;cursor:pointer;padding:0 2px;opacity:0;transition:opacity .15s;flex-shrink:0}
+.rec-row:hover .rec-del-btn{opacity:1}
+.rec-in{flex:1;border:1px solid var(--border-2);border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none;min-width:0}
+.rec-in:focus{border-color:var(--accent)}
+.rec-ok-btn{padding:5px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.rec-cancel-btn{padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:12px;font-family:inherit;cursor:pointer;flex-shrink:0}
 .rec-section-hd{font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
 .rec-wrap{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:6px}
 .rec-row{display:flex;align-items:center;gap:11px;padding:10px 14px;border-bottom:1px solid var(--border-2);cursor:pointer;transition:background .1s}
@@ -439,7 +460,7 @@ body{
 .rec-due{font-size:10.5px;color:var(--text-3);white-space:nowrap}
 .rec-del{background:transparent;border:none;color:var(--text-3);font-size:14px;cursor:pointer;padding:0 2px;opacity:0;transition:opacity .15s;flex-shrink:0}
 .rec-row:hover .rec-del{opacity:1}
-.rec-add-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border-2)}
+.rec-add-row{display:flex;gap:6px;padding:10px 14px;border-top:1px solid var(--border-2);align-items:center;flex-wrap:wrap}
 .rec-add-in{flex:1;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none}
 .rec-add-in:focus{border-color:var(--accent)}
 .rec-add-ok{padding:6px 13px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap}
@@ -1136,6 +1157,11 @@ function sidebar(){
       ${ap.length?`<div class="sl-label">Apps</div>${ap.map(pi).join('')}`:''}
       ${pr.length?`<div class="sl-label">Proveedores</div>${pr.map(pi).join('')}`:''}
     </div>
+    ${cl.length?`<div class="sb-legend">
+      <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#22C55E"></div>Verde: cliente activo</div>
+      <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#F59E0B"></div>Naranja: cliente standby</div>
+      <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#EF4444"></div>Rojo: cliente inactivo</div>
+    </div>`:''}
   </div>`
 }
 function pi(p){
@@ -1143,7 +1169,9 @@ function pi(p){
   const shape = TYPE_SHAPE[p.type]
   const badge = TYPE_BADGE[p.type]
   const avStyle = p.type==='proveedor' ? `color:${p.color}` : `background:${p.color}`
-  return `<div class="pi ${S.proj?.id===p.id?'on':''}" onclick="selectProj('${p.id}')">
+  const semCls = p.type==='cliente' && p.semaforo ? `sem-${p.semaforo}` : ''
+  const isOn   = S.proj?.id===p.id ? 'on' : ''
+  return `<div class="pi ${isOn} ${semCls}" onclick="selectProj('${p.id}')">
     <div class="pi-av-wrap">
       <div class="pi-av ${shape}" style="${avStyle}">${p.type==='proveedor'?badge:p.initials}</div>
       <div class="pi-badge">${badge}</div>
@@ -1227,43 +1255,41 @@ function resumen(p){
 }
 
 // ── Recordatorios section ──────────────────────────────────────────────────
+function fmtDue(due){
+  if(!due)return ''
+  try{return new Date(due+'T00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}
+  catch{return due}
+}
 function recordatoriosSection(p){
   const recs=p.recordatorios||[]
-  if(!recs.length && !S.addingRec) return `
-  <div class="rec-wrap">
+  const inner = `
     <div class="rec-head">
       <div class="rec-title">🔔 Recordatorios / Temas pendientes</div>
       <button class="rec-new-btn" onclick="startAddRec()">+ Nuevo</button>
     </div>
-    <div style="font-size:12px;color:var(--text-3)">Sin recordatorios. Añade temas pendientes o avisos importantes.</div>
-  </div>`
-  return `
-  <div class="rec-wrap">
-    <div class="rec-head">
-      <div class="rec-title">🔔 Recordatorios / Temas pendientes</div>
-      <button class="rec-new-btn" onclick="startAddRec()">+ Nuevo</button>
-    </div>
+    ${!recs.length?`<div style="font-size:12px;color:var(--text-3);padding:0 14px 14px">Sin recordatorios. Añade temas pendientes o avisos importantes.</div>`:''}
     ${recs.map((r,i)=>`
-      <div class="rec-row">
+      <div class="rec-row ${r.done?'done-row':''}">
         <div class="rec-cb ${r.done?'on':''}" onclick="toggleRec('${p.id}',${i})">${r.done?'✓':''}</div>
-        <div style="flex:1;min-width:0">
-          <div class="rec-text ${r.done?'done':''}" onclick="toggleRec('${p.id}',${i})">${r.text}</div>
+        <div class="rec-body">
+          <div class="rec-text" onclick="toggleRec('${p.id}',${i})">${r.text}</div>
           ${r.detail?`<div class="rec-detail">${r.detail}</div>`:''}
         </div>
-        ${r.due?`<div class="rec-date">${r.due}</div>`:''}
+        ${r.due?`<div class="rec-date">${fmtDue(r.due)}</div>`:''}
         <button class="rec-del-btn" onclick="deleteRec('${p.id}',${i})">🗑</button>
       </div>
     `).join('')}
     ${S.addingRec?`
-      <div class="rec-add-row" style="grid-template-columns:1fr 1fr auto auto">
-        <input id="rec-txt-in" class="rec-in" placeholder="Tarea o recordatorio…" onkeydown="if(event.key==='Enter')confirmAddRec('${p.id}')"/>
-        <input id="rec-det-in" class="rec-in" placeholder="Detalle (opcional)…"/>
-        <input id="rec-due-in" type="date" class="rec-in" style="width:130px"/>
-        <button class="rec-ok-btn" onclick="confirmAddRec('${p.id}')">OK</button>
+      <div class="rec-add-row">
+        <input id="rec-txt-in" class="rec-in" placeholder="Tarea o recordatorio…" style="flex:2" onkeydown="if(event.key==='Enter')confirmAddRec('${p.id}')"/>
+        <input id="rec-det-in" class="rec-in" placeholder="Detalle (opcional)…" style="flex:2"/>
+        <input id="rec-due-in" type="date" class="rec-in" style="width:130px;flex:none"/>
+        <button class="rec-ok-btn" onclick="confirmAddRec('${p.id}')">Añadir</button>
         <button class="rec-cancel-btn" onclick="cancelAddRec()">✕</button>
       </div>
     `:''}
-  </div>`
+  `
+  return `<div class="rec-wrap">${inner}</div>`
 }
 
 // ── Rich task table view ───────────────────────────────────────────────────
