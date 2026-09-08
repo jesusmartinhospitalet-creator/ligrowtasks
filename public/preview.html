@@ -1025,7 +1025,6 @@ function submitNewTask(){
   }
   if(!p.tasks)p.tasks=[]
   p.tasks.push(task)
-  S.view='kanban'
   S.modal=null
   render()
 }
@@ -1050,8 +1049,29 @@ function confirmAddCat(){
   render()
 }
 
+// ── Persistence ──────────────────────────────────────────────────────────────
+function save(){
+  try{
+    const mutable=DATA.map(p=>({
+      id:p.id,
+      semaforo:p.semaforo,
+      recordatorios:p.recordatorios||[],
+      tasks:p.tasks||[],
+      ...(p.cats!==undefined?{cats:p.cats}:{})
+    }))
+    localStorage.setItem('ligrow_data',JSON.stringify(mutable))
+    localStorage.setItem('ligrow_state',JSON.stringify({
+      projId:S.proj?.id,
+      view:S.view,
+      filter:S.filter,
+      navView:S.navView
+    }))
+  }catch(e){}
+}
+
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(){
+  save()
   applyAccent(S.proj?.type||'cliente')
   document.getElementById('app').innerHTML = sidebar() + main()
   if(S.modal==='newTask'){
@@ -1786,7 +1806,25 @@ function navCalendario(){
   </div>`
 }
 
-// Start on Dashboard with brand orange
+// ── Restore persisted state ───────────────────────────────────────────────────
+try{
+  const saved=JSON.parse(localStorage.getItem('ligrow_data')||'[]')
+  saved.forEach(s=>{
+    const p=DATA.find(x=>x.id===s.id)
+    if(!p)return
+    if(s.semaforo!==undefined)p.semaforo=s.semaforo
+    if(Array.isArray(s.recordatorios))p.recordatorios=s.recordatorios
+    if(Array.isArray(s.tasks))p.tasks=s.tasks
+    if(Array.isArray(s.cats))p.cats=s.cats
+  })
+  const st=JSON.parse(localStorage.getItem('ligrow_state')||'{}')
+  if(st.filter&&['todos','clientes','apps','proveedores'].includes(st.filter))S.filter=st.filter
+  if(st.projId){const found=DATA.find(x=>x.id===st.projId);if(found)S.proj=found}
+  if(st.view)S.view=st.view
+  if(st.navView!==undefined)S.navView=st.navView
+}catch(e){}
+
+// Start with brand orange
 applyAccent('cliente')
 render()
 </script>
