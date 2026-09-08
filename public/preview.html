@@ -100,9 +100,25 @@ body{
 .sb-list{flex:1;overflow-y:auto;padding:6px 8px 16px}
 .sb-list::-webkit-scrollbar{width:0}
 .sl-label{font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:12px 8px 5px}
-.pi{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:1px}
+.sl-label-row{display:flex;align-items:center;justify-content:space-between;padding-right:6px}
+.sl-add-btn{width:18px;height:18px;border-radius:5px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.sl-add-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+.sl-empty{padding:4px 8px 10px;font-size:11px;color:rgba(255,255,255,.22)}
+.pi{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:background .15s,opacity .15s;margin-bottom:1px;position:relative}
 .pi:hover{background:rgba(255,255,255,.05)}
 .pi.on{background:rgba(255,255,255,.08)}
+.pi-del{opacity:0;flex-shrink:0;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pi:hover .pi-del{opacity:1}
+.pi-del:hover{color:#EF4444;background:rgba(239,68,68,.14)}
+/* Drag & drop reordering */
+.pi-grip{flex-shrink:0;width:12px;font-size:12px;line-height:1;color:rgba(255,255,255,.16);opacity:0;cursor:grab;transition:opacity .15s;text-align:center}
+.pi:hover .pi-grip{opacity:1}
+.pi.dragging{opacity:.35}
+.pi.drag-over-top::before,.pi.drag-over-bottom::after{
+  content:'';position:absolute;left:6px;right:6px;height:2px;border-radius:2px;background:var(--accent)
+}
+.pi.drag-over-top::before{top:-1px}
+.pi.drag-over-bottom::after{bottom:-1px}
 
 /* Avatar wrappers — shape differs by type */
 .pi-av-wrap{position:relative;flex-shrink:0;width:30px;height:30px}
@@ -184,6 +200,8 @@ body{
 .type-pill{padding:3px 9px;border-radius:20px;font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:var(--accent-light);color:var(--accent-text);transition:all .3s}
 .tb-action{padding:8px 15px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;transition:background .3s;white-space:nowrap}
 .tb-action:hover{opacity:.9}
+.tb-del-btn{width:33px;height:33px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.tb-del-btn:hover{border-color:#EF4444;color:#EF4444;background:rgba(239,68,68,.07)}
 
 /* tabs */
 .tabs{display:flex;gap:0;margin:0 -28px;padding:0 28px}
@@ -421,6 +439,9 @@ body{
 .modal-chk-row{display:flex;align-items:center;gap:7px}
 .modal-chk-in{flex:1;border:1px solid var(--border-2);border-radius:5px;padding:5px 8px;font-size:12.5px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none}
 .modal-add-chk{font-size:12px;font-weight:600;color:var(--accent-text);background:transparent;border:none;padding:0;cursor:pointer;font-family:inherit;margin-top:4px}
+.color-swatches{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
+.color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-sizing:border-box;transition:all .15s}
+.color-swatch.on{border-color:var(--surface);box-shadow:0 0 0 2px var(--accent)}
 
 /* ── Semáforo ────────────────────────────────────────────────────────────── */
 .semaforo-wrap{display:flex;align-items:center;gap:7px}
@@ -619,8 +640,16 @@ body{
 <div id="app"></div>
 <script>
 // ── Data ────────────────────────────────────────────────────────────────────
-const DATA = [
+let DATA = [
   // ─ CLIENTES
+  {
+    id:'cpb', type:'cliente', color:'#0F9460', initials:'CS',
+    name:'CPB SERVEIS MENTALS', sub:'',
+    semaforo:null,
+    description:'',
+    recordatorios:[],
+    tasks:[]
+  },
   {
     id:'ab', type:'cliente', color:'#1D6FA4', initials:'AB',
     name:'AsistecBCN', sub:'',
@@ -826,6 +855,9 @@ const TYPE_SHAPE  = {cliente:'shape-cliente', app:'shape-app', proveedor:'shape-
 const TYPE_BADGE  = {cliente:'🏢', app:'⚡', proveedor:'🗂️'}
 const TYPE_ICON   = {cliente:'🏢', app:'⚡', proveedor:'🗂️'}
 
+// Palette offered when creating a new client
+const CLIENT_COLORS = ['#1D6FA4','#2C3E50','#A8385D','#0F9460','#B45309','#7C3AED','#DB2777','#0EA5E9']
+
 // ── State ────────────────────────────────────────────────────────────────────
 let S = {
   navView: 'dashboard', // dashboard | proyectos | calendario | null (= project view)
@@ -973,6 +1005,108 @@ function deleteTask(pid,code,e){
 function openNewTask(){ S.modal='newTask'; S._chkItems=['','']; render(); setTimeout(()=>document.getElementById('nt-name')?.focus(),50) }
 function closeModal(){ S.modal=null; render() }
 
+// ── Clientes: alta y baja ──────────────────────────────────────────────────
+function openNewClient(){
+  S.modal='newClient'
+  S._newClientColor=CLIENT_COLORS[0]
+  render()
+  setTimeout(()=>document.getElementById('nc-name')?.focus(),50)
+}
+function pickNewClientColor(c){
+  S._newClientColor=c
+  document.querySelectorAll('#modal-root .color-swatch').forEach(el=>{
+    el.classList.toggle('on', el.getAttribute('data-color')===c)
+  })
+}
+function submitNewClient(){
+  const name=(document.getElementById('nc-name')?.value||'').trim()
+  if(!name)return
+  const sub=(document.getElementById('nc-sub')?.value||'').trim()
+  const color=S._newClientColor||CLIENT_COLORS[0]
+  const initials=name.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('')||'CL'
+  const client={
+    id:'c_'+Date.now().toString(36),
+    type:'cliente', color, initials, name, sub,
+    semaforo:null, description:'', recordatorios:[], tasks:[]
+  }
+  DATA.push(client)
+  S.modal=null
+  S._newClientColor=null
+  S.proj=client
+  S.navView=null
+  S.view='resumen'
+  if(S.filter==='apps'||S.filter==='proveedores')S.filter='todos'
+  render()
+}
+function deleteClient(id,e){
+  if(e){e.stopPropagation();e.preventDefault()}
+  const p=DATA.find(x=>x.id===id)
+  if(!p)return
+  if(!confirm(`¿Eliminar el cliente "${p.name}"? Se perderán sus tareas y recordatorios.`))return
+  DATA=DATA.filter(x=>x.id!==id)
+  if(S.proj?.id===id){
+    const next=DATA.find(x=>x.type==='cliente')||DATA[0]||null
+    S.proj=next
+    S.view=next?defaultView(next):'resumen'
+  }
+  render()
+}
+
+// ── Reordenar proyectos (drag & drop) ───────────────────────────────────────
+// Items are only reorderable within their own section (clientes / apps /
+// proveedores) — dragState.type must match the item being dragged over.
+const dragState = { id:null, type:null, overId:null, before:true }
+
+function clearDragMarkers(){
+  document.querySelectorAll('.pi.dragging').forEach(el=>el.classList.remove('dragging'))
+  document.querySelectorAll('.pi.drag-over-top,.pi.drag-over-bottom').forEach(el=>el.classList.remove('drag-over-top','drag-over-bottom'))
+}
+function onProjDragStart(e,id,type){
+  dragState.id=id
+  dragState.type=type
+  e.dataTransfer.effectAllowed='move'
+  try{ e.dataTransfer.setData('text/plain',id) }catch(err){}
+  e.currentTarget.classList.add('dragging')
+}
+function onProjDragOver(e,id,type){
+  if(dragState.type!==type || dragState.id===id) return
+  e.preventDefault()
+  e.dataTransfer.dropEffect='move'
+  const el=e.currentTarget
+  const rect=el.getBoundingClientRect()
+  const before=(e.clientY-rect.top) < rect.height/2
+  if(dragState.overId!==id || dragState.before!==before){
+    document.querySelectorAll('.pi.drag-over-top,.pi.drag-over-bottom').forEach(x=>x.classList.remove('drag-over-top','drag-over-bottom'))
+    el.classList.add(before?'drag-over-top':'drag-over-bottom')
+    dragState.overId=id
+    dragState.before=before
+  }
+}
+function onProjDragLeave(e){
+  e.currentTarget.classList.remove('drag-over-top','drag-over-bottom')
+}
+function onProjDrop(e,id,type){
+  e.preventDefault()
+  clearDragMarkers()
+  if(dragState.type===type && dragState.id && dragState.id!==id){
+    moveProject(dragState.id,id,dragState.before)
+  }
+  dragState.id=null; dragState.type=null; dragState.overId=null
+  render()
+}
+function onProjDragEnd(e){
+  clearDragMarkers()
+  dragState.id=null; dragState.type=null; dragState.overId=null
+}
+function moveProject(sourceId,targetId,before){
+  const fromIdx=DATA.findIndex(x=>x.id===sourceId)
+  if(fromIdx===-1)return
+  const [item]=DATA.splice(fromIdx,1)
+  const toIdx=DATA.findIndex(x=>x.id===targetId)
+  if(toIdx===-1){ DATA.push(item); return }
+  DATA.splice(before?toIdx:toIdx+1,0,item)
+}
+
 // ── Documentos ────────────────────────────────────────────────────────────
 function openAddDoc(pid){ S.modal='addDoc'; S._docPid=pid; S._docTab='link'; render(); setTimeout(()=>document.getElementById('doc-name-in')?.focus(),50) }
 function switchDocTab(tab){ S._docTab=tab; render() }
@@ -1037,17 +1171,11 @@ function confirmAddCat(){
 }
 
 // ── Persistence ──────────────────────────────────────────────────────────────
+// Persists the whole DATA array (not just mutable sub-fields) so clients
+// added or removed at runtime survive a reload.
 function save(){
   try{
-    const mutable=DATA.map(p=>({
-      id:p.id,
-      semaforo:p.semaforo,
-      recordatorios:p.recordatorios||[],
-      tasks:p.tasks||[],
-      docs:p.docs||[],
-      ...(p.cats!==undefined?{cats:p.cats}:{})
-    }))
-    localStorage.setItem('ligrow_data',JSON.stringify(mutable))
+    localStorage.setItem('ligrow_data',JSON.stringify(DATA))
     localStorage.setItem('ligrow_state',JSON.stringify({
       projId:S.proj?.id,
       view:S.view,
@@ -1066,7 +1194,40 @@ function render(){
   if(!ov){ov=document.createElement('div');ov.id='modal-root';document.body.appendChild(ov)}
   if(S.modal==='newTask') ov.innerHTML=newTaskModal()
   else if(S.modal==='addDoc') ov.innerHTML=addDocModal()
+  else if(S.modal==='newClient') ov.innerHTML=newClientModal()
   else ov.innerHTML=''
+}
+
+function newClientModal(){
+  const sel=S._newClientColor||CLIENT_COLORS[0]
+  return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div class="modal-title">+ Nuevo cliente</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <div class="modal-lbl">Nombre del cliente</div>
+          <input id="nc-name" class="modal-in" placeholder="Ej. Nombre del cliente o marca…" onkeydown="if(event.key==='Enter')submitNewClient()"/>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Descripción (opcional)</div>
+          <input id="nc-sub" class="modal-in" placeholder="Ej. Campaña otoño 2026…"/>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Color</div>
+          <div class="color-swatches">
+            ${CLIENT_COLORS.map(c=>`<div class="color-swatch ${c===sel?'on':''}" data-color="${c}" style="background:${c}" onclick="pickNewClientColor('${c}')"></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="modal-ok" onclick="submitNewClient()">Crear cliente</button>
+      </div>
+    </div>
+  </div>`
 }
 
 function addDocModal(){
@@ -1208,7 +1369,13 @@ function sidebar(){
       </div>
     </div>
     <div class="sb-list">
-      ${cl.length?`<div class="sl-label">Clientes</div>${cl.map(pi).join('')}`:''}
+      ${(S.filter==='todos'||S.filter==='clientes')?`
+        <div class="sl-label sl-label-row">
+          <span>Clientes</span>
+          <button class="sl-add-btn" onclick="openNewClient()" title="Nuevo cliente">＋</button>
+        </div>
+        ${cl.length?cl.map(pi).join(''):'<div class="sl-empty">Sin clientes todavía</div>'}
+      `:''}
       ${ap.length?`<div class="sl-label">Apps</div>${ap.map(pi).join('')}`:''}
       ${pr.length?`<div class="sl-label">Proveedores</div>${pr.map(pi).join('')}`:''}
     </div>
@@ -1226,7 +1393,15 @@ function pi(p){
   const avStyle = p.type==='proveedor' ? `color:${p.color}` : `background:${p.color}`
   const semCls = p.type==='cliente' && p.semaforo ? `sem-${p.semaforo}` : ''
   const isOn   = S.proj?.id===p.id ? 'on' : ''
-  return `<div class="pi ${isOn} ${semCls}" onclick="selectProj('${p.id}')">
+  return `<div class="pi ${isOn} ${semCls}" data-id="${p.id}" data-type="${p.type}"
+    draggable="true"
+    onclick="selectProj('${p.id}')"
+    ondragstart="onProjDragStart(event,'${p.id}','${p.type}')"
+    ondragover="onProjDragOver(event,'${p.id}','${p.type}')"
+    ondragleave="onProjDragLeave(event)"
+    ondrop="onProjDrop(event,'${p.id}','${p.type}')"
+    ondragend="onProjDragEnd(event)">
+    <span class="pi-grip" title="Arrastra para reordenar">⠿</span>
     <div class="pi-av-wrap">
       <div class="pi-av ${shape}" style="${avStyle}">${p.type==='proveedor'?badge:p.initials}</div>
       <div class="pi-badge">${badge}</div>
@@ -1235,6 +1410,7 @@ function pi(p){
       <div class="pi-name">${p.name}</div>
       <div class="pi-sub">${p.sub}</div>
     </div>
+    ${p.type==='cliente'?`<button class="pi-del" onclick="deleteClient('${p.id}',event)" title="Eliminar cliente">🗑</button>`:''}
     <div class="pi-dot" style="background:${a.main}"></div>
   </div>`
 }
@@ -1275,6 +1451,7 @@ function main(){
           <div class="sem-btn sem-rojo ${p.semaforo==='rojo'?'on':''}" onclick="setSemaforo('${p.id}','rojo')" title="Rojo"></div>
         </div>`:''}
         <button class="tb-action" onclick="${btnClick}">${btnLabel}</button>
+        ${p.type==='cliente'?`<button class="tb-del-btn" onclick="deleteClient('${p.id}')" title="Eliminar cliente">🗑</button>`:''}
       </div>
       <div class="tabs">
         ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
@@ -1967,29 +2144,26 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v3'
+const STORE_VERSION='v5'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
   localStorage.setItem('ligrow_ver',STORE_VERSION)
 }
 try{
-  const saved=JSON.parse(localStorage.getItem('ligrow_data')||'[]')
-  saved.forEach(s=>{
-    const p=DATA.find(x=>x.id===s.id)
-    if(!p)return
-    if(s.semaforo!==undefined)p.semaforo=s.semaforo
-    if(Array.isArray(s.recordatorios))p.recordatorios=s.recordatorios
-    if(Array.isArray(s.tasks))p.tasks=s.tasks
-    if(Array.isArray(s.docs))p.docs=s.docs
-    if(Array.isArray(s.cats))p.cats=s.cats
-  })
+  const savedData=JSON.parse(localStorage.getItem('ligrow_data')||'null')
+  if(Array.isArray(savedData) && savedData.length) DATA=savedData
+}catch(e){}
+try{
   const st=JSON.parse(localStorage.getItem('ligrow_state')||'{}')
   if(st.filter&&['todos','clientes','apps','proveedores'].includes(st.filter))S.filter=st.filter
   if(st.projId){const found=DATA.find(x=>x.id===st.projId);if(found)S.proj=found}
   if(st.view)S.view=st.view
   if(st.navView!==undefined)S.navView=st.navView
 }catch(e){}
+// Guard against a stale S.proj reference (e.g. the previously active client
+// was deleted, or points at data from before a version bump).
+if(!DATA.find(x=>x.id===S.proj?.id)) S.proj=DATA[0]||null
 
 // Start with brand orange
 applyAccent('cliente')
