@@ -643,6 +643,14 @@ body{
 let DATA = [
   // ─ CLIENTES
   {
+    id:'cpb', type:'cliente', color:'#0F9460', initials:'CS',
+    name:'CPB SERVEIS MENTALS', sub:'',
+    semaforo:null,
+    description:'',
+    recordatorios:[],
+    tasks:[]
+  },
+  {
     id:'ab', type:'cliente', color:'#1D6FA4', initials:'AB',
     name:'AsistecBCN', sub:'',
     semaforo:null,
@@ -2136,7 +2144,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v4'
+const STORE_VERSION='v5'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
