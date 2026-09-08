@@ -65,11 +65,12 @@ body{
   background:var(--sidebar-bg);
   color:var(--text-1);
   height:100vh;
+  height:100dvh; /* iOS Safari: 100vh ignores the address bar and clips content */
   overflow:hidden;
   font-size:14px;
   line-height:1.5;
 }
-#app{display:grid;grid-template-columns:244px 1fr;height:100vh}
+#app{display:grid;grid-template-columns:244px 1fr;height:100vh;height:100dvh}
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 .sb{
@@ -97,7 +98,7 @@ body{
 .nv-badge{margin-left:auto;background:var(--brand);color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:1px 6px;min-width:18px;text-align:center}
 .nv.on{color:#fff !important;background:rgba(255,255,255,.07)}
 
-.sb-list{flex:1;overflow-y:auto;padding:6px 8px 16px}
+.sb-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 8px 16px}
 .sb-list::-webkit-scrollbar{width:0}
 .sl-label{font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:12px 8px 5px}
 .sl-label-row{display:flex;align-items:center;justify-content:space-between;padding-right:6px}
@@ -215,7 +216,7 @@ body{
 .tab.on{color:var(--accent-text);border-bottom-color:var(--accent);font-weight:600}
 
 /* content area */
-.ct{flex:1;overflow-y:auto;padding:22px 28px 28px}
+.ct{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 28px 28px}
 .ct::-webkit-scrollbar{width:4px}
 .ct::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
@@ -647,7 +648,7 @@ body{
   [style*="grid-template-columns"]:not(.tk-2in-row){grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important}
 }
 @media (max-width:760px){
-  #app{grid-template-columns:1fr;height:auto;min-height:100vh}
+  #app{grid-template-columns:1fr;height:auto;min-height:100vh;min-height:100dvh}
   body{overflow:auto}
   .sb{
     border-right:none;border-bottom:1px solid var(--sidebar-border);
