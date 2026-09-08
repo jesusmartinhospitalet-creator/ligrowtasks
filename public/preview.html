@@ -422,29 +422,54 @@ const DATA = [
   {
     id:'ae', type:'cliente', color:'#C0392B', initials:'AE',
     name:'Andorra Ecommerce', sub:'Rediseño UX/UI · Shopify Plus',
+    semaforo:'naranja',
+    description:'Proyecto de rediseño completo del ecommerce Andorra. Incluye migración a Shopify Plus y nueva pasarela de pagos.',
+    recordatorios:[
+      {id:'r1',text:'Revisar propuesta de tarifas',detail:'Pendiente confirmación cliente',due:'2026-09-15',done:false},
+      {id:'r2',text:'Reunión kick-off migración',detail:'Con equipo técnico Shopify',due:'2026-09-20',done:false},
+      {id:'r3',text:'Enviar accesos staging',detail:'Usuario y contraseña entorno pruebas',due:'2026-09-10',done:true},
+    ],
     tasks:[
       {code:'AE-001',name:'Auditoría completa del checkout',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-20',
+       description:'Auditoría completa del flujo de pago en todas las plataformas antes de la migración a Plus.',
        checklist:[{text:'Revisar flujo de pago desktop',done:true},{text:'Revisar flujo mobile',done:true},{text:'Test pasarela Stripe',done:false},{text:'Documentar incidencias',done:false}],
-       link:{label:'Notion · Brief checkout',href:'#'}},
+       links:[{name:'Notion · Brief checkout',href:'#'},{name:'Figma · Flujo actual',href:'#'}],
+       files:[{name:'audit-checkout-v1.pdf',href:'#'}]},
       {code:'AE-002',name:'Migración a Shopify Plus',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-09-30',
-       attachment:{name:'plan-migracion-v2.pdf',size:'1.2 MB'},
-       checklist:[{text:'Exportar productos y clientes',done:true},{text:'Configurar plan Plus',done:false},{text:'Migrar temas personalizados',done:false}]},
+       description:'Migración completa del plan actual a Shopify Plus incluyendo temas y datos de clientes.',
+       checklist:[{text:'Exportar productos y clientes',done:true},{text:'Configurar plan Plus',done:false},{text:'Migrar temas personalizados',done:false}],
+       links:[],
+       files:[{name:'plan-migracion-v2.pdf',href:'#'},{name:'checklist-migracion.xlsx',href:'#'}]},
       {code:'AE-003',name:'Integración pasarela de pagos',owner:'Alejandro',status:'En curso',priority:'Media',due:'2026-09-25',
-       link:{label:'Stripe Dashboard',href:'#'},
-       attachment:{name:'stripe-keys.txt',size:'2 KB'}},
+       description:'Configurar e integrar Stripe como pasarela principal de pagos para el nuevo plan Plus.',
+       links:[{name:'Stripe Dashboard',href:'#'}],
+       files:[{name:'stripe-docs.pdf',href:'#'}],
+       checklist:[{text:'Crear cuenta Stripe Business',done:true},{text:'Configurar webhooks',done:false},{text:'Test pago real con tarjeta',done:false}]},
       {code:'AE-004',name:'Optimización velocidad mobile',owner:'Jesús',status:'Detenido',priority:'Media',due:'2026-09-18',
-       attachment:{name:'lighthouse-report.pdf',size:'480 KB'}},
+       description:'Optimizar el rendimiento en dispositivos móviles según informe Lighthouse.',
+       links:[],files:[{name:'lighthouse-report.pdf',href:'#'}],checklist:[]},
       {code:'AE-005',name:'Copy fichas de producto (es/fr/ca)',owner:'Blanca',status:'Detenido',priority:'Baja',due:'2026-09-22',
-       link:{label:'Google Sheets · Copy master',href:'#'}},
+       description:'Redactar copy de todas las fichas de producto en tres idiomas.',
+       links:[{name:'Google Sheets · Copy master',href:'#'}],files:[],checklist:[{text:'Copy en español',done:false},{text:'Copy en francés',done:false},{text:'Copy en catalán',done:false}]},
       {code:'AE-006',name:'Setup Google Analytics 4',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-08',
-       checklist:[{text:'Crear propiedad GA4',done:true},{text:'Instalar gtag en theme',done:true},{text:'Verificar eventos clave',done:true}]},
+       description:'Configurar GA4 y verificar que los eventos de conversión se registran correctamente.',
+       checklist:[{text:'Crear propiedad GA4',done:true},{text:'Instalar gtag en theme',done:true},{text:'Verificar eventos clave',done:true}],
+       links:[{name:'Google Analytics',href:'#'}],files:[]},
       {code:'AE-007',name:'Briefing estrategia Q4',owner:'Jesús',status:'Listo',priority:'Alta',due:'2026-09-05',
-       attachment:{name:'briefing-Q4-2026.pdf',size:'890 KB'}},
+       description:'Documento de estrategia y objetivos para el cuarto trimestre de 2026.',
+       links:[],files:[{name:'briefing-Q4-2026.pdf',href:'#'}],checklist:[]},
     ]
   },
   {
     id:'pn', type:'cliente', color:'#D35400', initials:'PN',
     name:'Pic Negre', sub:'Campaña Invierno 2026',
+    semaforo:'verde',
+    description:'Campaña de marketing digital para la temporada de invierno 2026. Meta Ads, email marketing y creatividades.',
+    recordatorios:[
+      {id:'r1',text:'Tarifas – Ropa de alquiler',detail:'Pendiente para tarifas invierno',due:'2026-09-01',done:false},
+      {id:'r2',text:'La Central – Logo PNS',detail:'Botellas y maletines Seriprint',due:'2026-08-31',done:false},
+      {id:'r3',text:'Carlos Mejia',detail:'Mail Rentaski.com para fichas Google',due:'2026-08-31',done:false},
+    ],
     tasks:[
       {code:'PN-001',name:'Campaña Meta Ads Octubre',owner:'Blanca',status:'En curso',priority:'Alta',due:'2026-10-01'},
       {code:'PN-002',name:'Creatividades temporada esquí',owner:'Jesús',status:'En curso',priority:'Media',due:'2026-09-28'},
@@ -455,6 +480,11 @@ const DATA = [
   {
     id:'lhc', type:'cliente', color:'#7D3C98', initials:'LH',
     name:'Ligrow Hub', sub:'Infraestructura & Operaciones',
+    semaforo:'verde',
+    description:'Gestión de la infraestructura técnica y operaciones internas de Ligrow.',
+    recordatorios:[
+      {id:'r1',text:'Renovar dominio ligrow.app',detail:'Vence en noviembre',due:'2026-10-15',done:false},
+    ],
     tasks:[
       {code:'LH-001',name:'Renovar contrato hosting anual',owner:'Jesús',status:'En curso',priority:'Alta',due:'2026-09-15'},
       {code:'LH-002',name:'Backup automatizado MySQL',owner:'Alejandro',status:'Listo',priority:'Media',due:'2026-09-07'},
@@ -688,6 +718,8 @@ let S = {
   addingCat: false,
   modal: null,  // null | 'newTask'
   _chkItems: ['',''],  // checklist items draft
+  expandedTask: null,  // task code currently expanded in table
+  addingRec: false,    // showing new recordatorio form
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -722,6 +754,101 @@ function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.navView=null; S.view=
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
+
+// ── Recordatorios ────────────────────────────────────────────────────────
+function startAddRec(){ S.addingRec=true; render(); setTimeout(()=>document.getElementById('rec-txt-in')?.focus(),40) }
+function cancelAddRec(){ S.addingRec=false; render() }
+function confirmAddRec(pid){
+  const txt=(document.getElementById('rec-txt-in')?.value||'').trim()
+  if(!txt)return
+  const detail=(document.getElementById('rec-det-in')?.value||'').trim()
+  const due=(document.getElementById('rec-due-in')?.value||'')
+  const p=DATA.find(x=>x.id===pid)
+  if(p){if(!p.recordatorios)p.recordatorios=[];p.recordatorios.push({id:'r'+Date.now(),text:txt,detail,due,done:false})}
+  S.addingRec=false;render()
+}
+function toggleRec(pid,idx){
+  const p=DATA.find(x=>x.id===pid)
+  if(p?.recordatorios?.[idx])p.recordatorios[idx].done=!p.recordatorios[idx].done
+  render()
+}
+function deleteRec(pid,idx){
+  const p=DATA.find(x=>x.id===pid)
+  if(p?.recordatorios)p.recordatorios.splice(idx,1)
+  render()
+}
+function setSemaforo(pid,col){
+  const p=DATA.find(x=>x.id===pid)
+  if(p)p.semaforo=col
+  render()
+}
+// ── Task table interactions ────────────────────────────────────────────────
+function toggleTaskRow(code){
+  S.expandedTask=S.expandedTask===code?null:code
+  render()
+}
+function updateTaskField(pid,code,field,val){
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>x.code===code)
+  if(t)t[field]=val
+  render()
+}
+function toggleChkItem(pid,code,idx){
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>x.code===code)
+  if(t?.checklist?.[idx])t.checklist[idx].done=!t.checklist[idx].done
+  render()
+}
+function addChkItem(pid,code){
+  const el=document.getElementById('chk-in-'+code)
+  const txt=(el?.value||'').trim()
+  if(!txt)return
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>x.code===code)
+  if(t){if(!t.checklist)t.checklist=[];t.checklist.push({text:txt,done:false})}
+  el.value='';render()
+}
+function addLinkItem(pid,code){
+  const nEl=document.getElementById('lnk-n-'+code)
+  const hEl=document.getElementById('lnk-h-'+code)
+  const name=(nEl?.value||'').trim()
+  const href=(hEl?.value||'').trim()
+  if(!name&&!href)return
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>x.code===code)
+  if(t){if(!t.links)t.links=[];t.links.push({name:name||href,href:href||'#'})}
+  nEl.value='';hEl.value='';render()
+}
+function deleteLinkItem(pid,code,idx){
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>x.code===code)
+  if(t?.links)t.links.splice(idx,1)
+  render()
+}
+function addFileItem(pid,code){
+  const nEl=document.getElementById('fil-n-'+code)
+  const hEl=document.getElementById('fil-h-'+code)
+  const name=(nEl?.value||'').trim()
+  const href=(hEl?.value||'').trim()
+  if(!name&&!href)return
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>x.code===code)
+  if(t){if(!t.files)t.files=[];t.files.push({name:name||'Archivo',href:href||'#'})}
+  nEl.value='';hEl.value='';render()
+}
+function deleteFileItem(pid,code,idx){
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>x.code===code)
+  if(t?.files)t.files.splice(idx,1)
+  render()
+}
+function deleteTask(pid,code,e){
+  e.stopPropagation()
+  const p=DATA.find(x=>x.id===pid)
+  if(p?.tasks)p.tasks=p.tasks.filter(t=>t.code!==code)
+  if(S.expandedTask===code)S.expandedTask=null
+  render()
+}
 
 // ── Nueva tarea modal ─────────────────────────────────────────────────────
 function openNewTask(){ S.modal='newTask'; S._chkItems=['','']; render(); setTimeout(()=>document.getElementById('nt-name')?.focus(),50) }
@@ -927,6 +1054,13 @@ function main(){
           <div class="proj-sub-text">${p.sub}</div>
         </div>
         <span class="type-pill">${typeName}</span>
+        ${p.type==='cliente'?`
+        <div class="semaforo-wrap">
+          <span class="semaforo-lbl">SEMÁFORO</span>
+          <div class="sem-btn sem-verde ${p.semaforo==='verde'?'on':''}" onclick="setSemaforo('${p.id}','verde')" title="Verde"></div>
+          <div class="sem-btn sem-naranja ${p.semaforo==='naranja'?'on':''}" onclick="setSemaforo('${p.id}','naranja')" title="Naranja"></div>
+          <div class="sem-btn sem-rojo ${p.semaforo==='rojo'?'on':''}" onclick="setSemaforo('${p.id}','rojo')" title="Rojo"></div>
+        </div>`:''}
         <button class="tb-action" onclick="${btnClick}">${btnLabel}</button>
       </div>
       <div class="tabs">
@@ -947,41 +1081,188 @@ function content(p){
 // ─ CLIENTE ──────────────────────────────────────────────────────────────────
 function clienteContent(p){
   if(S.view==='kanban')     return kanban(p)
-  if(S.view==='tabla')      return tabla(p)
+  if(S.view==='tabla')      return tablaRich(p)
   if(S.view==='plantillas') return `<div class="card"><div class="card-head">Plantillas mensuales</div><div class="dashed-box">Las plantillas de tareas recurrentes aparecerán aquí.</div></div>`
   if(S.view==='meses')      return `<div class="card"><div class="card-head">Ciclos mensuales</div><div class="dashed-box">Generación y cierre de meses aquí.</div></div>`
   return resumen(p)
 }
 
 function resumen(p){
+  // New resumen: stats bar + recordatorios + rich task table
   const t=p.tasks||[]
   const en=t.filter(x=>x.status==='En curso').length
   const det=t.filter(x=>x.status==='Detenido').length
   const ok=t.filter(x=>x.status==='Listo').length
-  const recentTasks = t.filter(x=>x.status==='En curso').slice(0,4)
-  return `
-  <div class="stats">
-    <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val">${t.length}</div></div>
-    <div class="stat"><div class="stat-lbl">Sin empezar</div><div class="stat-val">0</div></div>
-    <div class="stat"><div class="stat-lbl">En edición</div><div class="stat-val accent">${en}</div></div>
-    <div class="stat"><div class="stat-lbl">Detenidas</div><div class="stat-val">${det}</div></div>
-    <div class="stat"><div class="stat-lbl">Finalizadas</div><div class="stat-val green">${ok}</div></div>
-  </div>
-  <div class="info-2">
-    <div class="card">
-      <div class="card-head">Documentos y recursos · <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">0 vinculados</span></div>
-      <div class="dashed-box">Los archivos y enlaces de las tareas aparecerán aquí.</div>
+  return recordatoriosSection(p) + taskTableView(p)
+}
+
+// ── Recordatorios section ──────────────────────────────────────────────────
+function recordatoriosSection(p){
+  const recs=p.recordatorios||[]
+  if(!recs.length && !S.addingRec) return `
+  <div class="rec-wrap">
+    <div class="rec-head">
+      <div class="rec-title">🔔 Recordatorios / Temas pendientes</div>
+      <button class="rec-new-btn" onclick="startAddRec()">+ Nuevo</button>
     </div>
-    <div class="card">
-      <div class="card-head">En curso ahora</div>
-      ${recentTasks.map(x=>`
-        <div class="t-row">
-          <div class="t-dot" style="background:${x.priority==='Alta'?'#D63A0F':x.priority==='Media'?'#D48000':'#0F9460'}"></div>
-          <div class="t-name">${x.name}</div>
-          <div class="t-owner">${x.owner}</div>
-          <span class="chip chip-orange">En curso</span>
+    <div style="font-size:12px;color:var(--text-3)">Sin recordatorios. Añade temas pendientes o avisos importantes.</div>
+  </div>`
+  return `
+  <div class="rec-wrap">
+    <div class="rec-head">
+      <div class="rec-title">🔔 Recordatorios / Temas pendientes</div>
+      <button class="rec-new-btn" onclick="startAddRec()">+ Nuevo</button>
+    </div>
+    ${recs.map((r,i)=>`
+      <div class="rec-row">
+        <div class="rec-cb ${r.done?'on':''}" onclick="toggleRec('${p.id}',${i})">${r.done?'✓':''}</div>
+        <div style="flex:1;min-width:0">
+          <div class="rec-text ${r.done?'done':''}" onclick="toggleRec('${p.id}',${i})">${r.text}</div>
+          ${r.detail?`<div class="rec-detail">${r.detail}</div>`:''}
         </div>
-      `).join('')||`<div class="dashed-box">Sin tareas activas</div>`}
+        ${r.due?`<div class="rec-date">${r.due}</div>`:''}
+        <button class="rec-del-btn" onclick="deleteRec('${p.id}',${i})">🗑</button>
+      </div>
+    `).join('')}
+    ${S.addingRec?`
+      <div class="rec-add-row" style="grid-template-columns:1fr 1fr auto auto">
+        <input id="rec-txt-in" class="rec-in" placeholder="Tarea o recordatorio…" onkeydown="if(event.key==='Enter')confirmAddRec('${p.id}')"/>
+        <input id="rec-det-in" class="rec-in" placeholder="Detalle (opcional)…"/>
+        <input id="rec-due-in" type="date" class="rec-in" style="width:130px"/>
+        <button class="rec-ok-btn" onclick="confirmAddRec('${p.id}')">OK</button>
+        <button class="rec-cancel-btn" onclick="cancelAddRec()">✕</button>
+      </div>
+    `:''}
+  </div>`
+}
+
+// ── Rich task table view ───────────────────────────────────────────────────
+function taskTableView(p){
+  const t=p.tasks||[]
+  const pending = t.filter(x=>x.status!=='Listo')
+  const done    = t.filter(x=>x.status==='Listo')
+  return `
+    ${tkSection(p,'pending',pending,'POR COMPLETAR','Tareas activas y pendientes','#EF4444','#FFF0F0','#C53030')}
+    ${tkSection(p,'done',done,'COMPLETADAS','Trabajo ya finalizado','#22C55E','#EDFAF2','#0F9460')}
+  `
+}
+
+function tkSection(p,key,tasks,title,desc,dotColor,badgeBg,badgeColor){
+  return `<div class="tk-section">
+    <div class="tk-s-head">
+      <div class="tk-s-dot" style="background:${dotColor}"></div>
+      <div class="tk-s-info">
+        <div class="tk-s-title" style="color:${badgeColor}">${title}</div>
+        <div class="tk-s-desc">${desc} · Arrastra el nombre para reordenar.</div>
+      </div>
+      <div class="tk-s-badge" style="background:${badgeBg};color:${badgeColor}">${tasks.length} tarea${tasks.length!==1?'s':''}</div>
+    </div>
+    <div class="tk-table">
+      <div class="tk-head-row">
+        <div class="tk-th" style="color:${badgeColor}">ID</div>
+        <div class="tk-th" style="color:${badgeColor}">TAREA</div>
+        <div class="tk-th"></div>
+        <div class="tk-th" style="color:${badgeColor}">VENCIMIENTO</div>
+        <div class="tk-th" style="color:${badgeColor}">PRIORIDAD</div>
+        <div class="tk-th" style="color:${badgeColor}">ESTADO</div>
+        <div class="tk-th" style="color:${badgeColor}">ELEMENTOS</div>
+      </div>
+      ${tasks.length?tasks.map(t=>tkTaskRow(p,t)).join(''):`<div style="padding:16px 14px;font-size:12px;color:var(--text-3)">Sin tareas en esta sección.</div>`}
+    </div>
+  </div>`
+}
+
+function tkTaskRow(p,t){
+  const isOpen=S.expandedTask===t.code
+  const cl=t.checklist||[];const lk=t.links||[];const fi=t.files||[]
+  const clDone=cl.filter(x=>x.done).length
+  const isDone=t.status==='Listo'
+  const dueFormatted=t.due?new Date(t.due+'T00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):''
+  return `<div class="tk-task-wrap">
+    <div class="tk-task-row ${isOpen?'open':''}" onclick="toggleTaskRow('${t.code}')">
+      <div class="tk-id">${t.code}</div>
+      <div class="tk-name-cell"><div class="tk-name-txt ${isDone?'done':''}">${t.name}</div></div>
+      <div class="tk-actions" onclick="event.stopPropagation()">
+        <button class="tk-act" title="Editar">✏️</button>
+        <button class="tk-act del" title="Eliminar" onclick="deleteTask('${p.id}','${t.code}',event)">🗑</button>
+      </div>
+      <div class="tk-due">${dueFormatted}</div>
+      <div onclick="event.stopPropagation()">
+        <select class="tk-sel" onchange="updateTaskField('${p.id}','${t.code}','priority',this.value)">
+          ${['Alta','Media','Baja'].map(v=>`<option ${t.priority===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+      <div onclick="event.stopPropagation()">
+        <select class="tk-sel" onchange="updateTaskField('${p.id}','${t.code}','status',this.value)">
+          ${['Sin empezar','En curso','Detenido','Listo'].map(v=>`<option ${t.status===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+      <div class="tk-elems">
+        <span class="tk-eb ${cl.length?'has':''}">☑ Checklist ${clDone}/${cl.length}</span>
+        <span class="tk-eb ${lk.length?'has':''}">🔗 ${lk.length} Enlace${lk.length!==1?'s':''}</span>
+        <span class="tk-eb ${fi.length?'has':''}">📎 ${fi.length?fi.length:'0'} Arch.</span>
+      </div>
+    </div>
+    <div class="tk-detail ${isOpen?'open':''}">
+      <!-- DESCRIPCIÓN -->
+      <div class="tk-panel" onclick="event.stopPropagation()">
+        <div class="tk-panel-hd">DESCRIPCIÓN</div>
+        <textarea class="tk-textarea" placeholder="Explica el objetivo y los detalles de esta tarea." onchange="updateTaskField('${p.id}','${t.code}','description',this.value)">${t.description||''}</textarea>
+        <span class="tk-lbl-sm">FECHA DE VENCIMIENTO</span>
+        <input type="date" class="tk-in-sm" value="${t.due||''}" onchange="updateTaskField('${p.id}','${t.code}','due',this.value)"/>
+      </div>
+      <!-- CHECKLIST -->
+      <div class="tk-panel" onclick="event.stopPropagation()">
+        <div class="tk-panel-hd">CHECKLIST</div>
+        <div class="tk-chk-items">
+          ${cl.map((c,i)=>`
+            <div class="tk-chk-row ${c.done?'done':''}" onclick="toggleChkItem('${p.id}','${t.code}',${i})">
+              <div class="tk-chk-box ${c.done?'on':''}">${c.done?'✓':''}</div>
+              ${c.text}
+            </div>
+          `).join('')}
+        </div>
+        <div class="tk-add-row">
+          <input id="chk-in-${t.code}" class="tk-add-field" placeholder="Añadir elemento…" onkeydown="if(event.key==='Enter')addChkItem('${p.id}','${t.code}')"/>
+          <button class="tk-add-plus" onclick="addChkItem('${p.id}','${t.code}')">+</button>
+        </div>
+      </div>
+      <!-- ARCHIVOS -->
+      <div class="tk-panel" onclick="event.stopPropagation()">
+        <div class="tk-panel-hd">ARCHIVOS</div>
+        ${fi.length?fi.map((f,i)=>`
+          <div class="tk-link-item">
+            <span class="tk-link-a">📄 ${f.name}</span>
+            <button class="tk-del-sm" onclick="deleteFileItem('${p.id}','${t.code}',${i})">🗑</button>
+          </div>
+        `).join(''):`<div class="tk-empty-hint">Sin archivos vinculados.</div>`}
+        <div class="tk-2in-row" style="grid-template-columns:1fr 26px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <input id="fil-n-${t.code}" class="tk-in-sm" placeholder="Nombre del archivo…"/>
+            <div style="display:flex;gap:4px">
+              <input id="fil-h-${t.code}" class="tk-in-sm" placeholder="https://…" style="flex:1"/>
+              <button class="tk-add-plus" onclick="addFileItem('${p.id}','${t.code}')">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ENLACES -->
+      <div class="tk-panel" onclick="event.stopPropagation()">
+        <div class="tk-panel-hd">ENLACES</div>
+        ${lk.length?lk.map((l,i)=>`
+          <div class="tk-link-item">
+            <a class="tk-link-a" href="${l.href}" target="_blank">🔗 ${l.name}</a>
+            <button class="tk-del-sm" onclick="deleteLinkItem('${p.id}','${t.code}',${i})">🗑</button>
+          </div>
+        `).join(''):`<div class="tk-empty-hint">Sin enlaces vinculados.</div>`}
+        <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+          <input id="lnk-n-${t.code}" class="tk-in-sm" placeholder="Nombre del enlace…"/>
+          <div style="display:flex;gap:4px">
+            <input id="lnk-h-${t.code}" class="tk-in-sm" placeholder="https://…" style="flex:1"/>
+            <button class="tk-add-plus" onclick="addLinkItem('${p.id}','${t.code}')">+</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>`
 }
