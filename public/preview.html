@@ -403,6 +403,16 @@ body{
 .ptable td{padding:6px 6px;border-bottom:1px solid var(--border-2);color:var(--text-1)}
 .ptable tr:last-child td{border-bottom:none}
 .price-val{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.prov-card-note{display:inline-block;max-width:100%;margin-top:7px;padding:4px 8px;border-radius:5px;background:var(--accent-light);color:var(--accent-text);font-size:10.5px;font-weight:700;line-height:1.35}
+.prov-products{white-space:pre-wrap;padding:9px 10px;border-radius:7px;background:var(--surface-2);border:1px solid var(--border-2);color:var(--text-2);font-size:12px;line-height:1.5}
+.prov-card-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:13px}
+.prov-card-action{border:1px solid var(--border);border-radius:6px;padding:5px 8px;background:transparent;color:var(--text-2);font:600 11px inherit}
+.prov-card-action:hover{border-color:var(--accent);color:var(--accent-text)}
+.prov-card-action.delete:hover{border-color:#E45C57;color:#C53030}
+.cat-delete{opacity:0;width:20px;height:20px;margin-left:4px;border:0;border-radius:5px;background:transparent;color:var(--text-3);font:600 15px inherit;line-height:1;transition:all .15s}
+.cat-item:hover .cat-delete{opacity:1}
+.cat-delete:hover{background:#FDECEC;color:#C53030}
+
 
 /* ── Kanban card extras ──────────────────────────────────────────────────── */
 .kc-extras{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
@@ -1182,28 +1192,6 @@ function submitNewTask(){
   S.modal=null
   render()
 }
-function startAddCat(){ S.addingCat=true; render(); setTimeout(()=>document.getElementById('cat-input')?.focus(),50) }
-function cancelAddCat(){ S.addingCat=false; render() }
-function confirmAddCat(){
-  const input=document.getElementById('cat-input')
-  const name=(input?.value||'').trim()
-  if(!name)return
-  // pick a default emoji based on name
-  const emojiMap={foto:'📷',impresi:'🖨️',diseño:'🎨',design:'🎨',dev:'💻',video:'🎬',audio:'🎙️',event:'🎪',transport:'🚚',legal:'⚖️',traducc:'🌐'}
-  let ico='📁'
-  const lc=name.toLowerCase()
-  for(const [k,v] of Object.entries(emojiMap)){if(lc.includes(k)){ico=v;break}}
-  const prov=DATA.find(p=>p.type==='proveedor')
-  if(prov){
-    const newId='cat_'+Date.now()
-    prov.cats.push({id:newId,ico,name,n:0,provs:[]})
-    S.provCat=newId
-  }
-  S.addingCat=false
-  render()
-}
-
-
 function escapeProviderHtml(value=''){
   return String(value)
     .replace(/&/g,'&amp;')
@@ -1212,13 +1200,177 @@ function escapeProviderHtml(value=''){
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#039;')
 }
+function providerPlainText(value=''){
+  return String(value).replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'")
+}
+function providerFieldValue(provider,label){
+  const found=(provider.fields||[]).find(field=>field.k===label)
+  return found?providerPlainText(found.v):''
+}
+function providerWebsiteValue(provider){
+  if(provider.website)return provider.website
+  const field=(provider.fields||[]).find(item=>item.k==='Web')
+  const href=String(field?.v||'').match(/href="([^"]+)"/i)
+  return href?.[1] && href[1]!=='#' ? href[1] : providerPlainText(field?.v||'')
+}
+function providerWebsiteHtml(value){
+  const raw=String(value||'').trim()
+  if(!raw)return''
+  const candidate=/^https?:\/\//i.test(raw)?raw:'https://'+raw
+  try{
+    const url=new URL(candidate)
+    if(!['http:','https:'].includes(url.protocol))return''
+    const label=url.hostname.replace(/^www\./,'')+(url.pathname&&url.pathname!=='/'?url.pathname:'')
+    return '<a href="'+escapeProviderHtml(url.href)+'" target="_blank" rel="noopener">'+escapeProviderHtml(label)+'</a>'
+  }catch(error){
+    return ''
+  }
+}
+function providerFieldsFromRecord(supplier){
+  const field=(key,value)=>value?{k:key,v:escapeProviderHtml(value)}:null
+  const fields=[
+    field('Email',supplier.email),
+    field('Tfno.',supplier.phone),
+    field('Pago',supplier.paymentTerms),
+    field('Plazo',supplier.leadTime)
+  ].filter(Boolean)
+  const website=providerWebsiteHtml(supplier.website)
+  if(website)fields.splice(Math.min(2,fields.length),0,{k:'Web',v:website})
+  return fields
+}
+function setSupplierDirectory(categories){
+  const project=DATA.find(item=>item.type==='proveedor')
+  if(!project)return
+  project.cats=(categories||[]).map(category=>({
+    id:category.id,
+    ico:category.icon||'📁',
+    name:category.name,
+    n:(category.suppliers||[]).length,
+    provs:(category.suppliers||[]).map(supplier=>({
+      id:supplier.id,
+      name:supplier.name,
+      type:supplier.supplierType||'Proveedor',
+      email:supplier.email||'',
+      phone:supplier.phone||'',
+      website:supplier.website||'',
+      payment:supplier.paymentTerms||'',
+      leadTime:supplier.leadTime||'',
+      fields:providerFieldsFromRecord(supplier),
+      prices:Array.isArray(supplier.rates)?supplier.rates:[],
+      productList:supplier.productList||'',
+      highlightNote:supplier.highlightNote||''
+    }))
+  }))
+  if(!project.cats.some(category=>category.id===S.provCat))S.provCat=project.cats[0]?.id||null
+}
+async function supplierRequest(path,options={}){
+  const response=await fetch('/api/suppliers'+path,{
+    credentials:'same-origin',
+    headers:{'Content-Type':'application/json',...(options.headers||{})},
+    ...options
+  })
+  let body=null
+  if(response.status!==204){
+    try{body=await response.json()}catch(error){}
+  }
+  if(!response.ok){
+    const error=new Error(body?.error||'No se ha podido guardar el directorio.')
+    error.status=response.status
+    throw error
+  }
+  return body
+}
+async function loadSupplierDirectory(){
+  const directory=await supplierRequest('/')
+  setSupplierDirectory(directory.categories||[])
+  render()
+  return directory
+}
+async function signInForSuppliers(){
+  const password=window.prompt('Introduce la contraseña de Ligrow para guardar el directorio de proveedores.')
+  if(password===null)return false
+  const response=await fetch('/api/auth/login',{
+    method:'POST',
+    credentials:'same-origin',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({password})
+  })
+  if(!response.ok){
+    alert('La contraseña no es correcta.')
+    return false
+  }
+  return true
+}
+async function ensureSupplierDirectory(){
+  try{
+    await loadSupplierDirectory()
+    return true
+  }catch(error){
+    if(error.status!==401){
+      alert('No se ha podido conectar con Supabase. '+error.message)
+      return false
+    }
+    if(!await signInForSuppliers())return false
+    try{
+      await loadSupplierDirectory()
+      return true
+    }catch(retryError){
+      alert('No se ha podido conectar con Supabase. '+retryError.message)
+      return false
+    }
+  }
+}
+function categoryIcon(name){
+  const icons={foto:'📷',impresi:'🖨️',diseño:'🎨',design:'🎨',dev:'💻',video:'🎬',audio:'🎙️',event:'🎪',transport:'🚚',legal:'⚖️',traducc:'🌐'}
+  const lower=String(name||'').toLowerCase()
+  return Object.entries(icons).find(entry=>lower.includes(entry[0]))?.[1]||'📁'
+}
+function startAddCat(){ S.addingCat=true; render(); setTimeout(()=>document.getElementById('cat-input')?.focus(),50) }
+function cancelAddCat(){ S.addingCat=false; render() }
+async function confirmAddCat(){
+  const name=(document.getElementById('cat-input')?.value||'').trim()
+  if(!name)return
+  if(!await ensureSupplierDirectory())return
+  try{
+    const result=await supplierRequest('/categories',{
+      method:'POST',
+      body:JSON.stringify({name,icon:categoryIcon(name)})
+    })
+    S.addingCat=false
+    S.provCat=result.category?.id||S.provCat
+    await loadSupplierDirectory()
+  }catch(error){
+    alert('No se ha podido crear la categoría. '+error.message)
+  }
+}
+async function deleteProviderCategory(categoryId,event){
+  event?.preventDefault()
+  event?.stopPropagation()
+  const project=DATA.find(item=>item.type==='proveedor')
+  const current=project?.cats?.find(category=>category.id===categoryId)
+  if(!current)return
+  const label=current.name
+  const count=(current.provs||[]).length
+  if(!confirm('¿Eliminar la categoría "'+label+'"'+(count?' y sus '+count+' proveedor'+(count===1?'':'es'):'')+'? Esta acción no se puede deshacer.'))return
+  if(!await ensureSupplierDirectory())return
+  const category=(DATA.find(item=>item.type==='proveedor')?.cats||[]).find(item=>item.id===categoryId||item.name===label)
+  if(!category)return
+  try{
+    await supplierRequest('/categories/'+encodeURIComponent(category.id),{method:'DELETE'})
+    S.provCat=null
+    await loadSupplierDirectory()
+  }catch(error){
+    alert('No se ha podido eliminar la categoría. '+error.message)
+  }
+}
 function openNewProvider(projectId,categoryId){
-  const providerProject=DATA.find(p=>p.id===projectId&&p.type==='proveedor')||DATA.find(p=>p.type==='proveedor')
-  const fallbackCategory=providerProject?.cats?.[0]?.id||''
+  const project=DATA.find(item=>item.id===projectId&&item.type==='proveedor')||DATA.find(item=>item.type==='proveedor')
+  const category=project?.cats?.find(item=>item.id===categoryId)||project?.cats?.[0]
   S.modal='newProvider'
   S._newProviderDraft={
-    projectId:providerProject?.id||'',
-    categoryId:categoryId||fallbackCategory,
+    projectId:project?.id||'',
+    categoryId:category?.id||'',
+    categoryName:category?.name||'',
     name:'',
     type:'',
     email:'',
@@ -1226,7 +1378,34 @@ function openNewProvider(projectId,categoryId){
     website:'',
     payment:'',
     leadTime:'',
+    highlightNote:'',
+    productList:'',
     prices:[{product:'',quantity:'',price:''}]
+  }
+  render()
+  setTimeout(()=>document.getElementById('np-name')?.focus(),50)
+}
+function openEditProvider(projectId,categoryId,supplierId){
+  const project=DATA.find(item=>item.id===projectId&&item.type==='proveedor')||DATA.find(item=>item.type==='proveedor')
+  const category=project?.cats?.find(item=>item.id===categoryId)
+  const provider=category?.provs?.find(item=>item.id===supplierId)
+  if(!provider)return
+  S.modal='newProvider'
+  S._newProviderDraft={
+    id:provider.id,
+    projectId:project?.id||'',
+    categoryId:category.id,
+    categoryName:category.name,
+    name:provider.name||'',
+    type:provider.type||'',
+    email:provider.email||providerFieldValue(provider,'Email'),
+    phone:provider.phone||providerFieldValue(provider,'Tfno.'),
+    website:providerWebsiteValue(provider),
+    payment:provider.payment||providerFieldValue(provider,'Pago'),
+    leadTime:provider.leadTime||providerFieldValue(provider,'Plazo'),
+    highlightNote:provider.highlightNote||'',
+    productList:provider.productList||'',
+    prices:(provider.prices||[]).map(rate=>({product:rate.prod||'',quantity:rate.qty||'',price:rate.price||''}))
   }
   render()
   setTimeout(()=>document.getElementById('np-name')?.focus(),50)
@@ -1240,9 +1419,12 @@ function captureNewProviderDraft(){
     quantity:row.querySelector('[data-price="quantity"]')?.value||'',
     price:row.querySelector('[data-price="price"]')?.value||''
   }))
+  const project=DATA.find(item=>item.type==='proveedor')
+  const selected=(project?.cats||[]).find(category=>category.id===val('np-category'))
   S._newProviderDraft={
     ...previous,
     categoryId:val('np-category')||previous.categoryId||'',
+    categoryName:selected?.name||previous.categoryName||'',
     name:val('np-name'),
     type:val('np-type'),
     email:val('np-email'),
@@ -1250,12 +1432,16 @@ function captureNewProviderDraft(){
     website:val('np-web'),
     payment:val('np-payment'),
     leadTime:val('np-lead-time'),
+    highlightNote:val('np-highlight-note'),
+    productList:val('np-product-list'),
     prices:prices.length?prices:(previous.prices||[])
   }
 }
 function setNewProviderCategory(categoryId){
   captureNewProviderDraft()
   S._newProviderDraft.categoryId=categoryId
+  const project=DATA.find(item=>item.type==='proveedor')
+  S._newProviderDraft.categoryName=project?.cats?.find(category=>category.id===categoryId)?.name||''
   render()
 }
 function addNewProviderPrice(){
@@ -1271,11 +1457,8 @@ function addNewProviderPrice(){
 function removeNewProviderPrice(index){
   captureNewProviderDraft()
   const prices=S._newProviderDraft.prices||[]
-  if(prices.length<=1){
-    S._newProviderDraft.prices=[{product:'',quantity:'',price:''}]
-  }else{
-    prices.splice(index,1)
-  }
+  if(prices.length<=1)S._newProviderDraft.prices=[{product:'',quantity:'',price:''}]
+  else prices.splice(index,1)
   render()
 }
 function cancelNewProvider(){
@@ -1283,65 +1466,70 @@ function cancelNewProvider(){
   S._newProviderDraft=null
   render()
 }
-function submitNewProvider(){
+async function submitNewProvider(){
   captureNewProviderDraft()
   const draft=S._newProviderDraft||{}
-  const name=(draft.name||'').trim()
-  if(!name){
+  if(!(draft.name||'').trim()){
     alert('Introduce el nombre del proveedor.')
     document.getElementById('np-name')?.focus()
     return
   }
-  const providerProject=DATA.find(p=>p.id===draft.projectId&&p.type==='proveedor')||DATA.find(p=>p.type==='proveedor')
-  const category=providerProject?.cats?.find(c=>c.id===draft.categoryId)||providerProject?.cats?.[0]
-  if(!providerProject||!category){
-    alert('No se ha encontrado una categoría de proveedores.')
+  if(!await ensureSupplierDirectory())return
+  const project=DATA.find(item=>item.type==='proveedor')
+  const category=(project?.cats||[]).find(item=>item.id===draft.categoryId||item.name===draft.categoryName)
+  if(!category){
+    alert('Crea primero una categoría para guardar el proveedor.')
     return
   }
-  const field=(key,value)=>value?{k:key,v:escapeProviderHtml(value)}:null
-  const fields=[
-    field('Email',(draft.email||'').trim()),
-    field('Tfno.',(draft.phone||'').trim()),
-    field('Pago',(draft.payment||'').trim()),
-    field('Plazo',(draft.leadTime||'').trim())
-  ].filter(Boolean)
-  const website=(draft.website||'').trim()
-  if(website){
-    const url=/^https?:\/\//i.test(website)?website:'https://'+website
-    const label=url.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,'')
-    fields.splice(Math.min(2,fields.length),0,{
-      k:'Web',
-      v:'<a href="'+escapeProviderHtml(url)+'" target="_blank" rel="noopener">'+escapeProviderHtml(label)+'</a>'
-    })
+  const payload={
+    categoryId:category.id,
+    name:draft.name.trim(),
+    supplierType:(draft.type||'').trim()||'Proveedor',
+    email:(draft.email||'').trim(),
+    phone:(draft.phone||'').trim(),
+    website:(draft.website||'').trim(),
+    paymentTerms:(draft.payment||'').trim(),
+    leadTime:(draft.leadTime||'').trim(),
+    highlightNote:(draft.highlightNote||'').trim(),
+    productList:(draft.productList||'').trim(),
+    rates:(draft.prices||[]).map(row=>({
+      prod:(row.product||'').trim(),
+      qty:(row.quantity||'').trim(),
+      price:(row.price||'').trim()
+    })).filter(row=>row.prod||row.qty||row.price)
   }
-  const prices=(draft.prices||[])
-    .map(row=>({
-      prod:escapeProviderHtml((row.product||'').trim()),
-      qty:escapeProviderHtml((row.quantity||'').trim()),
-      price:escapeProviderHtml((row.price||'').trim())
-    }))
-    .filter(row=>row.prod||row.qty||row.price)
-  category.provs=category.provs||[]
-  category.provs.push({
-    name:escapeProviderHtml(name),
-    type:escapeProviderHtml((draft.type||'').trim()||'Proveedor'),
-    fields,
-    prices
-  })
-  category.n=category.provs.length
-  S.provCat=category.id
-  S.open[category.id+'_'+(category.provs.length-1)]=true
-  S.modal=null
-  S._newProviderDraft=null
-  render()
+  try{
+    const path=draft.id?'/'+encodeURIComponent(draft.id):''
+    await supplierRequest(path,{method:draft.id?'PUT':'POST',body:JSON.stringify(payload)})
+    S.modal=null
+    S._newProviderDraft=null
+    S.provCat=category.id
+    await loadSupplierDirectory()
+  }catch(error){
+    alert('No se ha podido guardar el proveedor. '+error.message)
+  }
+}
+async function deleteProvider(projectId,categoryId,supplierId,event){
+  event?.preventDefault()
+  event?.stopPropagation()
+  const project=DATA.find(item=>item.id===projectId&&item.type==='proveedor')||DATA.find(item=>item.type==='proveedor')
+  const provider=project?.cats?.find(category=>category.id===categoryId)?.provs?.find(item=>item.id===supplierId)
+  if(!provider||!confirm('¿Eliminar el proveedor "'+provider.name+'"?'))return
+  if(!await ensureSupplierDirectory())return
+  try{
+    await supplierRequest('/'+encodeURIComponent(supplierId),{method:'DELETE'})
+    await loadSupplierDirectory()
+  }catch(error){
+    alert('No se ha podido eliminar el proveedor. '+error.message)
+  }
 }
 function newProviderModal(){
-  const providerProject=DATA.find(p=>p.id===S._newProviderDraft?.projectId&&p.type==='proveedor')||DATA.find(p=>p.type==='proveedor')
-  const cats=providerProject?.cats||[]
-  const draft=S._newProviderDraft||{categoryId:cats[0]?.id||'',prices:[{product:'',quantity:'',price:''}]}
+  const project=DATA.find(item=>item.id===S._newProviderDraft?.projectId&&item.type==='proveedor')||DATA.find(item=>item.type==='proveedor')
+  const categories=project?.cats||[]
+  const draft=S._newProviderDraft||{categoryId:categories[0]?.id||'',prices:[{product:'',quantity:'',price:''}]}
   const esc=escapeProviderHtml
-  const categoryOptions=cats.map(cat=>'<option value="'+esc(cat.id)+'"'+(cat.id===draft.categoryId?' selected':'')+'>'+esc(cat.ico)+' '+esc(cat.name)+'</option>').join('')
-  const priceRows=(draft.prices?.length?draft.prices:[{product:'',quantity:'',price:''}]).map((row,index)=>
+  const options=categories.map(category=>'<option value="'+esc(category.id)+'"'+(category.id===draft.categoryId?' selected':'')+'>'+esc(category.ico)+' '+esc(category.name)+'</option>').join('')
+  const rates=(draft.prices?.length?draft.prices:[{product:'',quantity:'',price:''}]).map((row,index)=>
     '<div data-provider-price-row style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;margin-top:8px;align-items:center">'+
       '<input class="modal-in" data-price="product" placeholder="Servicio o producto" value="'+esc(row.product||'')+'">'+
       '<input class="modal-in" data-price="quantity" placeholder="Cantidad" value="'+esc(row.quantity||'')+'">'+
@@ -1349,30 +1537,21 @@ function newProviderModal(){
       '<button type="button" class="modal-cancel" style="padding:8px 0" onclick="removeNewProviderPrice('+index+')" title="Eliminar tarifa">×</button>'+
     '</div>'
   ).join('')
+  const title=draft.id?'Editar proveedor':'+ Nuevo proveedor'
   return '<div class="modal-overlay" onclick="if(event.target===this)cancelNewProvider()">'+
     '<div class="modal-panel" style="max-width:700px">'+
-      '<div class="modal-head">'+
-        '<div><div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">DIRECTORIO DE PROVEEDORES</div><div class="modal-title">+ Nuevo proveedor</div></div>'+
-        '<button class="modal-close" onclick="cancelNewProvider()">×</button>'+
-      '</div>'+
+      '<div class="modal-head"><div><div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">DIRECTORIO DE PROVEEDORES</div><div class="modal-title">'+title+'</div></div><button class="modal-close" onclick="cancelNewProvider()">×</button></div>'+
       '<div class="modal-body">'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
-          '<div class="modal-field"><div class="modal-lbl">Categoría *</div><select id="np-category" class="modal-in" onchange="setNewProviderCategory(this.value)">'+categoryOptions+'</select></div>'+
-          '<div class="modal-field"><div class="modal-lbl">Tipo de proveedor</div><input id="np-type" class="modal-in" placeholder="Ej. Imprenta digital" value="'+esc(draft.type||'')+'"></div>'+
-        '</div>'+
-        '<div class="modal-field"><div class="modal-lbl">Nombre del proveedor *</div><input id="np-name" class="modal-in" placeholder="Ej. Nombre de la empresa" value="'+esc(draft.name||'')+'" onkeydown="if(event.key===\'Enter\')submitNewProvider()"></div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
-          '<div class="modal-field"><div class="modal-lbl">Email</div><input id="np-email" type="email" class="modal-in" placeholder="contacto@empresa.com" value="'+esc(draft.email||'')+'"></div>'+
-          '<div class="modal-field"><div class="modal-lbl">Teléfono / WhatsApp</div><input id="np-phone" class="modal-in" placeholder="+34..." value="'+esc(draft.phone||'')+'"></div>'+
-          '<div class="modal-field"><div class="modal-lbl">Web</div><input id="np-web" class="modal-in" placeholder="empresa.com" value="'+esc(draft.website||'')+'"></div>'+
-          '<div class="modal-field"><div class="modal-lbl">Pago y condiciones</div><input id="np-payment" class="modal-in" placeholder="Ej. 30 días / transferencia" value="'+esc(draft.payment||'')+'"></div>'+
-        '</div>'+
+        (categories.length?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="modal-field"><div class="modal-lbl">Categoría *</div><select id="np-category" class="modal-in" onchange="setNewProviderCategory(this.value)">'+options+'</select></div><div class="modal-field"><div class="modal-lbl">Tipo de proveedor</div><input id="np-type" class="modal-in" placeholder="Ej. Imprenta digital" value="'+esc(draft.type||'')+'"></div></div>':'<div class="modal-field"><div class="modal-lbl">Categoría</div><div style="font-size:12px;color:var(--text-3)">Crea primero una categoría en el panel de la izquierda.</div></div>')+
+        '<div class="modal-field"><div class="modal-lbl">Nombre del proveedor *</div><input id="np-name" class="modal-in" placeholder="Ej. Nombre de la empresa" value="'+esc(draft.name||'')+'"></div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="modal-field"><div class="modal-lbl">Email</div><input id="np-email" type="email" class="modal-in" placeholder="contacto@empresa.com" value="'+esc(draft.email||'')+'"></div><div class="modal-field"><div class="modal-lbl">Teléfono / WhatsApp</div><input id="np-phone" class="modal-in" placeholder="+34..." value="'+esc(draft.phone||'')+'"></div><div class="modal-field"><div class="modal-lbl">Web</div><input id="np-web" class="modal-in" placeholder="empresa.com" value="'+esc(draft.website||'')+'"></div><div class="modal-field"><div class="modal-lbl">Pago y condiciones</div><input id="np-payment" class="modal-in" placeholder="Ej. 30 días / transferencia" value="'+esc(draft.payment||'')+'"></div></div>'+
         '<div class="modal-field"><div class="modal-lbl">Plazo habitual</div><input id="np-lead-time" class="modal-in" placeholder="Ej. 3–5 días laborables" value="'+esc(draft.leadTime||'')+'"></div>'+
-        '<div class="modal-field" style="margin-bottom:0"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div class="modal-lbl">Tarifas (opcional)</div><button type="button" class="modal-cancel" style="padding:5px 9px" onclick="addNewProviderPrice()">+ Añadir tarifa</button></div><div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;margin-top:7px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-3)"><span>Servicio</span><span>Cantidad</span><span>Precio</span><span></span></div>'+priceRows+'</div>'+
+        '<div class="modal-field"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div class="modal-lbl">Tarifas (opcional)</div><button type="button" class="modal-cancel" style="padding:5px 9px" onclick="addNewProviderPrice()">+ Añadir tarifa</button></div><div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;margin-top:7px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-3)"><span>Servicio</span><span>Cantidad</span><span>Precio</span><span></span></div>'+rates+'</div>'+
+        '<div class="modal-field"><div class="modal-lbl">Nota destacada · visible al cerrar</div><textarea id="np-highlight-note" class="modal-in" rows="3" placeholder="Ej. Pedir siempre prueba de color antes de imprimir.">'+esc(draft.highlightNote||'')+'</textarea></div>'+
+        '<div class="modal-field" style="margin-bottom:0"><div class="modal-lbl">Productos / servicios sin tarifa</div><textarea id="np-product-list" class="modal-in" rows="5" placeholder="Escribe una línea por producto o servicio.">'+esc(draft.productList||'')+'</textarea></div>'+
       '</div>'+
-      '<div class="modal-foot"><button class="modal-cancel" onclick="cancelNewProvider()">Cancelar</button><button class="modal-ok" onclick="submitNewProvider()">Guardar proveedor</button></div>'+
-    '</div>'+
-  '</div>'
+      '<div class="modal-foot"><button class="modal-cancel" onclick="cancelNewProvider()">Cancelar</button><button class="modal-ok" onclick="submitNewProvider()"'+(categories.length?'':' disabled')+'>'+ (draft.id?'Guardar cambios':'Guardar proveedor') +'</button></div>'+
+    '</div></div>'
 }
 
 // Delegación de eventos para el alta de proveedores. Al estar en el documento, el botón
@@ -2154,75 +2333,30 @@ function appVars(p){
 // ─ PROVEEDOR ────────────────────────────────────────────────────────────────
 function provContent(p){
   const cats=p.cats||[]
-  if(!S.provCat) S.provCat=cats[0]?.id
-  const cat=cats.find(c=>c.id===S.provCat)||cats[0]
-  return `<div class="prov-layout">
-    <div class="prov-cats">
-      <div class="cat-list-wrap">
-        ${cats.map(c=>`
-          <div class="cat-item ${c.id===S.provCat?'on':''}" onclick="setProvCat('${c.id}')">
-            <span class="cat-ico">${c.ico}</span>
-            <span class="cat-name">${c.name}</span>
-            <span class="cat-n">${c.n}</span>
-          </div>
-        `).join('')}
-        ${S.addingCat
-          ? `<div class="cat-input-row">
-               <input id="cat-input" class="cat-input" placeholder="Nombre categoría…"
-                 onkeydown="if(event.key==='Enter')confirmAddCat();if(event.key==='Escape')cancelAddCat()"/>
-               <button class="cat-input-ok" onclick="confirmAddCat()">OK</button>
-             </div>`
-          : `<button class="cat-add-btn" onclick="startAddCat()">
-               <span style="font-size:15px;line-height:1">+</span> Nueva categoría
-             </button>`
-        }
-      </div>
-    </div>
-    <div class="prov-content">
-      <div class="prov-folder-bar">
-        <span class="folder-ico">${cat?.ico||'📁'}</span>
-        <div>
-          <div class="folder-title">${cat?.name||''}</div>
-          <div class="folder-sub">${cat?.provs?.length||0} proveedores</div>
-        </div>
-        <button class="add-btn" type="button" data-provider-project="${p.id}" data-provider-category="${cat?.id || ''}">+ Añadir proveedor</button>
-      </div>
-      <div class="prov-cards">
-        ${(cat?.provs||[]).map((pv,i)=>{
-          const k=`${cat.id}_${i}`
-          const isOpen=!!S.open[k]
-          return `<div class="prov-card">
-            <div class="prov-card-h ${isOpen?'open':''}" onclick="toggleCard('${k}')">
-              <div>
-                <div class="prov-card-name">${pv.name}</div>
-                <div class="prov-card-type">${pv.type}</div>
-              </div>
-              <span class="chev ${isOpen?'open':''}">▼</span>
-            </div>
-            <div class="prov-card-body ${isOpen?'open':''}">
-              ${(pv.fields||[]).map(f=>`
-                <div class="pf-row">
-                  <span class="pf-k">${f.k}</span>
-                  <span class="pf-v">${f.v}</span>
-                </div>
-              `).join('')}
-              ${pv.prices?.length?`
-                <div class="price-head">Tarifas</div>
-                <table class="ptable">
-                  <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr></thead>
-                  <tbody>${pv.prices.map(r=>`<tr>
-                    <td>${r.prod}</td>
-                    <td style="color:var(--text-3)">${r.qty}</td>
-                    <td class="price-val">${r.price}</td>
-                  </tr>`).join('')}</tbody>
-                </table>
-              `:''}
-            </div>
-          </div>`
-        }).join('')}
-      </div>
-    </div>
-  </div>`
+  if(!S.provCat)S.provCat=cats[0]?.id||null
+  const cat=cats.find(category=>category.id===S.provCat)||cats[0]
+  const esc=escapeProviderHtml
+  const categoryList=cats.map(category=>
+    '<div class="cat-item '+(category.id===S.provCat?'on':'')+'" onclick="setProvCat(\''+esc(category.id)+'\')">'+
+      '<span class="cat-ico">'+esc(category.ico||'📁')+'</span><span class="cat-name">'+esc(category.name)+'</span><span class="cat-n">'+(category.provs||[]).length+'</span>'+
+      '<button class="cat-delete" type="button" title="Eliminar categoría" onclick="deleteProviderCategory(\''+esc(category.id)+'\',event)">×</button>'+
+    '</div>'
+  ).join('')
+  const cards=(cat?.provs||[]).map((provider,index)=>{
+    const key=String(provider.id||cat.id+'_'+index)
+    const open=!!S.open[key]
+    const note=provider.highlightNote?'<div class="prov-card-note">'+esc(provider.highlightNote)+'</div>':''
+    const fields=(provider.fields||[]).map(field=>'<div class="pf-row"><span class="pf-k">'+esc(field.k)+'</span><span class="pf-v">'+field.v+'</span></div>').join('')
+    const rates=provider.prices?.length?'<div class="price-head">Tarifas</div><table class="ptable"><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr></thead><tbody>'+
+      provider.prices.map(rate=>'<tr><td>'+esc(rate.prod||'')+'</td><td style="color:var(--text-3)">'+esc(rate.qty||'')+'</td><td class="price-val">'+esc(rate.price||'')+'</td></tr>').join('')+
+      '</tbody></table>':''
+    const products=provider.productList?'<div class="price-head">Productos / servicios</div><div class="prov-products">'+esc(provider.productList)+'</div>':''
+    const actions=provider.id?'<div class="prov-card-actions"><button class="prov-card-action" type="button" onclick="openEditProvider(\''+esc(p.id)+'\',\''+esc(cat.id)+'\',\''+esc(provider.id)+'\')">Editar</button><button class="prov-card-action delete" type="button" onclick="deleteProvider(\''+esc(p.id)+'\',\''+esc(cat.id)+'\',\''+esc(provider.id)+'\',event)">Eliminar</button></div>':''
+    return '<div class="prov-card"><div class="prov-card-h '+(open?'open':'')+'" onclick="toggleCard(\''+esc(key)+'\')"><div><div class="prov-card-name">'+esc(provider.name)+'</div><div class="prov-card-type">'+esc(provider.type||'Proveedor')+'</div>'+note+'</div><span class="chev '+(open?'open':'')+'">▼</span></div><div class="prov-card-body '+(open?'open':'')+'">'+fields+rates+products+actions+'</div></div>'
+  }).join('')
+  return '<div class="prov-layout"><div class="prov-cats"><div class="cat-list-wrap">'+categoryList+
+    (S.addingCat?'<div class="cat-input-row"><input id="cat-input" class="cat-input" placeholder="Nombre categoría…" onkeydown="if(event.key===\'Enter\')confirmAddCat();if(event.key===\'Escape\')cancelAddCat()"/><button class="cat-input-ok" onclick="confirmAddCat()">OK</button></div>':'<button class="cat-add-btn" onclick="startAddCat()"><span style="font-size:15px;line-height:1">+</span> Nueva categoría</button>')+
+    '</div></div><div class="prov-content"><div class="prov-folder-bar"><span class="folder-ico">'+esc(cat?.ico||'📁')+'</span><div><div class="folder-title">'+esc(cat?.name||'Sin categorías')+'</div><div class="folder-sub">'+(cat?.provs?.length||0)+' proveedores</div></div><button class="add-btn" type="button" data-provider-project="'+esc(p.id)+'" data-provider-category="'+esc(cat?.id||'')+'">+ Añadir proveedor</button></div><div class="prov-cards">'+cards+'</div></div></div>'
 }
 
 // ─ NAV: Dashboard ────────────────────────────────────────────────────────────
@@ -2387,6 +2521,7 @@ if(!DATA.find(x=>x.id===S.proj?.id)) S.proj=DATA[0]||null
 // Start with brand orange
 applyAccent('cliente')
 render()
+loadSupplierDirectory().catch(()=>{})
 </script>
 </body>
 </html>
