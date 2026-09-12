@@ -1286,13 +1286,38 @@ async function loadSupplierDirectory(){
   render()
   return directory
 }
+async function signInForSuppliers(){
+  const password=window.prompt('Introduce la contraseña de Ligrow para guardar el directorio de proveedores.')
+  if(password===null)return false
+  const response=await fetch('/api/auth/login',{
+    method:'POST',
+    credentials:'same-origin',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({password})
+  })
+  if(!response.ok){
+    alert('La contraseña no es correcta.')
+    return false
+  }
+  return true
+}
 async function ensureSupplierDirectory(){
   try{
     await loadSupplierDirectory()
     return true
   }catch(error){
-    alert('No se ha podido conectar con Supabase. '+error.message)
-    return false
+    if(error.status!==401){
+      alert('No se ha podido conectar con Supabase. '+error.message)
+      return false
+    }
+    if(!await signInForSuppliers())return false
+    try{
+      await loadSupplierDirectory()
+      return true
+    }catch(retryError){
+      alert('No se ha podido conectar con Supabase. '+retryError.message)
+      return false
+    }
   }
 }
 function categoryIcon(name){
