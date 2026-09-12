@@ -1643,6 +1643,9 @@ function main(){
   const typeName = {cliente:'Cliente',app:'App',proveedor:'Proveedor'}[p.type]
   const btnLabel = p.type==='proveedor'?'+ Proveedor':p.type==='app'?'Abrir app':'+ Nueva tarea'
   const btnClick = p.type==='cliente'?`openNewTask()`:`console.log('action')`
+  const providerButtonAttrs = p.type==='proveedor'
+    ? `type="button" data-provider-project="${p.id}" data-provider-category="${S.provCat||p.cats?.[0]?.id||''}"`
+    : `onclick="${btnClick}"`
   const shape    = TYPE_SHAPE[p.type]
   const badge    = TYPE_BADGE[p.type]
   const lgStyle  = p.type==='proveedor'?`color:${p.color}`:`background:${p.color}`
@@ -1666,7 +1669,7 @@ function main(){
           <div class="sem-btn sem-naranja ${p.semaforo==='naranja'?'on':''}" onclick="setSemaforo('${p.id}','naranja')" title="Naranja"></div>
           <div class="sem-btn sem-rojo ${p.semaforo==='rojo'?'on':''}" onclick="setSemaforo('${p.id}','rojo')" title="Rojo"></div>
         </div>`:''}
-        <button class="tb-action" onclick="${btnClick}">${btnLabel}</button>
+        <button class="tb-action" ${providerButtonAttrs}>${btnLabel}</button>
         ${p.type==='cliente'?`<button class="tb-del-btn" onclick="deleteClient('${p.id}')" title="Eliminar cliente">🗑</button>`:''}
       </div>
       <div class="tabs">
