@@ -1375,6 +1375,16 @@ function newProviderModal(){
   '</div>'
 }
 
+// Delegación de eventos para el alta de proveedores. Al estar en el documento, el botón
+// sigue conectado después de cada renderizado de las categorías.
+document.addEventListener('click',event=>{
+  const button=event.target.closest?.('[data-provider-project][data-provider-category]')
+  if(!button)return
+  event.preventDefault()
+  event.stopPropagation()
+  openNewProvider(button.dataset.providerProject,button.dataset.providerCategory)
+})
+
 // ── Persistence ──────────────────────────────────────────────────────────────
 // Persists the whole DATA array (not just mutable sub-fields) so clients
 // added or removed at runtime survive a reload.
@@ -2172,7 +2182,7 @@ function provContent(p){
           <div class="folder-title">${cat?.name||''}</div>
           <div class="folder-sub">${cat?.provs?.length||0} proveedores</div>
         </div>
-        <button class="add-btn" onclick="openNewProvider('${p.id}','${cat?.id || ''}')">+ Añadir proveedor</button>
+        <button class="add-btn" type="button" data-provider-project="${p.id}" data-provider-category="${cat?.id || ''}">+ Añadir proveedor</button>
       </div>
       <div class="prov-cards">
         ${(cat?.provs||[]).map((pv,i)=>{
