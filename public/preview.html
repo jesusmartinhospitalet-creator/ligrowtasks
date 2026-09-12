@@ -1203,6 +1203,178 @@ function confirmAddCat(){
   render()
 }
 
+
+function escapeProviderHtml(value=''){
+  return String(value)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;')
+}
+function openNewProvider(projectId,categoryId){
+  const providerProject=DATA.find(p=>p.id===projectId&&p.type==='proveedor')||DATA.find(p=>p.type==='proveedor')
+  const fallbackCategory=providerProject?.cats?.[0]?.id||''
+  S.modal='newProvider'
+  S._newProviderDraft={
+    projectId:providerProject?.id||'',
+    categoryId:categoryId||fallbackCategory,
+    name:'',
+    type:'',
+    email:'',
+    phone:'',
+    website:'',
+    payment:'',
+    leadTime:'',
+    prices:[{product:'',quantity:'',price:''}]
+  }
+  render()
+  setTimeout(()=>document.getElementById('np-name')?.focus(),50)
+}
+function captureNewProviderDraft(){
+  if(S.modal!=='newProvider')return
+  const previous=S._newProviderDraft||{}
+  const val=id=>document.getElementById(id)?.value||''
+  const prices=Array.from(document.querySelectorAll('[data-provider-price-row]')).map(row=>({
+    product:row.querySelector('[data-price="product"]')?.value||'',
+    quantity:row.querySelector('[data-price="quantity"]')?.value||'',
+    price:row.querySelector('[data-price="price"]')?.value||''
+  }))
+  S._newProviderDraft={
+    ...previous,
+    categoryId:val('np-category')||previous.categoryId||'',
+    name:val('np-name'),
+    type:val('np-type'),
+    email:val('np-email'),
+    phone:val('np-phone'),
+    website:val('np-web'),
+    payment:val('np-payment'),
+    leadTime:val('np-lead-time'),
+    prices:prices.length?prices:(previous.prices||[])
+  }
+}
+function setNewProviderCategory(categoryId){
+  captureNewProviderDraft()
+  S._newProviderDraft.categoryId=categoryId
+  render()
+}
+function addNewProviderPrice(){
+  captureNewProviderDraft()
+  if(!S._newProviderDraft.prices)S._newProviderDraft.prices=[]
+  S._newProviderDraft.prices.push({product:'',quantity:'',price:''})
+  render()
+  setTimeout(()=>{
+    const rows=document.querySelectorAll('[data-provider-price-row]')
+    rows[rows.length-1]?.querySelector('[data-price="product"]')?.focus()
+  },30)
+}
+function removeNewProviderPrice(index){
+  captureNewProviderDraft()
+  const prices=S._newProviderDraft.prices||[]
+  if(prices.length<=1){
+    S._newProviderDraft.prices=[{product:'',quantity:'',price:''}]
+  }else{
+    prices.splice(index,1)
+  }
+  render()
+}
+function cancelNewProvider(){
+  S.modal=null
+  S._newProviderDraft=null
+  render()
+}
+function submitNewProvider(){
+  captureNewProviderDraft()
+  const draft=S._newProviderDraft||{}
+  const name=(draft.name||'').trim()
+  if(!name){
+    alert('Introduce el nombre del proveedor.')
+    document.getElementById('np-name')?.focus()
+    return
+  }
+  const providerProject=DATA.find(p=>p.id===draft.projectId&&p.type==='proveedor')||DATA.find(p=>p.type==='proveedor')
+  const category=providerProject?.cats?.find(c=>c.id===draft.categoryId)||providerProject?.cats?.[0]
+  if(!providerProject||!category){
+    alert('No se ha encontrado una categoría de proveedores.')
+    return
+  }
+  const field=(key,value)=>value?{k:key,v:escapeProviderHtml(value)}:null
+  const fields=[
+    field('Email',(draft.email||'').trim()),
+    field('Tfno.',(draft.phone||'').trim()),
+    field('Pago',(draft.payment||'').trim()),
+    field('Plazo',(draft.leadTime||'').trim())
+  ].filter(Boolean)
+  const website=(draft.website||'').trim()
+  if(website){
+    const url=/^https?:\/\//i.test(website)?website:'https://'+website
+    const label=url.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,'')
+    fields.splice(Math.min(2,fields.length),0,{
+      k:'Web',
+      v:'<a href="'+escapeProviderHtml(url)+'" target="_blank" rel="noopener">'+escapeProviderHtml(label)+'</a>'
+    })
+  }
+  const prices=(draft.prices||[])
+    .map(row=>({
+      prod:escapeProviderHtml((row.product||'').trim()),
+      qty:escapeProviderHtml((row.quantity||'').trim()),
+      price:escapeProviderHtml((row.price||'').trim())
+    }))
+    .filter(row=>row.prod||row.qty||row.price)
+  category.provs=category.provs||[]
+  category.provs.push({
+    name:escapeProviderHtml(name),
+    type:escapeProviderHtml((draft.type||'').trim()||'Proveedor'),
+    fields,
+    prices
+  })
+  category.n=category.provs.length
+  S.provCat=category.id
+  S.open[category.id+'_'+(category.provs.length-1)]=true
+  S.modal=null
+  S._newProviderDraft=null
+  render()
+}
+function newProviderModal(){
+  const providerProject=DATA.find(p=>p.id===S._newProviderDraft?.projectId&&p.type==='proveedor')||DATA.find(p=>p.type==='proveedor')
+  const cats=providerProject?.cats||[]
+  const draft=S._newProviderDraft||{categoryId:cats[0]?.id||'',prices:[{product:'',quantity:'',price:''}]}
+  const esc=escapeProviderHtml
+  const categoryOptions=cats.map(cat=>'<option value="'+esc(cat.id)+'"'+(cat.id===draft.categoryId?' selected':'')+'>'+esc(cat.ico)+' '+esc(cat.name)+'</option>').join('')
+  const priceRows=(draft.prices?.length?draft.prices:[{product:'',quantity:'',price:''}]).map((row,index)=>
+    '<div data-provider-price-row style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;margin-top:8px;align-items:center">'+
+      '<input class="modal-in" data-price="product" placeholder="Servicio o producto" value="'+esc(row.product||'')+'">'+
+      '<input class="modal-in" data-price="quantity" placeholder="Cantidad" value="'+esc(row.quantity||'')+'">'+
+      '<input class="modal-in" data-price="price" placeholder="Precio" value="'+esc(row.price||'')+'">'+
+      '<button type="button" class="modal-cancel" style="padding:8px 0" onclick="removeNewProviderPrice('+index+')" title="Eliminar tarifa">×</button>'+
+    '</div>'
+  ).join('')
+  return '<div class="modal-overlay" onclick="if(event.target===this)cancelNewProvider()">'+
+    '<div class="modal-panel" style="max-width:700px">'+
+      '<div class="modal-head">'+
+        '<div><div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">DIRECTORIO DE PROVEEDORES</div><div class="modal-title">+ Nuevo proveedor</div></div>'+
+        '<button class="modal-close" onclick="cancelNewProvider()">×</button>'+
+      '</div>'+
+      '<div class="modal-body">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
+          '<div class="modal-field"><div class="modal-lbl">Categoría *</div><select id="np-category" class="modal-in" onchange="setNewProviderCategory(this.value)">'+categoryOptions+'</select></div>'+
+          '<div class="modal-field"><div class="modal-lbl">Tipo de proveedor</div><input id="np-type" class="modal-in" placeholder="Ej. Imprenta digital" value="'+esc(draft.type||'')+'"></div>'+
+        '</div>'+
+        '<div class="modal-field"><div class="modal-lbl">Nombre del proveedor *</div><input id="np-name" class="modal-in" placeholder="Ej. Nombre de la empresa" value="'+esc(draft.name||'')+'" onkeydown="if(event.key===\'Enter\')submitNewProvider()"></div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
+          '<div class="modal-field"><div class="modal-lbl">Email</div><input id="np-email" type="email" class="modal-in" placeholder="contacto@empresa.com" value="'+esc(draft.email||'')+'"></div>'+
+          '<div class="modal-field"><div class="modal-lbl">Teléfono / WhatsApp</div><input id="np-phone" class="modal-in" placeholder="+34..." value="'+esc(draft.phone||'')+'"></div>'+
+          '<div class="modal-field"><div class="modal-lbl">Web</div><input id="np-web" class="modal-in" placeholder="empresa.com" value="'+esc(draft.website||'')+'"></div>'+
+          '<div class="modal-field"><div class="modal-lbl">Pago y condiciones</div><input id="np-payment" class="modal-in" placeholder="Ej. 30 días / transferencia" value="'+esc(draft.payment||'')+'"></div>'+
+        '</div>'+
+        '<div class="modal-field"><div class="modal-lbl">Plazo habitual</div><input id="np-lead-time" class="modal-in" placeholder="Ej. 3–5 días laborables" value="'+esc(draft.leadTime||'')+'"></div>'+
+        '<div class="modal-field" style="margin-bottom:0"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div class="modal-lbl">Tarifas (opcional)</div><button type="button" class="modal-cancel" style="padding:5px 9px" onclick="addNewProviderPrice()">+ Añadir tarifa</button></div><div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;margin-top:7px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-3)"><span>Servicio</span><span>Cantidad</span><span>Precio</span><span></span></div>'+priceRows+'</div>'+
+      '</div>'+
+      '<div class="modal-foot"><button class="modal-cancel" onclick="cancelNewProvider()">Cancelar</button><button class="modal-ok" onclick="submitNewProvider()">Guardar proveedor</button></div>'+
+    '</div>'+
+  '</div>'
+}
+
 // ── Persistence ──────────────────────────────────────────────────────────────
 // Persists the whole DATA array (not just mutable sub-fields) so clients
 // added or removed at runtime survive a reload.
@@ -1228,6 +1400,7 @@ function render(){
   if(S.modal==='newTask') ov.innerHTML=newTaskModal()
   else if(S.modal==='addDoc') ov.innerHTML=addDocModal()
   else if(S.modal==='newClient') ov.innerHTML=newClientModal()
+  else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
   else ov.innerHTML=''
 }
 
@@ -1999,7 +2172,7 @@ function provContent(p){
           <div class="folder-title">${cat?.name||''}</div>
           <div class="folder-sub">${cat?.provs?.length||0} proveedores</div>
         </div>
-        <button class="add-btn">+ Añadir proveedor</button>
+        <button class="add-btn" onclick="openNewProvider('${p.id}','${cat?.id || ''}')">+ Añadir proveedor</button>
       </div>
       <div class="prov-cards">
         ${(cat?.provs||[]).map((pv,i)=>{
