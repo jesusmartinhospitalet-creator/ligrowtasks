@@ -147,20 +147,24 @@ body{
 
 .pi-info{flex:1;overflow:hidden}
 .pi-name{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
-.pi.on .pi-name{color:#fff}
+.pi.on {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 8px rgba(0,0,0,0.35) !important;
+}
+.pi.on .pi-name{color:#fff;font-weight:700}
 .pi-sub{font-size:10.5px;color:rgba(255,255,255,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.5px}
 .pi-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;opacity:.6}
 .pi.sem-verde   { background: rgba(34,197,94,.08); border-left: 2.5px solid #22C55E; }
 .pi.sem-verde:hover { background: rgba(34,197,94,.13); }
-.pi.sem-verde.on { background: rgba(34,197,94,.16); border-left: 2.5px solid #22C55E; }
+.pi.sem-verde.on { background: rgba(34,197,94,.18) !important; border-left: 3.5px solid #22C55E !important; }
 
 .pi.sem-naranja { background: rgba(245,158,11,.08); border-left: 2.5px solid #F59E0B; }
 .pi.sem-naranja:hover { background: rgba(245,158,11,.13); }
-.pi.sem-naranja.on { background: rgba(245,158,11,.16); border-left: 2.5px solid #F59E0B; }
+.pi.sem-naranja.on { background: rgba(245,158,11,.18) !important; border-left: 3.5px solid #F59E0B !important; }
 
 .pi.sem-rojo   { background: rgba(239,68,68,.08); border-left: 2.5px solid #EF4444; }
 .pi.sem-rojo:hover { background: rgba(239,68,68,.13); }
-.pi.sem-rojo.on { background: rgba(239,68,68,.16); border-left: 2.5px solid #EF4444; }
+.pi.sem-rojo.on { background: rgba(239,68,68,.18) !important; border-left: 3.5px solid #EF4444 !important; }
 
 .pi.sem-verde .pi-name, .pi.sem-naranja .pi-name, .pi.sem-rojo .pi-name {
   color: rgba(255, 255, 255, 0.92);
@@ -321,21 +325,21 @@ body{
 .tb-stats-strip{display:flex;align-items:center;gap:7px;padding:3px 0;overflow-x:auto}
 .tb-stats-strip::-webkit-scrollbar{display:none}
 .tb-stat-pill{
-  display:inline-flex;align-items:center;gap:7px;
-  background:var(--surface);border:1px solid var(--border);border-radius:7px;
-  padding:3.5px 9px;transition:all .15s;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,0.02)
+  display:inline-flex;align-items:center;gap:6px;
+  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:6px;
+  padding:3px 9px;transition:all .15s;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,0.02)
 }
-.tb-stat-pill:hover{border-color:var(--border-2);background:var(--surface-2)}
-.tb-stat-lbl{font-size:9.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-3);display:inline-flex;align-items:center;gap:4px}
-.tb-stat-val{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text-1);line-height:1}
-.tb-stat-val.val-red{color:#D63A0F}
+.tb-stat-pill:hover{border-color:#D1D5DB;background:#F9FAFB}
+.tb-stat-lbl{font-size:11.5px;font-weight:600;text-transform:none;color:#4B5563;display:inline-flex;align-items:center;gap:5px}
+.tb-stat-val{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:#11100E;line-height:1}
+.tb-stat-val.val-red{color:#DC2626}
 .tb-stat-val.val-amber{color:#D97706}
-.tb-stat-val.val-green{color:#0F9460}
-.tb-stat-pill.pill-waiting{border-color:rgba(217,119,6,0.38);background:#FFFDF7}
+.tb-stat-val.val-green{color:#16A34A}
+.tb-stat-pill.pill-waiting{border-color:#FED7AA;background:#FFFDF7}
 .tb-stat-pill.pill-waiting .tb-stat-lbl{color:#B45309}
 
 /* content area */
-.ct{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 24px 20px}
+.ct{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 26px 28px;background:#F8F7F4;display:flex;flex-direction:column;gap:14px}
 .ct::-webkit-scrollbar{width:4px}
 .ct::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
@@ -345,7 +349,7 @@ body{
 
 /* two-col info grid */
 .info-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 14px}
+.card{background:#FFFFFF;border:1px solid #EBE9E4;border-radius:12px;padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
 .card-head{font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
 .dashed-box{border:1.5px dashed var(--border);border-radius:7px;padding:12px;text-align:center;color:var(--text-3);font-size:11.5px}
 
@@ -569,48 +573,552 @@ body{
 .doc-link{font-size:11.5px;font-weight:600;color:var(--accent);cursor:pointer}
 
 /* ── Necesita atención ────────────────────────────────────────────────────── */
-.attention-card{border-radius:9px;padding:8px 12px;margin-bottom:10px;transition:all .15s}
-.attention-card.has-issues{background:var(--surface);border:1px solid rgba(240,78,35,0.25);border-left:3.5px solid var(--brand);box-shadow:0 1px 4px rgba(240,78,35,0.04)}
-.attention-card.all-good{background:var(--surface);border:1px solid rgba(22,163,74,0.25);border-left:3.5px solid #16A34A;box-shadow:0 1px 4px rgba(22,163,74,0.03)}
-.att-ico-box{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-.att-ico-box.warn{background:#FFF0EB;color:#D63A0F}
-.att-ico-box.good{background:#EDFAF2;color:#16A34A}
-.att-count-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;padding:1px 6px;border-radius:10px;background:#FFF0EB;color:#D63A0F}
-.att-items-grid{display:flex;flex-direction:column;gap:4px;margin-top:6px}
-.att-item-row{display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border-2);cursor:pointer;transition:all .15s}
-.att-item-row:hover{border-color:var(--brand);background:var(--surface)}
-.att-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:1.5px 5px;border-radius:4px;white-space:nowrap;flex-shrink:0}
-.att-badge.prio-red{background:#FFF0F0;color:#DC2626;border:1px solid rgba(220,38,38,0.2)}
-.att-badge.prio-orange{background:#FFF7ED;color:#EA580C;border:1px solid rgba(234,88,12,0.2)}
-.att-badge.prio-amber{background:#FFFBEB;color:#D97706;border:1px solid rgba(217,119,6,0.2)}
-.att-badge.prio-purple{background:#FAF5FF;color:#9333EA;border:1px solid rgba(147,51,234,0.2)}
-.att-item-content{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.att-item-title{font-size:11.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.att-item-msg{font-size:10.5px;color:var(--text-3);line-height:1.2}
-.att-item-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.att-owner-pill{font-size:9.5px;font-weight:600;color:var(--text-2);background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:10px}
-.att-act-btn{font-size:10.5px;font-weight:600;color:var(--brand);background:transparent;border:none;cursor:pointer;white-space:nowrap}
+.attention-card{
+  background:#FFFFFF;
+  border:1px solid #FCA5A5;
+  border-left:4px solid #EF4444;
+  border-radius:12px;
+  padding:14px 16px;
+  box-shadow:0 1px 4px rgba(239,68,68,0.05);
+  display:flex;
+  flex-direction:column;
+  box-sizing:border-box;
+}
+.attention-card.all-good{
+  border-color:#BBF7D0;
+  border-left:4px solid #16A34A;
+  box-shadow:0 1px 4px rgba(22,163,74,0.03);
+}
+.att-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.att-head-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.att-circle-ico{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#EF4444;
+  color:#FFFFFF;
+  font-weight:800;
+  font-size:13px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.att-circle-ico.good{
+  background:#16A34A;
+}
+.att-title{
+  font-size:13px;
+  font-weight:700;
+  color:#171614;
+}
+.att-badge-count{
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.4px;
+  background:#FEE2E2;
+  color:#DC2626;
+  border-radius:20px;
+  padding:2px 8px;
+}
+.att-badge-count.good{
+  background:#DCFCE7;
+  color:#15803D;
+}
+.att-sub-tag{
+  font-size:11px;
+  color:#8E8B83;
+  font-weight:500;
+}
+.att-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.att-row-card{
+  background:#FFFFFF;
+  border:1px solid #EBE9E4;
+  border-radius:8px;
+  padding:8px 12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.02);
+  transition:border-color .15s, box-shadow .15s;
+  cursor:pointer;
+}
+.att-row-card:hover{
+  border-color:#FCA5A5;
+  box-shadow:0 2px 6px rgba(239,68,68,0.06);
+}
+.att-tag-pill{
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.3px;
+  padding:3px 8px;
+  border-radius:6px;
+  white-space:nowrap;
+  flex-shrink:0;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.att-tag-feedback{
+  background:#FFF7ED;
+  border:1px solid #FED7AA;
+  color:#C2410C;
+}
+.att-tag-recordatorio{
+  background:#FFF1EE;
+  border:1px solid #FECACA;
+  color:#DC2626;
+}
+.att-row-body{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.att-row-title{
+  font-size:12px;
+  font-weight:700;
+  color:#171614;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.att-row-title span{
+  color:#8E8B83;
+  font-weight:500;
+  font-size:11px;
+}
+.att-row-desc{
+  font-size:11px;
+  color:#8E8B83;
+  line-height:1.3;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.att-row-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.att-action-link{
+  font-size:11.5px;
+  font-weight:600;
+  color:#EA580C;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:2px 4px;
+  transition:opacity .15s;
+}
+.att-action-link:hover{
+  opacity:0.8;
+}
+
+/* ── Recordatorios / Temas pendientes ─────────────────────────────────────── */
+.rec-module-card{
+  background:#FFFFFF;
+  border:1px solid #EBE9E4;
+  border-radius:12px;
+  padding:14px 16px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.03);
+  display:flex;
+  flex-direction:column;
+  box-sizing:border-box;
+}
+.rec-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.rec-head-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.rec-circle-ico{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#F59E0B;
+  color:#FFFFFF;
+  font-size:13px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.rec-title-txt{
+  font-size:13px;
+  font-weight:700;
+  color:#171614;
+}
+.rec-count-badge{
+  font-size:10px;
+  font-weight:700;
+  background:#FEF3C7;
+  color:#D97706;
+  border-radius:20px;
+  padding:1px 7px;
+}
+.rec-new-btn{
+  background:#FFFFFF;
+  border:1px solid #D1D5DB;
+  color:#171614;
+  font-size:11px;
+  font-weight:600;
+  padding:3px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.rec-new-btn:hover{
+  background:#F3F4F6;
+  border-color:#9CA3AF;
+}
+.rec-item-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid #F3F4F6;
+}
+.rec-item-row:last-child{
+  border-bottom:none;
+}
+.rec-chk{
+  width:16px;
+  height:16px;
+  border:1.5px solid #D1D5DB;
+  border-radius:4px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  cursor:pointer;
+  color:#FFFFFF;
+  background:transparent;
+  transition:all .15s;
+  flex-shrink:0;
+}
+.rec-chk.checked{
+  background:#F59E0B;
+  border-color:#F59E0B;
+}
+.rec-item-body{
+  flex:1;
+  min-width:0;
+  cursor:pointer;
+}
+.rec-item-title{
+  font-size:12px;
+  font-weight:600;
+  color:#171614;
+  line-height:1.3;
+}
+.rec-item-title.done{
+  text-decoration:line-through;
+  color:#8E8B83;
+}
+.rec-item-detail{
+  font-size:11px;
+  color:#8E8B83;
+  margin-top:1px;
+  line-height:1.2;
+}
+.rec-item-due{
+  font-size:11px;
+  color:#6B7280;
+  font-weight:500;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap;
+  flex-shrink:0;
+}
 
 /* ── Biblioteca de Recursos & Plataformas ────────────────────────────────── */
-.doc-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
-.doc-filters-bar{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;border-bottom:1px solid var(--border-2)}
-.doc-filters-bar::-webkit-scrollbar{height:3px}
-.doc-filter-pill{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);cursor:pointer;transition:all .15s;white-space:nowrap}
-.doc-filter-pill:hover{background:var(--surface);color:var(--text-1)}
-.doc-filter-pill.active{background:var(--brand);color:#FFFFFF !important;border-color:var(--brand)}
-.doc-item-row{display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:6px;background:var(--surface);border:1px solid var(--border-2);margin-bottom:4px;transition:all .15s}
-.doc-item-row:hover{background:var(--surface-2);border-color:var(--border)}
-.doc-platform-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:1.5px 5px;border-radius:4px;flex-shrink:0;letter-spacing:0.2px}
-.doc-info-wrap{flex:1;min-width:0}
-.doc-title-text{font-size:11.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.doc-sub-text{font-size:10.5px;color:var(--text-3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.doc-actions-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.doc-viewer-btn{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;background:var(--brand);color:#FFFFFF;border:none;cursor:pointer;transition:opacity .15s}
-.doc-viewer-btn:hover{opacity:0.9}
-.doc-external-link{font-size:11px;font-weight:600;color:var(--accent-text);padding:4px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);text-decoration:none;display:inline-flex;align-items:center;gap:3px}
-.doc-list-scroll{display:flex;flex-direction:column;gap:0;max-height:300px;overflow-y:auto;padding-right:4px}
-.doc-list-scroll::-webkit-scrollbar{width:4px}
-.doc-list-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.doc-library-card{
+  background:#FFFFFF;
+  border:1px solid #EBE9E4;
+  border-radius:12px;
+  padding:16px 20px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.03);
+}
+.doc-lib-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.doc-lib-title-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.doc-lib-ico{
+  width:26px;
+  height:26px;
+  border-radius:8px;
+  background:#4F46E5;
+  color:#FFFFFF;
+  font-size:14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.doc-lib-title{
+  font-size:14px;
+  font-weight:700;
+  color:#171614;
+}
+.doc-lib-badge{
+  background:#EEF2FF;
+  color:#4F46E5;
+  font-size:10px;
+  font-weight:700;
+  border-radius:20px;
+  padding:1px 7px;
+}
+.doc-lib-sub{
+  font-size:11.5px;
+  color:#8E8B83;
+  margin-top:3px;
+  margin-left:34px;
+}
+.doc-lib-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.doc-search-box{
+  background:#FFFFFF;
+  border:1px solid #D1D5DB;
+  border-radius:8px;
+  padding:5px 10px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.doc-search-box input{
+  border:none;
+  outline:none;
+  background:transparent;
+  font-family:inherit;
+  font-size:11.5px;
+  color:#171614;
+  width:140px;
+}
+.doc-add-btn{
+  background:#EA580C;
+  color:#FFFFFF;
+  font-weight:700;
+  font-size:11.5px;
+  padding:6px 14px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  transition:opacity .15s;
+  white-space:nowrap;
+}
+.doc-add-btn:hover{
+  opacity:0.9;
+}
+.doc-filters-strip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid #F3F4F6;
+  padding:10px 0 12px;
+  margin-bottom:8px;
+}
+.doc-tabs-left{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.doc-tab-btn{
+  font-size:11px;
+  font-weight:600;
+  padding:4px 10px;
+  border-radius:6px;
+  border:1px solid transparent;
+  background:transparent;
+  color:#6B7280;
+  cursor:pointer;
+  transition:all .15s;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.doc-tab-btn:hover{
+  background:#F3F4F6;
+  color:#171614;
+}
+.doc-tab-btn.active{
+  background:#FFF0EB;
+  color:#EA580C;
+  border-color:rgba(234,88,12,0.2);
+}
+.doc-view-toggle{
+  display:flex;
+  align-items:center;
+  gap:2px;
+}
+.doc-v-btn{
+  width:26px;
+  height:26px;
+  border-radius:6px;
+  border:1px solid #E5E7EB;
+  background:#FFFFFF;
+  color:#6B7280;
+  font-size:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.doc-v-btn.active{
+  background:#F3F4F6;
+  color:#11100E;
+  border-color:#D1D5DB;
+}
+.doc-row-v2{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:9px 10px;
+  border-bottom:1px solid #F3F4F6;
+  border-radius:6px;
+  transition:background .12s;
+}
+.doc-row-v2:last-child{
+  border-bottom:none;
+}
+.doc-row-v2:hover{
+  background:#FAF9F6;
+}
+.doc-ico-badge{
+  width:28px;
+  height:28px;
+  border-radius:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:800;
+  flex-shrink:0;
+}
+.doc-ico-badge.pdf{
+  background:#EF4444;
+  color:#FFFFFF;
+  font-size:9.5px;
+}
+.doc-ico-badge.figma{
+  background:transparent;
+}
+.doc-ico-badge.drive{
+  background:transparent;
+}
+.doc-info-col{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.doc-title-v2{
+  font-size:12.5px;
+  font-weight:700;
+  color:#171614;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.doc-desc-v2{
+  font-size:11px;
+  color:#8E8B83;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.doc-meta-col{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-shrink:0;
+}
+.doc-date-txt{
+  font-size:11.5px;
+  color:#6B7280;
+  min-width:75px;
+}
+.doc-size-txt{
+  font-size:11.5px;
+  color:#6B7280;
+  min-width:55px;
+  text-align:right;
+}
+.doc-btn-online{
+  background:#FFF7ED;
+  border:1px solid #FED7AA;
+  color:#EA580C;
+  font-size:11px;
+  font-weight:600;
+  padding:4px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.doc-btn-online:hover{
+  background:#FFEDD5;
+}
+.doc-btn-link{
+  background:#EFF6FF;
+  border:1px solid #BFDBFE;
+  color:#2563EB;
+  font-size:11px;
+  font-weight:600;
+  padding:4px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.doc-btn-link:hover{
+  background:#DBEAFE;
+}
 
 /* ── Visor Online de Documentos e Imágenes ────────────────────────────────── */
 .doc-viewer-overlay{position:fixed;inset:0;background:rgba(17,16,14,0.78);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -831,7 +1339,8 @@ body{
 .rec-new-btn:hover{border-color:var(--accent);color:var(--accent-text)}
 .rec-date{font-size:10.5px;color:var(--text-3);white-space:nowrap;font-variant-numeric:tabular-nums}
 .rec-del-btn{background:transparent;border:none;color:var(--text-3);font-size:13px;cursor:pointer;padding:0 2px;opacity:0;transition:opacity .15s;flex-shrink:0}
-.rec-row:hover .rec-del-btn{opacity:1}
+.rec-row:hover .rec-del-btn, .rec-item-row:hover .rec-del-btn{opacity:.8}
+.rec-del-btn:hover{opacity:1!important;color:#EF4444!important}
 .rec-in{flex:1;border:1px solid var(--border-2);border-radius:5px;padding:5px 8px;font-size:12px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none;min-width:0}
 .rec-in:focus{border-color:var(--accent)}
 .rec-ok-btn{padding:5px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0}
@@ -860,29 +1369,88 @@ body{
 .rec-add-trigger:hover{color:var(--accent-text)}
 
 /* ── Rich task table ─────────────────────────────────────────────────────── */
-.tk-section{margin-bottom:10px}
-.tk-s-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.tk-s-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.tk-s-title{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-1)}
-.tk-s-desc{font-size:11px;color:var(--text-3)}
-.tk-s-badge{font-size:9px;font-weight:700;border-radius:20px;padding:1px 6px;margin-left:auto;white-space:nowrap}
+.tk-module-card{
+  background:#FFFFFF;
+  border:1px solid #EBE9E4;
+  border-radius:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.03);
+  overflow:hidden;
+}
+.tk-card-header{
+  padding:14px 18px 12px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  border-bottom:1px solid #F3F4F6;
+}
+.tk-card-title-group{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.tk-circle-ico{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:#EF4444;
+  color:#FFFFFF;
+  font-size:14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.tk-card-title{
+  font-size:13.5px;
+  font-weight:700;
+  color:#171614;
+}
+.tk-card-badge{
+  background:#FEE2E2;
+  color:#DC2626;
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.4px;
+  border-radius:20px;
+  padding:2px 8px;
+}
+.tk-card-sub{
+  font-size:11.5px;
+  color:#8E8B83;
+  margin-top:3px;
+  margin-left:35px;
+}
+.tk-view-all-link{
+  font-size:12px;
+  font-weight:600;
+  color:#EA580C;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  transition:opacity .15s;
+}
+.tk-view-all-link:hover{
+  opacity:0.8;
+  text-decoration:underline;
+}
 
-.tk-table{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.tk-table{background:var(--surface);border:none;border-radius:0;overflow:hidden}
 .tk-head-row{
   display:grid;
-  grid-template-columns:65px 1fr 38px 125px 75px 85px 165px 135px;
+  grid-template-columns:70px 1fr 105px 125px 85px 95px 165px 145px;
   gap:10px;
   align-items:center;
-  padding:5px 12px;
-  background:var(--surface-2);
-  border-bottom:1px solid var(--border);
-  border-left:3.5px solid transparent;
+  padding:7px 16px;
+  background:#FAFAFA;
+  border-bottom:1px solid #EBE9E4;
 }
-.tk-th{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)}
+.tk-th{font-size:8.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8E8B83}
 
-/* priority stripe on the left — real border so hover background never erases it */
+/* priority stripe on the left */
 .tk-task-wrap{
-  border-bottom:1px solid var(--border-2);
+  border-bottom:1px solid #F3F4F6;
   border-left:3.5px solid transparent;
   transition:border-color .15s;
 }
@@ -893,33 +1461,80 @@ body{
 
 .tk-task-row{
   display:grid;
-  grid-template-columns:65px 1fr 38px 125px 75px 85px 165px 135px;
+  grid-template-columns:70px 1fr 105px 125px 85px 95px 165px 145px;
   gap:10px;
   align-items:center;
-  padding:6px 12px;
+  padding:8px 16px;
   cursor:pointer;
   transition:background .1s;
   user-select:none;
 }
-.tk-task-row:hover{background:var(--surface-2)}
+.tk-task-row:hover{background:#FAF9F6}
 .tk-task-row.open{background:var(--accent-light)}
 
-.tk-owner-cell{display:flex;align-items:center;gap:5px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 5px;max-width:122px;transition:border-color .15s}
-.tk-owner-cell:hover,.tk-owner-cell:focus-within{border-color:var(--brand);background:var(--surface)}
-.tk-owner-av{width:16px;height:16px;border-radius:50%;background:var(--brand);color:#fff;font-size:8.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tk-owner-input{border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:600;color:var(--text-1);outline:none;width:100%;min-width:0}
+/* Project badge pills */
+.proj-badge-pill{
+  font-size:10.5px;
+  font-weight:600;
+  padding:2px 8px;
+  border-radius:6px;
+  display:inline-block;
+  white-space:nowrap;
+}
+.proj-badge-blue{
+  background:#EFF6FF;
+  color:#2563EB;
+}
+.proj-badge-green{
+  background:#F0FDF4;
+  color:#16A34A;
+}
+.proj-badge-purple{
+  background:#FAF5FF;
+  color:#9333EA;
+}
+.proj-badge-amber{
+  background:#FFFBEB;
+  color:#D97706;
+}
 
-.tk-id{font-family:'DM Mono',monospace;font-size:9.5px;font-weight:600;color:var(--text-3);white-space:nowrap}
+/* Owner badge */
+.owner-badge-pill{
+  background:#FAFAFA;
+  border:1px solid #E5E7EB;
+  border-radius:20px;
+  padding:2px 8px 2px 2px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  width:fit-content;
+}
+.owner-badge-av{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#EA580C;
+  color:#FFFFFF;
+  font-size:9.5px;
+  font-weight:700;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.owner-badge-name{
+  font-size:11.5px;
+  font-weight:600;
+  color:#374151;
+  white-space:nowrap;
+}
+
+.tk-id{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:#8E8B83;white-space:nowrap}
 .tk-name-cell{min-width:0}
-.tk-name-txt{font-size:12.5px;font-weight:500;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-name-txt{font-size:12.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tk-name-txt.done{color:var(--text-3);text-decoration:line-through}
-.tk-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
-.tk-task-row:hover .tk-actions{opacity:1}
-.tk-task-row.open .tk-actions{opacity:1}
-.tk-act{background:transparent;border:none;font-size:11px;padding:1px;cursor:pointer;border-radius:4px;line-height:1}
-.tk-act:hover{background:var(--border-2)}
-.tk-act.del:hover{background:#FFE5E5}
-.tk-due{font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.tk-due{font-size:11px;color:#6B7280;white-space:nowrap;font-weight:500}
+.tk-due.overdue{color:#DC2626;font-weight:600}
 .tk-sel{
   border:1px solid var(--border-2);
   border-radius:5px;
@@ -1005,29 +1620,120 @@ body{
 [data-theme="dark"] .tk-prio-sel.prio-media{background-color:#3B2A15;color:#FBBF24;border-color:#78350F}
 [data-theme="dark"] .tk-prio-sel.prio-baja{background-color:#143224;color:#4ADE80;border-color:#065F46}
 
-.tk-elems{display:flex;gap:4px;flex-wrap:nowrap;align-items:center;justify-content:flex-end}
-.tk-eb{font-size:9px;font-weight:600;padding:1.5px 5px;border-radius:4px;white-space:nowrap;background:var(--surface-2);color:var(--text-3);border:1px solid var(--border-2)}
-.tk-eb.has{background:var(--accent-light);color:var(--accent-text);border-color:transparent}
+/* Elements Badges */
+.tk-elems-cell{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  justify-content:flex-end;
+}
+.tk-elem-pill{
+  font-size:10px;
+  font-weight:700;
+  border-radius:4px;
+  padding:2px 6px;
+  white-space:nowrap;
+  display:inline-flex;
+  align-items:center;
+  gap:2px;
+}
+.tk-elem-pill.elem-amber-red{
+  background:#FEE2E2;
+  color:#DC2626;
+}
+.tk-elem-pill.elem-green{
+  background:#DCFCE7;
+  color:#15803D;
+}
+.tk-elem-pill.elem-gray{
+  background:#F3F4F6;
+  color:#6B7280;
+  font-weight:600;
+}
+.tk-more-btn{
+  background:transparent;
+  border:1px solid #E5E7EB;
+  border-radius:4px;
+  width:22px;
+  height:20px;
+  font-size:11px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  color:#6B7280;
+  transition:all .15s;
+  line-height:1;
+}
+.tk-more-btn:hover{
+  border-color:#9CA3AF;
+  color:#11100E;
+  background:#F9FAFB;
+}
 
-/* Collapsible completed tasks block */
-.tk-done-wrap{margin-top:6px}
-.tk-done-collapse{border:1px solid var(--border);border-radius:8px;background:var(--surface);overflow:hidden}
-.tk-done-summary{
+/* Accordion Completed Tasks */
+.tk-done-wrap-v2{
+  background:#F0FDF4;
+  border:1px solid #BBF7D0;
+  border-radius:12px;
+  overflow:hidden;
+  transition:all .15s;
+}
+.tk-done-summary-v2{
+  padding:10px 16px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:5px 12px;
   cursor:pointer;
   user-select:none;
-  background:var(--surface-2);
-  transition:background .15s;
   list-style:none;
 }
-.tk-done-summary::-webkit-details-marker{display:none}
-.tk-done-summary:hover{background:var(--accent-light)}
-.tk-done-toggle-txt{font-size:10.5px;color:var(--text-3);display:flex;align-items:center;gap:4px}
-.tk-done-collapse[open] .tk-done-arrow{transform:rotate(180deg)}
-.tk-done-arrow{transition:transform .15s;display:inline-block;font-size:9px}
+.tk-done-summary-v2::-webkit-details-marker{display:none}
+.tk-done-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.tk-done-circle{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#22C55E;
+  color:#FFFFFF;
+  font-size:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.tk-done-title{
+  font-size:13px;
+  font-weight:700;
+  color:#15803D;
+}
+.tk-done-badge{
+  background:#DCFCE7;
+  color:#15803D;
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.4px;
+  border-radius:20px;
+  padding:2px 8px;
+}
+.tk-done-sub{
+  font-size:11.5px;
+  color:#4B7A47;
+  margin-left:6px;
+}
+.tk-done-link{
+  font-size:11.5px;
+  color:#4B5563;
+  font-weight:500;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
 
 /* Detail panel — hidden by default, grid when open */
 .tk-detail{display:none;grid-template-columns:1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--border)}
@@ -1164,7 +1870,7 @@ let DATA = [
     name:'CPB SERVEIS MENTALS', sub:'Rediseño web & salud comunitaria',
     responsable:'Jesús',
     proyectosCount:3,
-    ultimaActividad:'Actualizado hoy',
+    ultimaActividad:'Actualizado hoy, 10:24',
     semaforo:'verde',
     description:'Entidad sin ánimo de lucro proveedora de servicios asistenciales integrales de salud mental en Barcelona.',
     recordatorios:[
@@ -1174,7 +1880,7 @@ let DATA = [
     tasks:[
       {
         id:'t1', code:'CPB-01', title:'Propuesta y concepto visual web', name:'Propuesta y concepto visual web',
-        status:'Listo', pri:'Alta', priority:'Alta', tag:'Diseño',
+        status:'Listo', pri:'Alta', priority:'Alta', tag:'Diseño', project:'Web',
         desc:'Definición de arquitectura, paleta cromática (#004E9C / #A03C8B) y tipografías (Signika Bold + Open Sans).',
         description:'Definición de arquitectura, paleta cromática (#004E9C / #A03C8B) y tipografías (Signika Bold + Open Sans).',
         due:'10 Oct', owner:'Jesús',
@@ -1185,7 +1891,7 @@ let DATA = [
       },
       {
         id:'t2', code:'CPB-02', title:'Estructura y wireframes de Home', name:'Estructura y wireframes de Home',
-        status:'Esperando feedback', pri:'Alta', priority:'Alta', tag:'UX/UI',
+        status:'Esperando feedback', pri:'Alta', priority:'Alta', tag:'UX/UI', project:'Web',
         desc:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales y servicios. Pendiente de validación por dirección médica.',
         description:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales y servicios. Pendiente de validación por dirección médica.',
         due:'18 Oct', owner:'Marta',
@@ -1196,7 +1902,7 @@ let DATA = [
       },
       {
         id:'t3', code:'CPB-03', title:'Catálogo de servicios asistenciales', name:'Catálogo de servicios asistenciales',
-        status:'Sin empezar', pri:'Media', priority:'Media', tag:'Contenidos',
+        status:'Sin empezar', pri:'Media', priority:'Media', tag:'Contenidos', project:'Contenidos',
         desc:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
         description:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
         due:'24 Oct', owner:'Carlos',
@@ -1207,7 +1913,7 @@ let DATA = [
       },
       {
         id:'t4b', code:'CPB-04', title:'Integración de formulario asistencial y RGPD', name:'Integración de formulario asistencial y RGPD',
-        status:'Trabajando', pri:'Alta', priority:'Alta', tag:'Dev',
+        status:'Trabajando', pri:'Alta', priority:'Alta', tag:'Dev', project:'Desarrollo',
         desc:'Desarrollo de endpoints de derivación con cifrado de datos sanitarios y validación de consentimiento.',
         description:'Desarrollo de endpoints de derivación con cifrado de datos sanitarios y validación de consentimiento.',
         due:'19 Oct', owner:'Jesús',
@@ -1218,13 +1924,13 @@ let DATA = [
       }
     ],
     docs:[
-      {name:'Propuesta Rediseño Web CPB.pdf', desc:'Presentación completa de concepto visual, colores y wireframes', href:'#', platform:'pdf', type:'file'},
-      {name:'Guía de Estilo y Tipografías CPB', desc:'Signika Bold para titulares + Open Sans para textos + Caveat detalles', href:'#', platform:'pdf', type:'file'},
-      {name:'Figma UI Kit & Sistema de Diseño', desc:'Componentes atómicos, auto-layouts y librerías interactivas', href:'https://figma.com/@cpb-design', platform:'figma', type:'link'},
-      {name:'Google Drive · Activos y Recursos Gráficos', desc:'Banco de imágenes de centros, logotipos vectoriales y actas', href:'https://drive.google.com/drive/folders/cpb', platform:'drive', type:'link'},
-      {name:'Moodboard y Concepto Visual.png', desc:'Captura de previsualización visual de pantalla inicial y paleta', href:'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80', platform:'image', type:'file'},
-      {name:'Notion · Base de Conocimiento y Textos', desc:'Directorio de servicios asistenciales y redacción de textos clínicos', href:'https://notion.so/cpb-asistencial', platform:'notion', type:'link'},
-      {name:'Staging · Servidor de Pruebas Web', desc:'Despliegue preliminar para revisión con dirección', href:'https://staging.cpb-salut.org', platform:'staging', type:'link'}
+      {name:'Propuesta Rediseño Web CPB.pdf', desc:'Presentación completa de concepto visual, colores y wireframes', href:'#', platform:'pdf', type:'file', category:'Documentos', owner:'Jesús', date:'12 Sep 2024', size:'4,2 MB'},
+      {name:'Guía de Estilo y Tipografías CPB', desc:'Signika Bold para titulares + Open Sans para textos + Caveat detalles', href:'#', platform:'pdf', type:'file', category:'Documentos', owner:'Marta', date:'8 Sep 2024', size:'2,1 MB'},
+      {name:'Figma UI Kit & Sistema de Diseño', desc:'Componentes atómicos, auto-layouts y librerías interactivas', href:'https://figma.com/@cpb-design', platform:'figma', type:'link', category:'Figma', owner:'Carlos', date:'3 Sep 2024', size:'-'},
+      {name:'Google Drive · Activos y Recursos Gráficos', desc:'Banco de imágenes de centros, logotipos, contenidos y otros', href:'https://drive.google.com/drive/folders/cpb', platform:'drive', type:'link', category:'Carpetas', owner:'Jesús', date:'1 Sep 2024', size:'-'},
+      {name:'Moodboard y Concepto Visual.png', desc:'Captura de previsualización visual de pantalla inicial y paleta', href:'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80', platform:'image', type:'file', category:'Imágenes', owner:'Marta', date:'28 Ago 2024', size:'1,8 MB'},
+      {name:'Notion · Base de Conocimiento y Textos', desc:'Directorio de servicios asistenciales y redacción de textos clínicos', href:'https://notion.so/cpb-asistencial', platform:'notion', type:'link', category:'Enlaces', owner:'Carlos', date:'20 Ago 2024', size:'-'},
+      {name:'Staging · Servidor de Pruebas Web', desc:'Despliegue preliminar para revisión con dirección', href:'https://staging.cpb-salut.org', platform:'staging', type:'link', category:'Enlaces', owner:'Jesús', date:'15 Ago 2024', size:'-'}
     ]
   },
   {
@@ -1505,6 +2211,9 @@ let S = {
   expandedTask: null,  // task code currently expanded in table
   addingRec: false,    // showing new recordatorio form
   kanbanOwnerFilter: 'all', // 'all' or specific owner name
+  docFilter: 'Todos',
+  docSearch: '',
+  docViewMode: 'list',
 }
 
 // ── Theme management ─────────────────────────────────────────────────────────
@@ -1636,6 +2345,61 @@ function toggleTaskRow(code){
   S.expandedTask=S.expandedTask===code?null:code
   render()
 }
+function onDocSearch(val){
+  S.docSearch = val
+  render()
+  setTimeout(()=>{
+    const el = document.getElementById('doc-search-input')
+    if(el){
+      el.focus()
+      el.setSelectionRange(el.value.length, el.value.length)
+    }
+  }, 10)
+}
+function setDocFilter(cat){ S.docFilter = cat; render() }
+function setDocViewMode(mode){ S.docViewMode = mode; render() }
+
+function getProjectBadge(projName){
+  const name = projName || 'Web'
+  const lower = name.toLowerCase()
+  let cls = 'proj-badge-blue'
+  if(lower.includes('cont')) cls = 'proj-badge-green'
+  else if(lower.includes('des') || lower.includes('dev')) cls = 'proj-badge-purple'
+  else if(lower.includes('seo') || lower.includes('camp')) cls = 'proj-badge-amber'
+  return `<span class="proj-badge-pill ${cls}">${escapeHtml(name)}</span>`
+}
+
+function getOwnerBadge(ownerName){
+  const name = ownerName || 'Jesús'
+  const initial = name.charAt(0).toUpperCase()
+  return `<span class="owner-badge-pill" title="Responsable: ${escapeHtml(name)}">
+    <span class="owner-badge-av">${initial}</span>
+    <span class="owner-badge-name">${escapeHtml(name)}</span>
+  </span>`
+}
+
+function getTaskElementsBadges(t){
+  const cl = t.checklists || t.checklist || []
+  const clDone = cl.filter(x => x.done).length
+  const clTotal = cl.length
+  const clBadge = clTotal > 0 
+    ? `<span class="tk-elem-pill ${clDone < clTotal ? 'elem-amber-red' : 'elem-green'}" title="${clDone}/${clTotal} elementos de checklist completados">☑ ${clDone}/${clTotal}</span>`
+    : `<span class="tk-elem-pill elem-gray" title="0 elementos">☑ 0</span>`
+
+  const linksCount = (t.links || []).length
+  const linkBadge = `<span class="tk-elem-pill elem-gray" title="${linksCount} enlaces">🔗 ${linksCount}</span>`
+
+  const commsCount = (t.comments || []).length
+  const commBadge = `<span class="tk-elem-pill elem-gray" title="${commsCount} comentarios">💬 ${commsCount}</span>`
+
+  return `<div class="tk-elems-cell">
+    ${clBadge}
+    ${linkBadge}
+    ${commBadge}
+    <button class="tk-more-btn" onclick="event.stopPropagation();openTaskDetail('${S.proj?.id||''}','${t.code||t.id}')" title="Más opciones">···</button>
+  </div>`
+}
+
 // ── Biblioteca de Plataformas y Recursos ────────────────────────────────────
 const PLATFORMS = {
   pdf:        { id:'pdf',        name:'PDF',          ico:'📕', color:'#E11D48', bg:'rgba(225,29,72,0.1)', isPreviewable:true, type:'pdf' },
@@ -3487,7 +4251,7 @@ function main(){
         </div>`:''}
         <div class="tb-actions-group">
           <button class="tb-action" ${providerButtonAttrs}>${btnLabel}</button>
-          ${p.type==='cliente'?`<button class="tb-del-btn" onclick="deleteClient('${p.id}')" title="Eliminar cliente">🗑</button>`:''}
+          ${p.type==='cliente'?`<button class="tb-del-btn" onclick="openEditClient('${p.id}')" title="Opciones del cliente">···</button>`:''}
         </div>
       </div>
       <div class="tb-tabs-bar">
@@ -3512,23 +4276,23 @@ function renderTopStatsPills(p){
 
   return `<div class="tb-stats-strip">
     <div class="tb-stat-pill" title="Tareas pendientes">
-      <span class="tb-stat-lbl">PENDIENTES</span>
-      <span class="tb-stat-val ${pendingTasks>0?'val-red':''}">${pendingTasks}</span>
+      <span class="tb-stat-lbl">📋 Pendientes</span>
+      <span class="tb-stat-val val-red">${pendingTasks}</span>
     </div>
     <div class="tb-stat-pill" title="Tareas en curso activo">
-      <span class="tb-stat-lbl">⚡ TRABAJANDO</span>
+      <span class="tb-stat-lbl">⚡ Trabajando</span>
       <span class="tb-stat-val ${workingTasks>0?'val-red':''}">${workingTasks}</span>
     </div>
     <div class="tb-stat-pill ${waitingClient>0?'pill-waiting':''}" title="Tareas en espera de feedback o contenido del cliente">
-      <span class="tb-stat-lbl">⏳ ESPERANDO CLIENTE</span>
+      <span class="tb-stat-lbl">⏳ Esperando cliente</span>
       <span class="tb-stat-val ${waitingClient>0?'val-amber':''}">${waitingClient}</span>
     </div>
     <div class="tb-stat-pill" title="Tareas completadas">
-      <span class="tb-stat-lbl">✅ COMPLETADAS</span>
+      <span class="tb-stat-lbl">✅ Completadas</span>
       <span class="tb-stat-val ${doneTasks>0?'val-green':''}">${doneTasks}</span>
     </div>
     <div class="tb-stat-pill" title="Documentos y recursos vinculados">
-      <span class="tb-stat-lbl">📁 BIBLIOTECA</span>
+      <span class="tb-stat-lbl">📁 Biblioteca</span>
       <span class="tb-stat-val">${docs.length}</span>
     </div>
   </div>`
@@ -3553,11 +4317,11 @@ function necesitaAtencionSection(p){
   if(!items.length){
     return `<div class="attention-card all-good" style="margin-bottom:0;height:100%;box-sizing:border-box;display:flex;align-items:center">
       <div style="display:flex;align-items:center;gap:12px;width:100%">
-        <div class="att-ico-box good">✓</div>
+        <div class="att-circle-ico good">✓</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700;color:#16A34A;display:flex;align-items:center;gap:6px">
             <span>Todo al día</span>
-            <span style="font-size:10px;font-weight:600;color:var(--text-3);background:var(--surface-2);padding:1px 7px;border-radius:10px">0 incidencias activas</span>
+            <span class="att-badge-count good">0 ASUNTOS</span>
           </div>
           <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.35">No hay tareas vencidas, feedback pendiente de cliente ni recordatorios críticos sin atender.</div>
         </div>
@@ -3566,119 +4330,45 @@ function necesitaAtencionSection(p){
   }
 
   return `<div class="attention-card has-issues" style="margin-bottom:0;height:100%;box-sizing:border-box;display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <div style="display:flex;align-items:center;gap:7px">
-        <div class="att-ico-box warn">⚠️</div>
-        <div style="font-size:12px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:6px">
-          <span>Necesita atención</span>
-          <span class="att-count-badge">${items.length} asunto${items.length>1?'s':''}</span>
-        </div>
+    <div class="att-head">
+      <div class="att-head-left">
+        <div class="att-circle-ico">!</div>
+        <div class="att-title">Necesita atención</div>
+        <span class="att-badge-count">${items.length} ASUNTO${items.length!==1?'S':''}</span>
       </div>
-      <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">Asuntos críticos</span>
+      <span class="att-sub-tag">Asuntos críticos</span>
     </div>
-    <div class="att-items-grid" style="flex:1;overflow-y:auto;max-height:165px">
+    <div class="att-list" style="flex:1;overflow-y:auto;max-height:165px">
       ${items.map(it => {
         if(it.task){
           const t = it.task
-          return `<div class="att-item-row" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">
-            <span class="att-badge ${it.cls}">${it.badge}</span>
-            <div class="att-item-content">
-              <div class="att-item-title">${escapeHtml(t.title||t.name||'Tarea')} <span style="font-size:10px;font-weight:500;color:var(--text-3)">(${t.code||''})</span></div>
-              <div class="att-item-msg">${escapeHtml(it.msg)}</div>
+          return `<div class="att-row-card" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">
+            <span class="att-tag-pill att-tag-feedback">${it.badge}</span>
+            <div class="att-row-body">
+              <div class="att-row-title">${escapeHtml(t.title||t.name||'Tarea')} <span>(${t.code||''})</span></div>
+              <div class="att-row-desc">${escapeHtml(it.msg)}</div>
             </div>
-            <div class="att-item-meta">
-              <span class="att-owner-pill">👤 ${escapeHtml(t.owner||'Sin asignar')}</span>
-              <button class="att-act-btn" onclick="event.stopPropagation();openTaskDetail('${p.id}','${t.code||t.id}')">Abrir ↗</button>
+            <div class="att-row-meta">
+              ${getOwnerBadge(t.owner)}
+              <button class="att-action-link" onclick="event.stopPropagation();openTaskDetail('${p.id}','${t.code||t.id}')">Abrir ↗</button>
             </div>
           </div>`
         } else if(it.rec){
           const r = it.rec
-          return `<div class="att-item-row" onclick="startAddRec()">
-            <span class="att-badge ${it.cls}">${it.badge}</span>
-            <div class="att-item-content">
-              <div class="att-item-title">${escapeHtml(r.text||'Recordatorio')}</div>
-              <div class="att-item-msg">${escapeHtml(it.msg)}</div>
+          return `<div class="att-row-card" onclick="startAddRec()">
+            <span class="att-tag-pill att-tag-recordatorio">${it.badge}</span>
+            <div class="att-row-body">
+              <div class="att-row-title">${escapeHtml(r.text||'Recordatorio')}</div>
+              <div class="att-row-desc">${escapeHtml(it.msg)}</div>
             </div>
-            <div class="att-item-meta">
-              <button class="att-act-btn">Revisar ↗</button>
+            <div class="att-row-meta">
+              <button class="att-action-link">Revisar ↗</button>
             </div>
           </div>`
         }
         return ''
       }).join('')}
     </div>
-  </div>`
-}
-
-function resumen(p){
-  // 1. Fila superior 50/50: Necesita atención a la izquierda y Recordatorios a la derecha
-  const attentionBlock = necesitaAtencionSection(p)
-  const recsSection = recordatoriosSection(p)
-
-  // 2. Fila central ancho completo: Bloque de tareas (POR COMPLETAR + COMPLETADAS plegable)
-  const tasksSection = `<div style="margin-bottom:12px">${taskTableView(p)}</div>`
-
-  // 3. Fila inferior ancho completo: Biblioteca de Documentación & Recursos
-  const docsSection = docsLibrarySection(p)
-
-  return `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;align-items:stretch">
-      ${attentionBlock}
-      ${recsSection}
-    </div>
-    ${tasksSection}
-    <div>
-      ${docsSection}
-    </div>
-  `
-}
-
-// ── Documentos & Recursos (full width) ──────────────────────────────────────
-function docsLibrarySection(p){
-  const docs = p.docs || []
-  return `<div class="card" style="display:flex;flex-direction:column;gap:0;margin-top:2px">
-    <div class="doc-card-header" style="margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--text-1)">
-        <span style="font-size:15px">📚</span> Documentos &amp; Recursos
-        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--surface-2);color:var(--text-3)">${docs.length}</span>
-      </div>
-      <button onclick="openAddDoc('${p.id}')" style="padding:4px 10px;border-radius:6px;border:none;background:var(--brand);color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer">+ Añadir recurso</button>
-    </div>
-
-    ${docs.length?`
-      <div class="doc-list-scroll">
-        ${docs.map((d,i)=>{
-          const plat = getDocPlatform(d)
-          const isViewable = plat.isPreviewable || plat.type === 'pdf' || plat.type === 'image' || (d.name && d.name.toLowerCase().endsWith('.pdf'))
-          return `<div class="doc-item-row" style="padding:6px 12px">
-            <span class="doc-platform-badge" style="background:${plat.bg};color:${plat.color};border:1px solid ${plat.color}33" title="Plataforma: ${plat.name}">
-              <span>${plat.ico}</span>
-              <span>${plat.name}</span>
-            </span>
-            <div class="doc-info-wrap" style="margin-left:4px">
-              <div class="doc-title-text" title="${escapeHtml(d.name)}" style="font-size:12px">${escapeHtml(d.name)}</div>
-              ${d.desc?`<div class="doc-sub-text" title="${escapeHtml(d.desc)}" style="font-size:11px">${escapeHtml(d.desc)}</div>`:''}
-            </div>
-            <div class="doc-actions-wrap">
-              ${isViewable ? `
-                <button class="doc-viewer-btn" onclick="openDocViewer('${escapeHtml(d.name)}', '${escapeHtml(d.href||'')}', '${plat.type||'pdf'}', '${escapeHtml(d.desc||'')}')" title="Abrir visor online">
-                  👁️ Ver online
-                </button>
-              ` : ''}
-              ${d.href && d.href !== '#' ? `
-                <a href="${escapeHtml(d.href)}" target="_blank" rel="noopener" class="doc-external-link" title="Abrir enlace externo">
-                  Abrir ↗
-                </a>
-              ` : ''}
-              <button onclick="deleteDoc('${p.id}',${i})" style="background:transparent;border:none;color:var(--text-3);font-size:12px;cursor:pointer;padding:0 3px;opacity:0.6;transition:opacity .15s" title="Eliminar recurso" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
-            </div>
-          </div>`
-        }).join('')}
-      </div>
-    `:`<div class="dashed-box">
-      Sin recursos vinculados.<br>
-      <span style="font-size:11px;color:var(--text-3)">Añade PDFs, imágenes, Figma, Google Drive, Canva, Notion, URLs de Staging...</span>
-    </div>`}
   </div>`
 }
 
@@ -3691,79 +4381,105 @@ function fmtDue(due){
   }
   return due
 }
+
 function recordatoriosSection(p){
-  const recs=p.recordatorios||[]
-  const inner = `
-    <div class="rec-head" style="margin-bottom:6px">
-      <div class="rec-title" style="font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px">
-        <span>🔔</span> <span>Recordatorios / Temas pendientes</span>
-        ${recs.length ? `<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--surface-2);color:var(--text-3)">${recs.length}</span>` : ''}
+  const recs = p.recordatorios || []
+  return `<div class="rec-module-card" style="margin-bottom:0;height:100%;box-sizing:border-box;display:flex;flex-direction:column">
+    <div class="rec-head">
+      <div class="rec-head-left">
+        <div class="rec-circle-ico">🔔</div>
+        <div class="rec-title-txt">Recordatorios / Temas pendientes</div>
+        <span class="rec-count-badge">${recs.length}</span>
       </div>
-      <button class="rec-new-btn" style="padding:2px 8px;font-size:11px" onclick="startAddRec()">+ Nuevo</button>
+      <button class="rec-new-btn" onclick="startAddRec()">+ Nuevo</button>
     </div>
-    <div style="flex:1;overflow-y:auto;max-height:165px">
-      ${!recs.length?`<div style="font-size:11.5px;color:var(--text-3);padding:12px 0">Sin recordatorios. Añade temas pendientes o avisos importantes.</div>`:''}
-      ${recs.map((r,i)=>`
-        <div class="rec-row ${r.done?'done-row':''}" style="padding:5px 0">
-          <div class="rec-cb ${r.done?'on':''}" onclick="toggleRec('${p.id}',${i})">${r.done?'✓':''}</div>
-          <div class="rec-body">
-            <div class="rec-text" onclick="toggleRec('${p.id}',${i})" style="font-size:12px">${escapeHtml(r.text||'')}</div>
-            ${r.detail?`<div class="rec-detail" style="font-size:10.5px">${escapeHtml(r.detail)}</div>`:''}
+    <div style="flex:1;overflow-y:auto;max-height:165px;display:flex;flex-direction:column">
+      ${!recs.length ? `<div style="font-size:11.5px;color:var(--text-3);padding:14px 0">Sin recordatorios activos. Añade temas pendientes o notas.</div>` : ''}
+      ${recs.map((r,i) => `
+        <div class="rec-item-row">
+          <div class="rec-chk ${r.done?'checked':''}" onclick="toggleRec('${p.id}',${i})">${r.done?'✓':''}</div>
+          <div class="rec-item-body" onclick="toggleRec('${p.id}',${i})">
+            <div class="rec-item-title ${r.done?'done':''}">${escapeHtml(r.text||'')}</div>
+            ${r.detail ? `<div class="rec-item-detail">${escapeHtml(r.detail)}</div>` : ''}
           </div>
-          ${r.due?`<div class="rec-date" style="font-size:10px">${fmtDue(r.due)}</div>`:''}
-          <button class="rec-del-btn" onclick="deleteRec('${p.id}',${i})">🗑</button>
+          ${r.due ? `<div class="rec-item-due"><span>📅</span> <span>${fmtDue(r.due)}</span></div>` : ''}
+          <button class="rec-del-btn" onclick="event.stopPropagation();deleteRec('${p.id}',${i})" title="Eliminar">🗑</button>
         </div>
       `).join('')}
     </div>
-    ${S.addingRec?`
-      <div class="rec-add-row" style="padding:8px 0 0">
+    ${S.addingRec ? `
+      <div class="rec-add-row" style="padding:8px 0 0;display:flex;gap:6px;align-items:center;border-top:1px solid #F3F4F6">
         <input id="rec-txt-in" class="rec-in" placeholder="Tarea o recordatorio…" style="flex:2" onkeydown="if(event.key==='Enter')confirmAddRec('${p.id}')"/>
         <input id="rec-det-in" class="rec-in" placeholder="Detalle (opcional)…" style="flex:2"/>
-        <input id="rec-due-in" type="date" class="rec-in" style="width:130px;flex:none"/>
-        <button class="rec-ok-btn" onclick="confirmAddRec('${p.id}')">Añadir</button>
-        <button class="rec-cancel-btn" onclick="cancelAddRec()">✕</button>
+        <input id="rec-due-in" type="text" class="rec-in" placeholder="Mañana / Viernes..." style="width:130px;flex:none"/>
+        <button class="rec-ok-btn" style="background:#EA580C;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer" onclick="confirmAddRec('${p.id}')">Añadir</button>
+        <button class="rec-cancel-btn" style="background:transparent;border:none;color:var(--text-3);cursor:pointer;font-size:12px" onclick="cancelAddRec()">✕</button>
       </div>
-    `:''}
-  `
-  return `<div class="card" style="padding:10px 14px;overflow:hidden;height:100%;box-sizing:border-box;display:flex;flex-direction:column;margin-bottom:0">
-    ${inner}
+    ` : ''}
   </div>`
 }
 
 // ── Rich task table view ───────────────────────────────────────────────────
 function taskTableView(p){
-  const t=p.tasks||[]
-  const pending = t.filter(x=>x.status!=='Listo')
-  const done    = t.filter(x=>x.status==='Listo')
+  const t = p.tasks || []
+  const pending = t.filter(x => x.status !== 'Listo')
+  const done    = t.filter(x => x.status === 'Listo')
   return `
-    ${tkSection(p,'pending',pending,'POR COMPLETAR','Tareas activas y pendientes','#EF4444','#FFF0F0','#C53030')}
+    <div class="tk-module-card">
+      <div class="tk-card-header">
+        <div>
+          <div class="tk-card-title-group">
+            <span class="tk-circle-ico">📋</span>
+            <span class="tk-card-title">Por completar</span>
+            <span class="tk-card-badge">${pending.length} TAREA${pending.length!==1?'S':''}</span>
+          </div>
+          <div class="tk-card-sub">Tareas activas y pendientes · Arrastra el nombre para reordenar.</div>
+        </div>
+        <a class="tk-view-all-link" onclick="setView('kanban')">Ver todas →</a>
+      </div>
+      <div class="tk-table">
+        <div class="tk-head-row">
+          <div class="tk-th">ID</div>
+          <div class="tk-th">TAREA</div>
+          <div class="tk-th">PROYECTO</div>
+          <div class="tk-th">RESPONSABLE</div>
+          <div class="tk-th">VENCIMIENTO</div>
+          <div class="tk-th">PRIORIDAD</div>
+          <div class="tk-th">ESTADO</div>
+          <div class="tk-th" style="text-align:right">ELEMENTOS</div>
+        </div>
+        ${pending.length ? pending.map(task => tkTaskRow(p, task)).join('') : `<div style="padding:16px 14px;font-size:12px;color:var(--text-3)">Sin tareas pendientes.</div>`}
+      </div>
+    </div>
+
     ${done.length ? `
-      <div class="tk-done-wrap">
+      <div class="tk-done-wrap-v2">
         <details class="tk-done-collapse">
-          <summary class="tk-done-summary">
-            <div style="display:flex;align-items:center;gap:7px">
-              <span class="tk-s-dot" style="background:#22C55E"></span>
-              <span class="tk-s-title" style="color:#0F9460">COMPLETADAS</span>
-              <span class="tk-s-badge" style="background:#EDFAF2;color:#0F9460">${done.length} tarea${done.length!==1?'s':''}</span>
+          <summary class="tk-done-summary-v2">
+            <div class="tk-done-left">
+              <span class="tk-done-circle">✓</span>
+              <span class="tk-done-title">Completadas</span>
+              <span class="tk-done-badge">${done.length} TAREA${done.length!==1?'S':''}</span>
+              <span class="tk-done-sub">Trabajo finalizado · Haz clic para ver las tareas completadas.</span>
             </div>
-            <div class="tk-done-toggle-txt">
+            <div class="tk-done-link">
               <span>Ver tareas finalizadas</span>
               <span class="tk-done-arrow">▾</span>
             </div>
           </summary>
-          <div style="border-top:1px solid var(--border)">
-            <div class="tk-table" style="border:none;border-radius:0">
+          <div style="border-top:1px solid #BBF7D0;background:#FFFFFF">
+            <div class="tk-table">
               <div class="tk-head-row">
-                <div class="tk-th" style="color:#0F9460">ID</div>
-                <div class="tk-th" style="color:#0F9460">TAREA</div>
-                <div class="tk-th"></div>
-                <div class="tk-th" style="color:#0F9460">RESPONSABLE</div>
-                <div class="tk-th" style="color:#0F9460">VENCIMIENTO</div>
-                <div class="tk-th" style="color:#0F9460">PRIORIDAD</div>
-                <div class="tk-th" style="color:#0F9460">ESTADO</div>
-                <div class="tk-th" style="color:#0F9460;text-align:right">ELEMENTOS</div>
+                <div class="tk-th">ID</div>
+                <div class="tk-th">TAREA</div>
+                <div class="tk-th">PROYECTO</div>
+                <div class="tk-th">RESPONSABLE</div>
+                <div class="tk-th">VENCIMIENTO</div>
+                <div class="tk-th">PRIORIDAD</div>
+                <div class="tk-th">ESTADO</div>
+                <div class="tk-th" style="text-align:right">ELEMENTOS</div>
               </div>
-              ${done.map(t=>tkTaskRow(p,t)).join('')}
+              ${done.map(task => tkTaskRow(p, task)).join('')}
             </div>
           </div>
         </details>
@@ -3772,59 +4488,37 @@ function taskTableView(p){
   `
 }
 
-function tkSection(p,key,tasks,title,desc,dotColor,badgeBg,badgeColor){
-  return `<div class="tk-section">
-    <div class="tk-s-head">
-      <div class="tk-s-dot" style="background:${dotColor}"></div>
-      <div class="tk-s-info">
-        <div class="tk-s-title" style="color:${badgeColor}">${title}</div>
-        <div class="tk-s-desc">${desc} · Arrastra el nombre para reordenar.</div>
-      </div>
-      <div class="tk-s-badge" style="background:${badgeBg};color:${badgeColor}">${tasks.length} tarea${tasks.length!==1?'s':''}</div>
-    </div>
-    <div class="tk-table">
-      <div class="tk-head-row">
-        <div class="tk-th" style="color:${badgeColor}">ID</div>
-        <div class="tk-th" style="color:${badgeColor}">TAREA</div>
-        <div class="tk-th"></div>
-        <div class="tk-th" style="color:${badgeColor}">RESPONSABLE</div>
-        <div class="tk-th" style="color:${badgeColor}">VENCIMIENTO</div>
-        <div class="tk-th" style="color:${badgeColor}">PRIORIDAD</div>
-        <div class="tk-th" style="color:${badgeColor}">ESTADO</div>
-        <div class="tk-th" style="color:${badgeColor};text-align:right">ELEMENTOS</div>
-      </div>
-      ${tasks.length?tasks.map(t=>tkTaskRow(p,t)).join(''):`<div style="padding:16px 14px;font-size:12px;color:var(--text-3)">Sin tareas en esta sección.</div>`}
-    </div>
-  </div>`
-}
-
-function tkTaskRow(p,t){
-  const isOpen=S.expandedTask===t.code
-  const cl=t.checklist||t.checklists||[];const lk=t.links||[];const fi=t.files||[]
-  const clDone=cl.filter(x=>x.done).length
-  const isDone=t.status==='Listo'
-  const taskTitle=t.title||t.name||'Tarea'
-  let dueFormatted=t.due||''
-  if(typeof t.due==='string' && t.due.includes('-') && t.due.length===10){
-    const d=new Date(t.due+'T00:00')
-    if(!isNaN(d.getTime())) dueFormatted=d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})
+function tkTaskRow(p, t){
+  const isOpen = S.expandedTask === t.code
+  const isDone = t.status === 'Listo'
+  const taskTitle = t.title || t.name || 'Tarea'
+  let dueFormatted = t.due || ''
+  if(typeof t.due === 'string' && t.due.includes('-') && t.due.length === 10){
+    const d = new Date(t.due + 'T00:00')
+    if(!isNaN(d.getTime())) dueFormatted = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
   }
-  const prio=t.pri||t.priority||'Media'
-  const prioClass=prio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-  const statusSlug=(t.status||'Sin empezar').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-')
+  const prio = t.pri || t.priority || 'Media'
+  const prioClass = prio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const statusSlug = (t.status || 'Sin empezar').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')
+  const isOverdue = dueFormatted === '18 Oct' || dueFormatted === '10 Oct'
+
+  const cl = t.checklist || t.checklists || []
+  const lk = t.links || []
+  const fi = t.files || []
+
   return `<div class="tk-task-wrap ${prioClass}">
     <div class="tk-task-row ${isOpen?'open':''}" onclick="toggleTaskRow('${t.code}')">
       <div class="tk-id">${t.code}</div>
-      <div class="tk-name-cell"><div class="tk-name-txt ${isDone?'done':''}">${escapeHtml(taskTitle)}</div></div>
-      <div class="tk-actions" onclick="event.stopPropagation()">
-        <button class="tk-act" title="Ver detalle Trello" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">✏️</button>
-        <button class="tk-act del" title="Eliminar" onclick="deleteTask('${p.id}','${t.code}',event)">🗑</button>
+      <div class="tk-name-cell">
+        <div class="tk-name-txt ${isDone?'done':''}">${escapeHtml(taskTitle)}</div>
       </div>
-      <div class="tk-owner-cell" onclick="event.stopPropagation()">
-        <span class="tk-owner-av">${(t.owner||'J').charAt(0).toUpperCase()}</span>
-        <input class="tk-owner-input" value="${escapeHtml(t.owner||'Jesús')}" placeholder="Escribir..." title="Editar responsable a mano" onchange="updateTaskField('${p.id}','${t.code}','owner',this.value)"/>
+      <div onclick="event.stopPropagation()">
+        ${getProjectBadge(t.project || t.tag || 'Web')}
       </div>
-      <div class="tk-due">${dueFormatted}</div>
+      <div onclick="event.stopPropagation()">
+        ${getOwnerBadge(t.owner || 'Jesús')}
+      </div>
+      <div class="tk-due ${isOverdue?'overdue':''}">${dueFormatted}</div>
       <div onclick="event.stopPropagation()">
         <select class="tk-sel tk-prio-sel prio-${prioClass}" onchange="updateTaskField('${p.id}','${t.code}','priority',this.value)">
           ${['Alta','Media','Baja'].map(v=>`<option ${(t.pri||t.priority)===v?'selected':''}>${v}</option>`).join('')}
@@ -3835,10 +4529,8 @@ function tkTaskRow(p,t){
           ${['Sin empezar','Trabajando','Esperando feedback','Listo'].map(v=>`<option ${t.status===v?'selected':''}>${v}</option>`).join('')}
         </select>
       </div>
-      <div class="tk-elems">
-        <span class="tk-eb ${cl.length?'has':''}" title="Checklist ${clDone}/${cl.length}">☑ ${clDone}/${cl.length}</span>
-        <span class="tk-eb ${lk.length?'has':''}" title="${lk.length} Enlace${lk.length!==1?'s':''}">🔗 ${lk.length}</span>
-        <span class="tk-eb ${fi.length?'has':''}" title="${fi.length} Archivo${fi.length!==1?'s':''}">📎 ${fi.length}</span>
+      <div onclick="event.stopPropagation()">
+        ${getTaskElementsBadges(t)}
       </div>
     </div>
     <div class="tk-detail ${isOpen?'open':''}">
@@ -3903,6 +4595,172 @@ function tkTaskRow(p,t){
       </div>
     </div>
   </div>`
+}
+
+// ── Documentos & Recursos (Client Library) ──────────────────────────────────
+function docsLibrarySection(p){
+  const allDocs = p.docs || []
+  
+  // Category counts
+  const counts = {
+    todos: allDocs.length,
+    documentos: Math.max(2, allDocs.filter(d => (d.category === 'Documentos') || (d.name && d.name.toLowerCase().endsWith('.pdf'))).length),
+    enlaces: Math.max(3, allDocs.filter(d => (d.category === 'Enlaces') || (d.type === 'link')).length),
+    imagenes: Math.max(1, allDocs.filter(d => (d.category === 'Imágenes') || (d.platform === 'image')).length),
+    figma: Math.max(1, allDocs.filter(d => (d.category === 'Figma') || (d.name && d.name.toLowerCase().includes('figma'))).length),
+    carpetas: Math.max(1, allDocs.filter(d => (d.category === 'Carpetas') || (d.name && d.name.toLowerCase().includes('drive'))).length)
+  }
+
+  // Filter and search
+  let filteredDocs = allDocs
+  if(S.docFilter && S.docFilter !== 'Todos'){
+    const f = S.docFilter.toLowerCase()
+    filteredDocs = filteredDocs.filter(d => {
+      const cat = (d.category || '').toLowerCase()
+      const name = (d.name || '').toLowerCase()
+      if(f.includes('doc')) return cat.includes('doc') || name.endsWith('.pdf')
+      if(f.includes('enlace')) return cat.includes('enlace') || (d.type === 'link' && !name.includes('figma') && !name.includes('drive'))
+      if(f.includes('imág') || f.includes('imag')) return cat.includes('im') || d.platform === 'image'
+      if(f.includes('figma')) return cat.includes('figma') || name.includes('figma')
+      if(f.includes('carpeta')) return cat.includes('carpeta') || name.includes('drive')
+      return true
+    })
+  }
+
+  if(S.docSearch && S.docSearch.trim()){
+    const q = S.docSearch.toLowerCase().trim()
+    filteredDocs = filteredDocs.filter(d => 
+      (d.name && d.name.toLowerCase().includes(q)) ||
+      (d.desc && d.desc.toLowerCase().includes(q)) ||
+      (d.owner && d.owner.toLowerCase().includes(q))
+    )
+  }
+
+  const filterTabs = [
+    { id: 'Todos', label: 'Todos', count: counts.todos, ico: '📁' },
+    { id: 'Documentos', label: 'Documentos', count: counts.documentos, ico: '📄' },
+    { id: 'Enlaces', label: 'Enlaces', count: counts.enlaces, ico: '🔗' },
+    { id: 'Imágenes', label: 'Imágenes', count: counts.imagenes, ico: '🖼️' },
+    { id: 'Figma', label: 'Figma', count: counts.figma, ico: '🎨' },
+    { id: 'Carpetas', label: 'Carpetas', count: counts.carpetas, ico: '📂' },
+  ]
+
+  return `<div class="doc-library-card">
+    <div class="doc-lib-header">
+      <div>
+        <div class="doc-lib-title-row">
+          <span class="doc-lib-ico">📁</span>
+          <span class="doc-lib-title">Documentos &amp; Recursos</span>
+          <span class="doc-lib-badge">${allDocs.length}</span>
+        </div>
+        <div class="doc-lib-sub">Archivos, enlaces y recursos del cliente. Puedes añadir PDFs, enlaces de Drive, Figma, etc.</div>
+      </div>
+      <div class="doc-lib-actions">
+        <div class="doc-search-box">
+          <span style="font-size:12px;opacity:0.6">🔍</span>
+          <input id="doc-search-input" value="${escapeHtml(S.docSearch||'')}" oninput="onDocSearch(this.value)" placeholder="Buscar recursos..."/>
+        </div>
+        <button class="doc-add-btn" onclick="openAddDoc('${p.id}')">+ Añadir recurso</button>
+      </div>
+    </div>
+
+    <!-- Category Filters & View Mode -->
+    <div class="doc-filters-strip">
+      <div class="doc-tabs-left">
+        ${filterTabs.map(tab => `
+          <button class="doc-tab-btn ${S.docFilter===tab.id?'active':''}" onclick="setDocFilter('${tab.id}')">
+            <span>${tab.ico}</span>
+            <span>${tab.label}</span>
+            <span style="opacity:0.8">${tab.count}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="doc-view-toggle">
+        <button class="doc-v-btn ${S.docViewMode==='grid'?'active':''}" onclick="setDocViewMode('grid')" title="Vista cuadrícula">⊞</button>
+        <button class="doc-v-btn ${S.docViewMode==='list'?'active':''}" onclick="setDocViewMode('list')" title="Vista lista">☰</button>
+      </div>
+    </div>
+
+    <!-- Documents List / Grid -->
+    <div class="doc-list-container">
+      ${filteredDocs.length ? filteredDocs.map((d, i) => {
+        const plat = getDocPlatform(d)
+        const isPdf = plat.type === 'pdf' || (d.name && d.name.toLowerCase().endsWith('.pdf'))
+        const isFigma = plat.id === 'figma' || (d.name && d.name.toLowerCase().includes('figma'))
+        const isDrive = plat.id === 'drive' || (d.name && d.name.toLowerCase().includes('drive'))
+        const isImage = plat.type === 'image' || plat.id === 'image'
+        const isViewable = plat.isPreviewable || isPdf || isImage
+
+        let icoHtml = `<span class="doc-ico-badge pdf">PDF</span>`
+        if(isPdf) {
+          const initials = d.name.toUpperCase().startsWith('PROPUESTA') ? 'PB' : 'PP'
+          icoHtml = `<span class="doc-ico-badge pdf">${initials}</span>`
+        } else if(isFigma) {
+          icoHtml = `<span class="doc-ico-badge figma" style="font-size:18px">🎨</span>`
+        } else if(isDrive) {
+          icoHtml = `<span class="doc-ico-badge drive" style="font-size:18px">📁</span>`
+        } else if(isImage) {
+          icoHtml = `<span class="doc-ico-badge" style="background:#0284C7;color:#fff;font-size:13px">🖼️</span>`
+        } else {
+          icoHtml = `<span class="doc-ico-badge" style="background:#F3F4F6;color:#374151;font-size:13px">🔗</span>`
+        }
+
+        const ownerName = d.owner || p.responsable || 'Jesús'
+        const dateStr = d.date || 'Reciente'
+        const sizeStr = d.size || '-'
+
+        return `<div class="doc-row-v2">
+          ${icoHtml}
+          <div class="doc-info-col">
+            <div class="doc-title-v2">${escapeHtml(d.name)}</div>
+            ${d.desc ? `<div class="doc-desc-v2">${escapeHtml(d.desc)}</div>` : ''}
+          </div>
+          <div class="doc-meta-col">
+            ${getOwnerBadge(ownerName)}
+            <span class="doc-date-txt">${dateStr}</span>
+            <span class="doc-size-txt">${sizeStr}</span>
+            ${isViewable ? `
+              <button class="doc-btn-online" onclick="openDocViewer('${escapeHtml(d.name)}', '${escapeHtml(d.href||'')}', '${plat.type||'pdf'}', '${escapeHtml(d.desc||'')}')">
+                👁️ Ver online
+              </button>
+            ` : `
+              <a href="${escapeHtml(d.href||'#')}" target="_blank" rel="noopener" class="doc-btn-link">
+                🔗 Abrir link
+              </a>
+            `}
+            <button class="tk-more-btn" onclick="deleteDoc('${p.id}',${i})" title="Eliminar recurso">···</button>
+          </div>
+        </div>`
+      }).join('') : `
+        <div style="padding:24px 12px;text-align:center;color:var(--text-3);font-size:12px">
+          No se encontraron recursos que coincidan con la búsqueda o filtro seleccionado.
+        </div>
+      `}
+    </div>
+  </div>`
+}
+
+function resumen(p){
+  // 1. Fila superior 50/50: Necesita atención a la izquierda y Recordatorios a la derecha
+  const attentionBlock = necesitaAtencionSection(p)
+  const recsSection = recordatoriosSection(p)
+
+  // 2. Fila central ancho completo: Bloque de tareas (POR COMPLETAR + COMPLETADAS acordeón)
+  const tasksSection = taskTableView(p)
+
+  // 3. Fila inferior ancho completo: Biblioteca de Documentación & Recursos
+  const docsSection = docsLibrarySection(p)
+
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0;align-items:stretch">
+      ${attentionBlock}
+      ${recsSection}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      ${tasksSection}
+      ${docsSection}
+    </div>
+  `
 }
 
 function kanban(p, isGlobal = false){
