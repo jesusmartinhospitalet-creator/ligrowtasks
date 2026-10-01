@@ -371,24 +371,52 @@ body{
 .k-card-list{display:flex;flex-direction:column;gap:9px;overflow-y:auto;padding:2px 2px 6px;min-height:50px;flex:1}
 .k-card-list::-webkit-scrollbar{width:4px}
 .k-card-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.k-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 13px 10px;cursor:grab;transition:transform .15s cubic-bezier(0.16,1,0.3,1),box-shadow .15s cubic-bezier(0.16,1,0.3,1),border-color .15s ease,opacity .15s ease;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:relative}
-.k-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.08);border-color:rgba(240,78,35,0.4)}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:grab;transition:transform .15s cubic-bezier(0.16,1,0.3,1),box-shadow .15s cubic-bezier(0.16,1,0.3,1),border-color .15s ease,opacity .15s ease;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.k-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,0.09);border-color:rgba(240,78,35,0.45)}
 .k-card:active{cursor:grabbing}
 .k-card.is-dragging{opacity:0.35;transform:scale(0.97);border:1.5px dashed var(--brand)}
 .k-card.is-complete{opacity:0.88}
-.k-card.is-complete .k-card-title{color:var(--text-2);text-decoration:none}
-.k-card-top{display:flex;align-items:center;gap:6px;margin-bottom:7px}
-.k-card-client{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--surface-2);color:var(--text-1);letter-spacing:0.3px}
-.k-card-tag{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.3px;background:var(--accent-light);color:var(--accent-text)}
-.k-card-code{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--text-3);margin-left:auto}
-.k-card-title{font-size:13.5px;font-weight:600;color:var(--text-1);line-height:1.35;margin-bottom:6px;word-break:break-word}
-.k-card-desc-snippet{font-size:11.5px;color:var(--text-3);line-height:1.35;margin-bottom:7px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.k-card-badges{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-top:6px;border-top:1px solid var(--border-2)}
-.k-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-3);padding:2px 5px;border-radius:4px;font-weight:500;font-variant-numeric:tabular-nums;background:var(--surface-2)}
-.k-badge.badge-done{background:rgba(22,163,74,0.12);color:#16A34A;font-weight:600}
-.k-card-owner{display:inline-flex;align-items:center;gap:5px;margin-left:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:1px 6px 1px 2px;max-width:125px}
+.k-card.is-complete .k-card-title{color:var(--text-2)}
+
+/* Banda superior de color estilo Trello (Franja Semáforo de Urgencia) */
+.k-card-strip{height:28px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;user-select:none;font-family:'DM Sans',sans-serif;transition:background .2s ease;flex-shrink:0}
+.k-card-strip.sem-rojo{background:#DC2626;color:#FFFFFF}
+.k-card-strip.sem-naranja{background:#D97706;color:#FFFFFF}
+.k-card-strip.sem-verde{background:#16A34A;color:#FFFFFF}
+.k-card-strip-left{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}
+.k-card-strip-code{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.5px;color:#FFFFFF;background:rgba(0,0,0,0.2);padding:1px 5px;border-radius:4px;flex-shrink:0}
+.k-card-strip-client{font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.22);color:#FFFFFF;flex-shrink:0}
+.k-card-strip-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.18);color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-card-strip-dots{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.k-strip-dot{width:9px;height:9px;border-radius:50%;cursor:pointer;transition:transform .12s,opacity .12s,border-color .12s;border:1.5px solid rgba(255,255,255,0.45);opacity:0.75}
+.k-strip-dot:hover{transform:scale(1.3);opacity:1}
+.k-strip-dot.on{border-color:#FFFFFF;opacity:1;box-shadow:0 0 0 1.5px rgba(0,0,0,0.25);transform:scale(1.15)}
+.k-strip-dot.dot-v{background:#22C55E}
+.k-strip-dot.dot-n{background:#F59E0B}
+.k-strip-dot.dot-r{background:#EF4444}
+
+/* Cuerpo de la tarjeta */
+.k-card-body{padding:10px 12px 10px;display:flex;flex-direction:column;gap:7px}
+.k-card-title{font-size:13.5px;font-weight:700;color:var(--text-1);line-height:1.35;word-break:break-word}
+.k-card-desc-snippet{font-size:11.5px;color:var(--text-3);line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* Fila auxiliar con pequeños iconos estilo Trello */
+.k-card-aux-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:6px;border-top:1px solid var(--border-2)}
+.k-card-icons{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.k-aux-ico{font-size:11px;font-weight:600;color:var(--text-3);display:inline-flex;align-items:center;gap:3px;font-variant-numeric:tabular-nums;cursor:default}
+.k-aux-ico.ico-done{color:#16A34A;font-weight:700}
+.k-aux-ico.due-late{color:#DC2626;font-weight:700}
+.k-aux-ico.due-soon{color:#EA580C;font-weight:700}
+.k-card-owner{display:inline-flex;align-items:center;gap:5px;margin-left:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:1px 6px 1px 2px;max-width:125px;flex-shrink:0}
 .k-card-avatar{width:18px;height:18px;border-radius:50%;background:var(--brand);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .k-card-owner-name{font-size:10.5px;font-weight:600;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Semáforo selector en modal de tarjeta Trello */
+.trello-sem-options{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.trello-sem-btn{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-1);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;text-align:left}
+.trello-sem-btn:hover{background:var(--surface);border-color:var(--brand)}
+.trello-sem-btn.active{border-color:var(--brand);background:var(--surface);box-shadow:0 0 0 1.5px var(--brand)}
+.trello-sem-dot-lg{width:11px;height:11px;border-radius:50%;flex-shrink:0}
 .k-empty-col{padding:24px 10px;text-align:center;font-size:11.5px;color:var(--text-3);border:1.5px dashed var(--border);border-radius:8px;background:rgba(255,255,255,0.2)}
 .k-add-card-trigger{width:100%;border:none;background:transparent;color:var(--text-2);font-size:12.5px;font-weight:500;border-radius:7px;padding:8px 10px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:6px;margin-top:4px;transition:all .15s;flex-shrink:0}
 .k-add-card-trigger:hover{background:var(--surface);color:var(--text-1)}
@@ -1524,6 +1552,34 @@ function openDocViewer(title, url, type, desc){
   render()
 }
 
+// ── Semáforo de Urgencia en Tarjetas y Tareas ────────────────────────────────
+function getTaskSemaforo(t){
+  if(t.semaforo && ['rojo','naranja','verde'].includes(t.semaforo)) return t.semaforo
+  if(t.status === 'Listo') return 'verde'
+  if(t.status === 'Esperando feedback') return 'naranja'
+  if(t.due && typeof t.due === 'string' && t.due.includes('-') && t.due.length === 10){
+    const dueD = new Date(t.due + 'T23:59:59')
+    if(dueD < new Date()) return 'rojo'
+  }
+  const pri = (t.pri || t.priority || 'Media').toLowerCase()
+  if(pri === 'alta' || pri === 'urgente') return 'rojo'
+  if(pri === 'media') return 'naranja'
+  if(pri === 'baja') return 'verde'
+  return 'verde'
+}
+
+function setTaskSemaforo(clientId, taskId, col, e){
+  if(e) e.stopPropagation()
+  const client = DATA.find(p => p.id === clientId)
+  if(!client || !client.tasks) return
+  const t = client.tasks.find(x => x.id === taskId || x.code === taskId)
+  if(t){
+    t.semaforo = (t.semaforo === col) ? null : col
+    save()
+    render()
+  }
+}
+
 // ── Detección de asuntos que Necesitan Atención ─────────────────────────────
 function getAttentionItems(p){
   const tasks = p.tasks || []
@@ -1626,6 +1682,8 @@ function normTask(t, idx, client){
   else if(st === 'Esperando feedback' || st === 'Detenido' || st === 'Standby' || st === 'Bloqueado' || st === 'Revisión' || st === 'Esperando cliente' || st === 'Feedback') t.status = 'Esperando feedback'
   else if(st === 'Listo' || st === 'Completada' || st === 'Hecho' || st === 'Done' || st === 'done') t.status = 'Listo'
   else t.status = 'Sin empezar'
+
+  if(!t.semaforo) t.semaforo = getTaskSemaforo(t)
   return t
 }
 
@@ -2669,9 +2727,12 @@ function taskDetailModal(){
   const prio = (t.pri || t.priority || 'Media').toLowerCase()
   const prioLabel = t.pri || t.priority || 'Media'
   const isDone = t.status === 'Listo'
+  const taskSem = getTaskSemaforo(t)
 
   return `<div class="trello-modal-overlay" onclick="if(event.target===this)closeModal()">
     <div class="trello-card-modal">
+      <!-- Top Urgency Stripe -->
+      <div class="k-card-strip sem-${taskSem}" style="border-radius:14px 14px 0 0;height:14px;padding:0;flex-shrink:0"></div>
       <!-- Modal Header -->
       <div class="trello-modal-head">
         <div class="trello-head-main">
@@ -2831,6 +2892,22 @@ function taskDetailModal(){
           <button class="trello-act-btn ${isDone?'is-done':''}" onclick="updateTaskField('${p.id}','${t.code}','status','${isDone?'Sin empezar':'Listo'}')">
             <span>${isDone?'↩️ Reabrir tarea':'✅ Marcar como Listo'}</span>
           </button>
+
+          <div class="trello-act-label" style="margin-top:16px">SEMÁFORO DE URGENCIA</div>
+          <div class="trello-sem-options">
+            <button type="button" class="trello-sem-btn ${taskSem==='verde'?'active':''}" onclick="updateTaskField('${p.id}','${t.code}','semaforo','verde')">
+              <span class="trello-sem-dot-lg" style="background:#16A34A"></span>
+              <span>Verde · Normal</span>
+            </button>
+            <button type="button" class="trello-sem-btn ${taskSem==='naranja'?'active':''}" onclick="updateTaskField('${p.id}','${t.code}','semaforo','naranja')">
+              <span class="trello-sem-dot-lg" style="background:#D97706"></span>
+              <span>Naranja · Atención</span>
+            </button>
+            <button type="button" class="trello-sem-btn ${taskSem==='rojo'?'active':''}" onclick="updateTaskField('${p.id}','${t.code}','semaforo','rojo')">
+              <span class="trello-sem-dot-lg" style="background:#DC2626"></span>
+              <span>Rojo · Urgente</span>
+            </button>
+          </div>
 
           <div class="trello-act-label" style="margin-top:16px">MOVER A LISTA</div>
           ${['Sin empezar','Trabajando','Esperando feedback','Listo'].map(st=>`
@@ -3542,7 +3619,10 @@ function tkTaskRow(p,t){
   const prioClass=prio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
   return `<div class="tk-task-wrap ${prioClass}">
     <div class="tk-task-row ${isOpen?'open':''}" onclick="toggleTaskRow('${t.code}')">
-      <div class="tk-id">${t.code}</div>
+      <div class="tk-id" style="display:flex;align-items:center;gap:6px">
+        <span class="k-strip-dot dot-${getTaskSemaforo(t).charAt(0)} on" style="display:inline-block;cursor:pointer;flex-shrink:0" onclick="setTaskSemaforo('${p.id}','${t.code||t.id}',getTaskSemaforo(t)==='verde'?'naranja':getTaskSemaforo(t)==='naranja'?'rojo':'verde',event)" title="Urgencia (Semáforo): ${getTaskSemaforo(t)}. Clic para alternar"></span>
+        <span>${t.code}</span>
+      </div>
       <div class="tk-name-cell"><div class="tk-name-txt ${isDone?'done':''}">${escapeHtml(taskTitle)}</div></div>
       <div class="tk-actions" onclick="event.stopPropagation()">
         <button class="tk-act" title="Ver detalle Trello" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">✏️</button>
@@ -3715,42 +3795,59 @@ function kanban(p, isGlobal = false){
             ${colItems.map(({ t, client }) => {
               const cl = t.checklist || t.checklists || []
               const clDone = cl.filter(c => c.done).length
-              const prio = (t.pri || t.priority || 'Media').toLowerCase()
-              const prioLabel = t.pri || t.priority || 'Media'
               const isComplete = t.status === 'Listo'
               const linksCount = (t.links?.length || 0) + (t.files?.length || 0)
               const commentsCount = t.comments?.length || 0
+              const hasDesc = !!(t.description || t.desc)
+              const taskSem = getTaskSemaforo(t)
+              const semLabel = taskSem === 'rojo' ? 'Rojo (Urgente)' : taskSem === 'naranja' ? 'Naranja (Atención)' : 'Verde (Normal)'
 
-              return `<div class="k-card ${prio} ${isComplete?'is-complete':''}" 
+              return `<div class="k-card ${isComplete?'is-complete':''}" 
                            id="card-${t.code || t.id}"
                            draggable="true" 
                            ondragstart="handleCardDragStart(event, '${client.id}', '${t.code || t.id}')"
                            ondragend="handleCardDragEnd(event)"
                            ondrop="handleCardDrop(event, '${col.id}', '${t.code || t.id}')"
                            onclick="openTaskDetail('${client.id}', '${t.code || t.id}')">
-                <!-- Top row: client badge (if global) / tag / priority / code -->
-                <div class="k-card-top">
-                  ${isGlobal ? `<span class="k-card-client" style="border-left:2px solid ${client.color||'var(--brand)'}">${escapeHtml(client.initials || client.name.slice(0,3))}</span>` : ''}
-                  ${t.tag ? `<span class="k-card-tag">${escapeHtml(t.tag)}</span>` : ''}
-                  <span class="pri ${prio}">${prioLabel}</span>
-                  <span class="k-card-code">${escapeHtml(t.code || '')}</span>
+                
+                <!-- 1. Banda superior de color estilo Trello (Franja Semáforo de Urgencia) -->
+                <div class="k-card-strip sem-${taskSem}" title="Semáforo de urgencia: ${semLabel}">
+                  <div class="k-card-strip-left">
+                    ${isGlobal ? `<span class="k-card-strip-client" style="border-left:2px solid ${client.color||'#fff'}">${escapeHtml(client.initials || client.name.slice(0,3))}</span>` : ''}
+                    <span class="k-card-strip-code">${escapeHtml(t.code || '')}</span>
+                    ${t.tag ? `<span class="k-card-strip-tag">${escapeHtml(t.tag)}</span>` : ''}
+                  </div>
+                  <!-- Selector rápido de semáforo (Verde, Naranja, Rojo) -->
+                  <div class="k-card-strip-dots" onclick="event.stopPropagation()">
+                    <span class="k-strip-dot dot-v ${taskSem==='verde'?'on':''}" onclick="setTaskSemaforo('${client.id}','${t.code||t.id}','verde',event)" title="Semáforo: Verde (Normal)"></span>
+                    <span class="k-strip-dot dot-n ${taskSem==='naranja'?'on':''}" onclick="setTaskSemaforo('${client.id}','${t.code||t.id}','naranja',event)" title="Semáforo: Naranja (Atención / En espera)"></span>
+                    <span class="k-strip-dot dot-r ${taskSem==='rojo'?'on':''}" onclick="setTaskSemaforo('${client.id}','${t.code||t.id}','rojo',event)" title="Semáforo: Rojo (Urgente)"></span>
+                  </div>
                 </div>
 
-                <!-- Title -->
-                <div class="k-card-title">${escapeHtml(t.title || t.name || 'Sin título')}</div>
+                <!-- 2. Cuerpo de la tarjeta: Título, ID / detalles, pequeños iconos -->
+                <div class="k-card-body">
+                  <!-- Título de la tarea -->
+                  <div class="k-card-title">${escapeHtml(t.title || t.name || 'Sin título')}</div>
 
-                <!-- Optional snippet -->
-                ${(t.description || t.desc) ? `<div class="k-card-desc-snippet">${escapeHtml(t.description || t.desc)}</div>` : ''}
+                  <!-- Descripción previa si existe -->
+                  ${hasDesc ? `<div class="k-card-desc-snippet">${escapeHtml(t.description || t.desc)}</div>` : ''}
 
-                <!-- Badges Row -->
-                <div class="k-card-badges">
-                  ${t.due ? `<span class="k-badge ${isComplete?'badge-done':''}" title="Vencimiento: ${escapeHtml(t.due)}">📅 ${fmtDue(t.due)}</span>` : ''}
-                  ${cl.length ? `<span class="k-badge ${clDone===cl.length?'badge-done':''}" title="Checklist ${clDone}/${cl.length}">☑ ${clDone}/${cl.length}</span>` : ''}
-                  ${linksCount ? `<span class="k-badge" title="${linksCount} adjuntos / enlaces">📎 ${linksCount}</span>` : ''}
-                  ${commentsCount ? `<span class="k-badge" title="${commentsCount} comentarios">💬 ${commentsCount}</span>` : ''}
-                  <div class="k-card-owner" title="Responsable: ${escapeHtml(t.owner || 'Sin asignar')}">
-                    <div class="k-card-avatar">${((t.owner||'J').trim().charAt(0)||'?').toUpperCase()}</div>
-                    <span class="k-card-owner-name">${escapeHtml(t.owner || 'Jesús')}</span>
+                  <!-- Fila auxiliar con pequeños iconos estilo Trello -->
+                  <div class="k-card-aux-row">
+                    <div class="k-card-icons">
+                      ${hasDesc ? `<span class="k-aux-ico" title="Tiene descripción">≡</span>` : ''}
+                      ${t.due ? `<span class="k-aux-ico ${isComplete?'ico-done':''}" title="Vencimiento: ${escapeHtml(t.due)}">📅 ${fmtDue(t.due)}</span>` : ''}
+                      ${cl.length ? `<span class="k-aux-ico ${clDone===cl.length?'ico-done':''}" title="Checklist ${clDone}/${cl.length}">☑ ${clDone}/${cl.length}</span>` : ''}
+                      ${linksCount ? `<span class="k-aux-ico" title="${linksCount} adjuntos / enlaces">📎 ${linksCount}</span>` : ''}
+                      ${commentsCount ? `<span class="k-aux-ico" title="${commentsCount} comentarios">💬 ${commentsCount}</span>` : ''}
+                    </div>
+
+                    <!-- Responsable -->
+                    <div class="k-card-owner" title="Responsable: ${escapeHtml(t.owner || 'Sin asignar')}">
+                      <div class="k-card-avatar">${((t.owner||'J').trim().charAt(0)||'?').toUpperCase()}</div>
+                      <span class="k-card-owner-name">${escapeHtml(t.owner || 'Jesús')}</span>
+                    </div>
                   </div>
                 </div>
               </div>`
@@ -4169,7 +4266,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v9'
+const STORE_VERSION='v10'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
