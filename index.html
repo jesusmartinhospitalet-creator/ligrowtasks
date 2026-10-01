@@ -343,29 +343,132 @@ body{
 .chip-green{background:#EDFAF2;color:#0F9460}
 .chip-red{background:#FFF0F0;color:#C53030}
 
-/* ── Kanban ──────────────────────────────────────────────────────────────── */
-.kanban{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.k-col{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px}
-.k-col-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
-.k-col-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)}
-.k-count{font-size:10.5px;font-weight:600;background:var(--surface-2);border-radius:20px;padding:1px 7px;color:var(--text-3);border:1px solid var(--border-2)}
-.kc{
-  background:var(--surface-2);border:1px solid var(--border-2);
-  border-radius:8px;padding:11px 13px;margin-bottom:7px;
-  border-left-width:3px;border-left-style:solid;border-left-color:var(--border)
-}
-.kc.alta{border-left-color:#D63A0F}
-.kc.media{border-left-color:#D48000}
-.kc.baja{border-left-color:#0F9460}
-.kc-code{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text-3);margin-bottom:4px}
-.kc-name{font-size:13px;font-weight:500;color:var(--text-1);margin-bottom:9px;line-height:1.35}
-.kc-foot{display:flex;align-items:center;justify-content:space-between}
-.kc-owner{font-size:11px;color:var(--text-3)}
+/* ── Trello Kanban Board ─────────────────────────────────────────────────── */
+.kanban-wrapper{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+.kanban-board{display:grid;grid-template-columns:repeat(4,minmax(270px,1fr));gap:16px;align-items:flex-start;overflow-x:auto;padding-bottom:20px;height:100%}
+.kanban-board::-webkit-scrollbar{height:6px}
+.kanban-board::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.k-col{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;max-height:calc(100vh - 200px);min-height:160px;transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease;user-select:none}
+.k-col.k-col-dragover{background:rgba(240,78,35,0.06) !important;border:2px dashed var(--brand) !important}
+.k-col-h{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 10px;flex-shrink:0}
+.k-col-title-wrap{display:flex;align-items:center;gap:8px}
+.k-col-icon{font-size:14px}
+.k-col-title{font-size:13px;font-weight:700;color:var(--text-1);letter-spacing:-0.1px}
+.k-count{font-size:11px;font-weight:700;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1px 8px;color:var(--text-2)}
+.k-col-add-btn{background:transparent;border:none;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:16px;cursor:pointer;transition:all .15s}
+.k-col-add-btn:hover{background:var(--surface);color:var(--text-1)}
+.k-card-list{display:flex;flex-direction:column;gap:9px;overflow-y:auto;padding:2px 2px 6px;min-height:50px;flex:1}
+.k-card-list::-webkit-scrollbar{width:4px}
+.k-card-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 13px 10px;cursor:grab;transition:transform .15s cubic-bezier(0.16,1,0.3,1),box-shadow .15s cubic-bezier(0.16,1,0.3,1),border-color .15s ease,opacity .15s ease;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:relative}
+.k-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.08);border-color:rgba(240,78,35,0.4)}
+.k-card:active{cursor:grabbing}
+.k-card.is-dragging{opacity:0.35;transform:scale(0.97);border:1.5px dashed var(--brand)}
+.k-card.is-complete{opacity:0.88}
+.k-card.is-complete .k-card-title{color:var(--text-2);text-decoration:none}
+.k-card-top{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.k-card-tag{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.3px;background:var(--accent-light);color:var(--accent-text)}
+.k-card-code{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--text-3);margin-left:auto}
+.k-card-title{font-size:13.5px;font-weight:600;color:var(--text-1);line-height:1.35;margin-bottom:6px;word-break:break-word}
+.k-card-desc-snippet{font-size:11.5px;color:var(--text-3);line-height:1.35;margin-bottom:7px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.k-card-badges{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-top:6px;border-top:1px solid var(--border-2)}
+.k-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-3);padding:2px 5px;border-radius:4px;font-weight:500;font-variant-numeric:tabular-nums;background:var(--surface-2)}
+.k-badge.badge-done{background:rgba(22,163,74,0.12);color:#16A34A;font-weight:600}
+.k-card-avatar{width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto}
+.k-empty-col{padding:24px 10px;text-align:center;font-size:11.5px;color:var(--text-3);border:1.5px dashed var(--border);border-radius:8px;background:rgba(255,255,255,0.2)}
+.k-add-card-trigger{width:100%;border:none;background:transparent;color:var(--text-2);font-size:12.5px;font-weight:500;border-radius:7px;padding:8px 10px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:6px;margin-top:4px;transition:all .15s;flex-shrink:0}
+.k-add-card-trigger:hover{background:var(--surface);color:var(--text-1)}
+.k-add-card-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;margin-top:4px;box-shadow:0 2px 8px rgba(0,0,0,0.06);flex-shrink:0}
+.k-add-textarea{width:100%;border:none;outline:none;resize:none;font-family:inherit;font-size:13px;color:var(--text-1);background:transparent;min-height:48px;line-height:1.35}
+.k-add-actions{display:flex;align-items:center;gap:6px;margin-top:6px}
+.k-add-confirm-btn{padding:6px 12px;border-radius:6px;border:none;background:var(--brand);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.k-add-confirm-btn:hover{opacity:.9}
+.k-add-cancel-btn{background:transparent;border:none;font-size:15px;color:var(--text-3);cursor:pointer;padding:4px 6px;border-radius:4px}
+.k-add-cancel-btn:hover{color:var(--text-1);background:var(--surface-2)}
+
+/* ── Trello Card Detail Modal ───────────────────────────────────────────── */
+.trello-modal-overlay{position:fixed;inset:0;background:rgba(17,16,14,0.65);backdrop-filter:blur(4px);z-index:250;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.trello-card-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:820px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 50px rgba(0,0,0,0.25);animation:trelloModalIn .2s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column}
+@keyframes trelloModalIn{from{opacity:0;transform:scale(0.96) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.trello-modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:22px 26px 14px;border-bottom:1px solid var(--border-2);gap:16px}
+.trello-head-main{flex:1}
+.trello-code-pill{display:inline-block;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--accent-light);color:var(--accent-text);margin-bottom:6px}
+.trello-title-input{width:100%;font-family:inherit;font-size:19px;font-weight:700;color:var(--text-1);background:transparent;border:1px solid transparent;border-radius:6px;padding:3px 6px;margin-left:-6px;transition:all .15s}
+.trello-title-input:hover{background:var(--surface-2)}
+.trello-title-input:focus{background:var(--surface);border-color:var(--brand);outline:none;box-shadow:0 0 0 2px rgba(240,78,35,0.2)}
+.trello-head-sub{font-size:12px;color:var(--text-3);margin-top:4px;display:flex;align-items:center;gap:6px}
+.trello-list-select{font-family:inherit;font-size:12px;font-weight:600;color:var(--brand);background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;cursor:pointer;outline:none}
+.trello-close-btn{width:32px;height:32px;border-radius:7px;border:none;background:var(--surface-2);color:var(--text-2);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
+.trello-close-btn:hover{background:#EF4444;color:#fff}
+.trello-modal-grid{display:grid;grid-template-columns:1fr 220px;gap:24px;padding:20px 26px 28px}
+@media (max-width:768px){.trello-modal-grid{grid-template-columns:1fr}}
+.trello-main-col{display:flex;flex-direction:column;gap:22px}
+.trello-meta-strip{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.trello-meta-box{display:flex;flex-direction:column;gap:4px}
+.trello-meta-label{font-size:9.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-3)}
+.trello-member-badge{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:3px 6px}
+.trello-avatar{width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.trello-avatar.sm{width:26px;height:26px;font-size:11px}
+.trello-meta-input{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:var(--text-1);outline:none}
+.trello-prio-select{font-family:inherit;font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:6px;border:1px solid var(--border);cursor:pointer;outline:none}
+.trello-prio-select.alta{background:#FFF0EB;color:#D63A0F;border-color:rgba(214,58,15,0.3)}
+.trello-prio-select.media{background:#FFFBEC;color:#B07B00;border-color:rgba(176,123,0,0.3)}
+.trello-prio-select.baja{background:#EDFAF2;color:#0F9460;border-color:rgba(15,148,96,0.3)}
+.trello-date-input{font-family:inherit;font-size:11.5px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-1);outline:none}
+.trello-section{display:flex;flex-direction:column;gap:8px}
+.trello-sec-header{display:flex;align-items:center;gap:8px}
+.trello-sec-icon{font-size:15px}
+.trello-sec-title{font-size:13.5px;font-weight:700;color:var(--text-1)}
+.trello-chk-pct{margin-left:auto;font-size:11px;font-weight:700;color:var(--text-3);font-variant-numeric:tabular-nums}
+.trello-desc-textarea{width:100%;font-family:inherit;font-size:13px;color:var(--text-1);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;min-height:74px;resize:vertical;line-height:1.45;outline:none;transition:all .15s}
+.trello-desc-textarea:focus{background:var(--surface);border-color:var(--brand);box-shadow:0 0 0 2px rgba(240,78,35,0.15)}
+.trello-prog-track{width:100%;height:6px;background:var(--border-2);border-radius:3px;overflow:hidden}
+.trello-prog-fill{height:100%;background:var(--brand);border-radius:3px;transition:width .25s ease}
+.trello-prog-fill.complete{background:#16A34A}
+.trello-chk-list{display:flex;flex-direction:column;gap:4px}
+.trello-chk-item{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;transition:background .12s}
+.trello-chk-item:hover{background:var(--surface-2)}
+.trello-chk-item.is-done .trello-chk-text{text-decoration:line-through;color:var(--text-3)}
+.trello-chk-cb{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0}
+.trello-chk-text{font-size:13px;color:var(--text-1);cursor:pointer;flex:1}
+.trello-item-del{background:transparent;border:none;color:var(--text-3);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px;opacity:0;transition:all .12s}
+.trello-chk-item:hover .trello-item-del,.trello-link-row:hover .trello-item-del{opacity:1}
+.trello-item-del:hover{color:#EF4444;background:rgba(239,68,68,0.1)}
+.trello-add-item-row,.trello-add-link-box{display:flex;align-items:center;gap:8px;margin-top:4px}
+.trello-sub-input{font-family:inherit;font-size:12.5px;color:var(--text-1);background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;outline:none;flex:1}
+.trello-sub-input:focus{background:var(--surface);border-color:var(--brand)}
+.trello-btn-sm{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-1);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.trello-btn-sm:hover{background:var(--surface);border-color:var(--text-3)}
+.trello-btn-sm.brand{background:var(--brand);border-color:var(--brand);color:#fff}
+.trello-btn-sm.brand:hover{opacity:.9}
+.trello-links-list{display:flex;flex-direction:column;gap:5px}
+.trello-link-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border-2)}
+.trello-link-icon{font-size:14px}
+.trello-link-name{font-size:12.5px;font-weight:500;color:var(--accent-text);text-decoration:underline;flex:1;word-break:break-all}
+.trello-empty-hint{font-size:12px;color:var(--text-3);font-style:italic;padding:4px 2px}
+.trello-comment-box{display:flex;align-items:flex-start;gap:10px;margin-top:4px}
+.trello-comment-in-wrap{flex:1;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.trello-comment-textarea{width:100%;font-family:inherit;font-size:12.5px;color:var(--text-1);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;min-height:56px;resize:vertical;outline:none}
+.trello-comment-textarea:focus{background:var(--surface);border-color:var(--brand)}
+.trello-comments-stream{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.trello-comment-item{display:flex;align-items:flex-start;gap:10px}
+.trello-comment-content{flex:1;background:var(--surface-2);border:1px solid var(--border-2);border-radius:8px;padding:8px 12px}
+.trello-comment-meta{display:flex;align-items:center;gap:8px;margin-bottom:3px;font-size:11.5px}
+.trello-comment-meta strong{color:var(--text-1)}
+.trello-comment-time{color:var(--text-3);font-size:10.5px}
+.trello-comment-body{font-size:12.5px;color:var(--text-1);line-height:1.4;white-space:pre-wrap}
+.trello-actions-col{display:flex;flex-direction:column;gap:6px}
+.trello-act-label{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-3);margin-bottom:2px}
+.trello-act-btn,.trello-move-btn{width:100%;padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-1);font-size:12px;font-weight:600;text-align:left;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.trello-act-btn:hover,.trello-move-btn:hover{background:var(--surface);border-color:var(--brand)}
+.trello-act-btn.is-done{background:rgba(22,163,74,0.12);border-color:#16A34A;color:#16A34A}
+.trello-move-btn.active{background:var(--brand);border-color:var(--brand);color:#fff}
+.trello-act-btn.danger{color:#EF4444}
+.trello-act-btn.danger:hover{background:rgba(239,68,68,0.08);border-color:#EF4444}
 .pri{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:20px}
 .pri.alta{background:#FFF0EB;color:#D63A0F}
 .pri.media{background:#FFFBEC;color:#B07B00}
 .pri.baja{background:#EDFAF2;color:#0F9460}
-.k-empty{font-size:12px;color:var(--text-3);padding:6px 0 2px}
 
 /* ── Tabla ───────────────────────────────────────────────────────────────── */
 .gtable{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
@@ -819,9 +922,39 @@ let DATA = [
       {id:'r2', text:'Validar colores corporativos (#004E9C y #A03C8B) en cabecera', detail:'Asegurar rigor institucional y calidez humana', due:'Viernes', done:false}
     ],
     tasks:[
-      {id:'t1', code:'CPB-01', title:'Propuesta y concepto visual web', status:'Listo', pri:'Alta', tag:'Diseño', desc:'Definición de arquitectura, paleta cromática (#004E9C / #A03C8B) y tipografías (Signika Bold + Open Sans).', due:'10 Oct', comments:[], checklists:[{text:'Paleta de colores',done:true},{text:'Tipografía y estilo',done:true},{text:'Wireframes home',done:true}], links:[{label:'PDF Propuesta',url:'#'}]},
-      {id:'t2', code:'CPB-02', title:'Estructura y wireframes de Home', status:'En curso', pri:'Alta', tag:'UX/UI', desc:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.', due:'18 Oct', comments:[], checklists:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}], links:[]},
-      {id:'t3', code:'CPB-03', title:'Catálogo de servicios asistenciales', status:'Pendiente', pri:'Media', tag:'Contenidos', desc:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.', due:'24 Oct', comments:[], checklists:[{text:'Fichas de servicios',done:false},{text:'Revisión con equipo médico',done:false}], links:[]}
+      {
+        id:'t1', code:'CPB-01', title:'Propuesta y concepto visual web', name:'Propuesta y concepto visual web',
+        status:'Listo', pri:'Alta', priority:'Alta', tag:'Diseño',
+        desc:'Definición de arquitectura, paleta cromática (#004E9C / #A03C8B) y tipografías (Signika Bold + Open Sans).',
+        description:'Definición de arquitectura, paleta cromática (#004E9C / #A03C8B) y tipografías (Signika Bold + Open Sans).',
+        due:'10 Oct', owner:'Jesús',
+        comments:[{author:'Jesús', text:'Concepto aprobado preliminarmente con la dirección.', date:'Ayer a las 18:20'}],
+        checklists:[{text:'Paleta de colores (#004E9C / #A03C8B)',done:true},{text:'Tipografía y estilo visual',done:true},{text:'Wireframes home',done:true}],
+        checklist:[{text:'Paleta de colores (#004E9C / #A03C8B)',done:true},{text:'Tipografía y estilo visual',done:true},{text:'Wireframes home',done:true}],
+        links:[{label:'PDF Propuesta',url:'#',href:'#'}], files:[]
+      },
+      {
+        id:'t2', code:'CPB-02', title:'Estructura y wireframes de Home', name:'Estructura y wireframes de Home',
+        status:'En curso', pri:'Alta', priority:'Alta', tag:'UX/UI',
+        desc:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.',
+        description:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.',
+        due:'18 Oct', owner:'Jesús',
+        comments:[{author:'Jesús', text:'Ajustando sección de acceso rápido a centros asistenciales.', date:'Hoy a las 11:30'}],
+        checklists:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}],
+        checklist:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}],
+        links:[], files:[]
+      },
+      {
+        id:'t3', code:'CPB-03', title:'Catálogo de servicios asistenciales', name:'Catálogo de servicios asistenciales',
+        status:'Por hacer', pri:'Media', priority:'Media', tag:'Contenidos',
+        desc:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
+        description:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
+        due:'24 Oct', owner:'Jesús',
+        comments:[],
+        checklists:[{text:'Fichas de servicios psiquiátricos',done:false},{text:'Revisión con equipo médico',done:false}],
+        checklist:[{text:'Fichas de servicios psiquiátricos',done:false},{text:'Revisión con equipo médico',done:false}],
+        links:[], files:[]
+      }
     ],
     docs:[
       {name:'Propuesta Rediseño Web CPB.pdf', desc:'Presentación completa de concepto visual, colores y wireframes', href:'#', type:'file'},
@@ -837,7 +970,19 @@ let DATA = [
     semaforo:'verde',
     description:'Servicio técnico y mantenimiento informático para empresas.',
     recordatorios:[],
-    tasks:[]
+    tasks:[
+      {
+        id:'t4', code:'AB-01', title:'Auditoría SEO on-page y Core Web Vitals', name:'Auditoría SEO on-page y Core Web Vitals',
+        status:'En curso', pri:'Media', priority:'Media', tag:'SEO',
+        desc:'Optimización de velocidad de carga y meta etiquetas principales.',
+        description:'Optimización de velocidad de carga y meta etiquetas principales.',
+        due:'22 Oct', owner:'Jesús',
+        comments:[],
+        checklists:[{text:'Análisis de keywords',done:true},{text:'Optimización de imágenes',done:false}],
+        checklist:[{text:'Análisis de keywords',done:true},{text:'Optimización de imágenes',done:false}],
+        links:[], files:[]
+      }
+    ]
   },
   {
     id:'dh', type:'cliente', color:'#2C3E50', initials:'DD',
@@ -848,7 +993,19 @@ let DATA = [
     semaforo:'naranja',
     description:'Estudio de arquitectura interior y diseño de espacios.',
     recordatorios:[],
-    tasks:[]
+    tasks:[
+      {
+        id:'t5', code:'DH-01', title:'Moodboard y manual de marca interior', name:'Moodboard y manual de marca interior',
+        status:'Por hacer', pri:'Alta', priority:'Alta', tag:'Branding',
+        desc:'Selección de texturas, paleta y aplicaciones corporativas.',
+        description:'Selección de texturas, paleta y aplicaciones corporativas.',
+        due:'28 Oct', owner:'Jesús',
+        comments:[],
+        checklists:[{text:'Definición de paleta',done:true},{text:'Guía de aplicación',done:false}],
+        checklist:[{text:'Definición de paleta',done:true},{text:'Guía de aplicación',done:false}],
+        links:[], files:[]
+      }
+    ]
   },
   {
     id:'cm', type:'cliente', color:'#A8385D', initials:'CM',
@@ -859,7 +1016,19 @@ let DATA = [
     semaforo:'rojo',
     description:'Agencia de eventos y comunicación de marca.',
     recordatorios:[],
-    tasks:[]
+    tasks:[
+      {
+        id:'t6', code:'CM-01', title:'Calendario editorial para Instagram Reels', name:'Calendario editorial para Instagram Reels',
+        status:'Detenido', pri:'Baja', priority:'Baja', tag:'Social',
+        desc:'Planificación de publicaciones mensuales.',
+        description:'Planificación de publicaciones mensuales.',
+        due:'30 Oct', owner:'Jesús',
+        comments:[{author:'Jesús', text:'En espera de validación final del cliente.', date:'Hace 2 días'}],
+        checklists:[{text:'Copywriting de guiones',done:true}],
+        checklist:[{text:'Copywriting de guiones',done:true}],
+        links:[], files:[]
+      }
+    ]
   },
   // ─ APPS
   {
@@ -1199,27 +1368,78 @@ function toggleTaskRow(code){
   S.expandedTask=S.expandedTask===code?null:code
   render()
 }
+// ── Normalización de tareas y persistencia ──────────────────────────────────
+function normTask(t, idx, client){
+  if(!t) return t
+  if(!t.id) t.id = 'task_' + (t.code ? t.code.toLowerCase().replace(/[^a-z0-9]/g,'') : (idx||'0'))
+  if(!t.title && t.name) t.title = t.name
+  if(!t.name && t.title) t.name = t.title
+  if(!t.pri && t.priority) t.pri = t.priority
+  if(!t.priority && t.pri) t.priority = t.pri
+  if(!t.priority){ t.priority = 'Media'; t.pri = 'Media'; }
+  if(!t.desc && t.description) t.desc = t.description
+  if(!t.description && t.desc) t.description = t.desc
+  if(!t.checklists && t.checklist) t.checklists = t.checklist
+  if(!t.checklist && t.checklists) t.checklist = t.checklists
+  if(!t.checklist){ t.checklist = []; t.checklists = []; }
+  if(!t.comments) t.comments = []
+  if(!t.links) t.links = t.link ? [t.link] : []
+  if(!t.files) t.files = t.attachment ? [t.attachment] : []
+  if(!t.owner) t.owner = client?.responsable || S.defaultUser || 'Jesús'
+
+  // Normalización canónica de los 4 estados Trello
+  const st = (t.status || 'Por hacer').trim()
+  if(st === 'Pendiente' || st === 'Por hacer' || st === 'Sin empezar' || st === 'To Do' || st === 'todo') t.status = 'Por hacer'
+  else if(st === 'En curso' || st === 'En progreso' || st === 'Doing' || st === 'doing') t.status = 'En curso'
+  else if(st === 'Detenido' || st === 'Standby' || st === 'Bloqueado' || st === 'Revisión') t.status = 'Detenido'
+  else if(st === 'Listo' || st === 'Completada' || st === 'Hecho' || st === 'Done' || st === 'done') t.status = 'Listo'
+  else t.status = 'Por hacer'
+  return t
+}
+
 function updateTaskField(pid,code,field,val){
   const p=DATA.find(x=>x.id===pid)
-  const t=p?.tasks?.find(x=>x.code===code)
-  if(t)t[field]=val
-  render()
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    t[field]=val
+    if(field==='priority'||field==='pri'){ t.priority=val; t.pri=val }
+    if(field==='title'||field==='name'){ t.title=val; t.name=val }
+    if(field==='status'){
+      if(val==='Pendiente') t.status='Por hacer'
+    }
+    normTask(t, 0, p)
+    save()
+    render()
+  }
 }
+
 function toggleChkItem(pid,code,idx){
   const p=DATA.find(x=>x.id===pid)
-  const t=p?.tasks?.find(x=>x.code===code)
-  if(t?.checklist?.[idx])t.checklist[idx].done=!t.checklist[idx].done
-  render()
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    if(t.checklist?.[idx]){
+      t.checklist[idx].done = !t.checklist[idx].done
+      save()
+      render()
+    }
+  }
 }
+
 function addChkItem(pid,code){
   const el=document.getElementById('chk-in-'+code)
   const txt=(el?.value||'').trim()
   if(!txt)return
   const p=DATA.find(x=>x.id===pid)
-  const t=p?.tasks?.find(x=>x.code===code)
-  if(t){if(!t.checklist)t.checklist=[];t.checklist.push({text:txt,done:false})}
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    t.checklist.push({text:txt,done:false})
+    save()
+  }
   el.value='';render()
 }
+
 function addLinkItem(pid,code){
   const nEl=document.getElementById('lnk-n-'+code)
   const hEl=document.getElementById('lnk-h-'+code)
@@ -1227,16 +1447,25 @@ function addLinkItem(pid,code){
   const href=(hEl?.value||'').trim()
   if(!name&&!href)return
   const p=DATA.find(x=>x.id===pid)
-  const t=p?.tasks?.find(x=>x.code===code)
-  if(t){if(!t.links)t.links=[];t.links.push({name:name||href,href:href||'#'})}
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    t.links.push({name:name||href,href:href||'#',label:name||href,url:href||'#'})
+    save()
+  }
   nEl.value='';hEl.value='';render()
 }
+
 function deleteLinkItem(pid,code,idx){
   const p=DATA.find(x=>x.id===pid)
-  const t=p?.tasks?.find(x=>x.code===code)
-  if(t?.links)t.links.splice(idx,1)
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t?.links){
+    t.links.splice(idx,1)
+    save()
+  }
   render()
 }
+
 function addFileItem(pid,code){
   const nEl=document.getElementById('fil-n-'+code)
   const hEl=document.getElementById('fil-h-'+code)
@@ -1244,27 +1473,256 @@ function addFileItem(pid,code){
   const href=(hEl?.value||'').trim()
   if(!name&&!href)return
   const p=DATA.find(x=>x.id===pid)
-  const t=p?.tasks?.find(x=>x.code===code)
-  if(t){if(!t.files)t.files=[];t.files.push({name:name||'Archivo',href:href||'#'})}
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    t.files.push({name:name||'Archivo',href:href||'#'})
+    save()
+  }
   nEl.value='';hEl.value='';render()
 }
+
 function deleteFileItem(pid,code,idx){
   const p=DATA.find(x=>x.id===pid)
-  const t=p?.tasks?.find(x=>x.code===code)
-  if(t?.files)t.files.splice(idx,1)
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t?.files){
+    t.files.splice(idx,1)
+    save()
+  }
   render()
 }
+
 function deleteTask(pid,code,e){
-  e.stopPropagation()
+  if(e) e.stopPropagation()
   const p=DATA.find(x=>x.id===pid)
-  if(p?.tasks)p.tasks=p.tasks.filter(t=>t.code!==code)
-  if(S.expandedTask===code)S.expandedTask=null
+  if(p?.tasks){
+    p.tasks=p.tasks.filter(t=>(t.code!==code && t.id!==code))
+    save()
+  }
+  if(S.expandedTask===code) S.expandedTask=null
+  render()
+}
+
+// ── Trello Card Modal Handlers ──────────────────────────────────────────────
+function openTaskDetail(pid, code){
+  if(isDraggingActive) return
+  S.modal='taskDetail'
+  S._taskDetail={ clientId: pid, taskCode: code }
+  render()
+}
+
+function deleteTaskFromModal(pid, code){
+  if(!confirm('¿Eliminar esta tarjeta definitivamente?')) return
+  const p=DATA.find(x=>x.id===pid)
+  if(p?.tasks){
+    p.tasks=p.tasks.filter(t=>(t.code!==code && t.id!==code))
+    save()
+  }
+  closeModal()
+}
+
+function addChkItemFromModal(pid, code){
+  const el=document.getElementById('trello-new-chk')
+  const txt=(el?.value||'').trim()
+  if(!txt)return
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    t.checklist.push({text:txt,done:false})
+    save()
+    render()
+  }
+}
+
+function deleteChkItem(pid, code, idx){
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    t.checklist.splice(idx,1)
+    save()
+    render()
+  }
+}
+
+function addCommentFromModal(pid, code){
+  const el=document.getElementById('trello-comment-in')
+  const txt=(el?.value||'').trim()
+  if(!txt)return
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    const now=new Date()
+    const timeStr='Hoy a las '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')
+    t.comments.push({
+      author: S.defaultUser || 'Jesús',
+      text: txt,
+      date: timeStr
+    })
+    save()
+    render()
+  }
+}
+
+function addLinkFromModal(pid, code){
+  const urlEl=document.getElementById('trello-link-url')
+  const lblEl=document.getElementById('trello-link-lbl')
+  const url=(urlEl?.value||'').trim()
+  if(!url)return
+  const label=(lblEl?.value||'').trim() || url.replace(/^https?:\/\//,'').split('/')[0]
+  const p=DATA.find(x=>x.id===pid)
+  const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
+  if(t){
+    normTask(t, 0, p)
+    t.links.push({label,url,href:url})
+    save()
+    render()
+  }
+}
+
+// ── Trello Inline Quick Card ────────────────────────────────────────────────
+function startQuickCard(colId){
+  S._addingCardCol=colId
+  render()
+  setTimeout(()=>document.getElementById('k-add-input-'+colId)?.focus(),50)
+}
+
+function cancelQuickCard(){
+  S._addingCardCol=null
+  render()
+}
+
+function submitQuickCard(pid, colId){
+  const el=document.getElementById('k-add-input-'+colId)
+  const val=(el?.value||'').trim()
+  if(!val)return
+  const p=DATA.find(x=>x.id===pid)
+  if(!p)return
+  if(!p.tasks)p.tasks=[]
+  const nextNum=p.tasks.length+1
+  const code=(p.initials||p.id.toUpperCase().slice(0,3))+'-'+String(nextNum).padStart(2,'0')
+  const newTask={
+    id:'t_'+Date.now(),
+    code,
+    title:val,
+    name:val,
+    status:colId,
+    pri:'Media',
+    priority:'Media',
+    owner:p.responsable || S.defaultUser || 'Jesús',
+    due:'',
+    tag:'',
+    desc:'',
+    description:'',
+    checklist:[],
+    checklists:[],
+    links:[],
+    comments:[],
+    files:[]
+  }
+  p.tasks.push(newTask)
+  save()
+  S._addingCardCol=colId
+  render()
+  setTimeout(()=>document.getElementById('k-add-input-'+colId)?.focus(),50)
+}
+
+// ── Drag & Drop Handlers (HTML5 Native estilo Trello) ────────────────────────
+let draggedTaskInfo = null
+let isDraggingActive = false
+
+function handleCardDragStart(e, clientId, taskId){
+  draggedTaskInfo = { clientId, taskId }
+  isDraggingActive = true
+  e.dataTransfer.effectAllowed = 'move'
+  e.dataTransfer.setData('text/plain', JSON.stringify({ clientId, taskId }))
+  setTimeout(()=>{
+    const cardEl = document.getElementById('card-' + taskId)
+    if(cardEl) cardEl.classList.add('is-dragging')
+  }, 0)
+}
+
+function handleCardDragEnd(e){
+  const cardEl = e.currentTarget
+  if(cardEl) cardEl.classList.remove('is-dragging')
+  document.querySelectorAll('.k-col').forEach(col=>col.classList.remove('k-col-dragover'))
+  setTimeout(()=>{ isDraggingActive = false }, 80)
+  draggedTaskInfo = null
+}
+
+function handleColDragOver(e){
+  e.preventDefault()
+  e.dataTransfer.dropEffect = 'move'
+  const colEl = e.currentTarget
+  if(!colEl.classList.contains('k-col-dragover')){
+    colEl.classList.add('k-col-dragover')
+  }
+}
+
+function handleColDragLeave(e){
+  const colEl = e.currentTarget
+  if(!colEl.contains(e.relatedTarget)){
+    colEl.classList.remove('k-col-dragover')
+  }
+}
+
+function handleColDrop(e, targetColId){
+  e.preventDefault()
+  e.currentTarget.classList.remove('k-col-dragover')
+  let data = draggedTaskInfo
+  if(!data){
+    try{
+      const raw = e.dataTransfer.getData('text/plain')
+      if(raw) data = JSON.parse(raw)
+    }catch(err){}
+  }
+  if(!data || !data.clientId || !data.taskId) return
+  const client = DATA.find(p=>p.id===data.clientId)
+  if(!client || !client.tasks) return
+  const task = client.tasks.find(t=>(t.id===data.taskId || t.code===data.taskId))
+  if(!task) return
+
+  if(task.status !== targetColId){
+    task.status = targetColId
+    save()
+    render()
+  }
+}
+
+function handleCardDrop(e, targetColId, targetTaskId){
+  e.stopPropagation()
+  e.preventDefault()
+  let data = draggedTaskInfo
+  if(!data){
+    try{
+      const raw = e.dataTransfer.getData('text/plain')
+      if(raw) data = JSON.parse(raw)
+    }catch(err){}
+  }
+  if(!data || !data.clientId || !data.taskId) return
+  const client = DATA.find(p=>p.id===data.clientId)
+  if(!client || !client.tasks) return
+
+  const fromIdx = client.tasks.findIndex(t=>(t.id===data.taskId || t.code===data.taskId))
+  if(fromIdx < 0) return
+  const [movedTask] = client.tasks.splice(fromIdx, 1)
+  movedTask.status = targetColId
+
+  const toIdx = client.tasks.findIndex(t=>(t.id===targetTaskId || t.code===targetTaskId))
+  if(toIdx >= 0){
+    client.tasks.splice(toIdx, 0, movedTask)
+  }else{
+    client.tasks.push(movedTask)
+  }
+  save()
   render()
 }
 
 // ── Nueva tarea modal ─────────────────────────────────────────────────────
 function openNewTask(){ S.modal='newTask'; S._chkItems=['','']; render(); setTimeout(()=>document.getElementById('nt-name')?.focus(),50) }
-function closeModal(){ S.modal=null; render() }
+function closeModal(){ S.modal=null; S._taskDetail=null; S._addingCardCol=null; render() }
 
 // ── Clientes: alta y baja ──────────────────────────────────────────────────
 function openNewClient(){
@@ -1793,6 +2251,7 @@ function render(){
   else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
   else if(S.modal==='config') ov.innerHTML=configModal()
   else if(S.modal==='editClient') ov.innerHTML=editClientModal()
+  else if(S.modal==='taskDetail') ov.innerHTML=taskDetailModal()
   else ov.innerHTML=''
 }
 
@@ -1886,6 +2345,204 @@ function editClientModal(){
       <div class="modal-foot">
         <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
         <button class="modal-ok" onclick="saveEditClient()">Guardar cambios</button>
+      </div>
+    </div>
+  </div>`
+}
+
+function taskDetailModal(){
+  const d = S._taskDetail
+  if(!d) return ''
+  const p = DATA.find(x => x.id === d.clientId)
+  if(!p) return ''
+  const t = p.tasks?.find(x => (x.code === d.taskCode || x.id === d.taskCode))
+  if(!t) return ''
+  normTask(t, 0, p)
+
+  const cl = t.checklist || t.checklists || []
+  const clDone = cl.filter(x => x.done).length
+  const pct = cl.length ? Math.round((clDone / cl.length) * 100) : 0
+  const lk = t.links || []
+  const fi = t.files || []
+  const comments = t.comments || []
+  const prio = (t.pri || t.priority || 'Media').toLowerCase()
+  const prioLabel = t.pri || t.priority || 'Media'
+  const isDone = t.status === 'Listo'
+
+  return `<div class="trello-modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="trello-card-modal">
+      <!-- Modal Header -->
+      <div class="trello-modal-head">
+        <div class="trello-head-main">
+          <div class="trello-code-pill">${escapeHtml(t.code || 'TASK')}</div>
+          <input class="trello-title-input" value="${escapeHtml(t.title || t.name || '')}" 
+            placeholder="Título de la tarea"
+            onchange="updateTaskField('${p.id}','${t.code}','title',this.value);updateTaskField('${p.id}','${t.code}','name',this.value)"/>
+          <div class="trello-head-sub">
+            en la lista 
+            <select class="trello-list-select" onchange="updateTaskField('${p.id}','${t.code}','status',this.value)">
+              ${['Por hacer','En curso','Detenido','Listo'].map(st=>`
+                <option value="${st}" ${t.status===st?'selected':''}>${st}</option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+        <button class="trello-close-btn" onclick="closeModal()" title="Cerrar (Esc)">✕</button>
+      </div>
+
+      <!-- Modal Body Grid (Left: Main Content, Right: Actions) -->
+      <div class="trello-modal-grid">
+        <div class="trello-main-col">
+          <!-- Metadata strip -->
+          <div class="trello-meta-strip">
+            <div class="trello-meta-box">
+              <span class="trello-meta-label">MIEMBRO</span>
+              <div class="trello-member-badge">
+                <div class="trello-avatar">${(t.owner||'J').charAt(0).toUpperCase()}</div>
+                <input class="trello-meta-input" value="${escapeHtml(t.owner||'Jesús')}" 
+                  onchange="updateTaskField('${p.id}','${t.code}','owner',this.value)" style="width:90px"/>
+              </div>
+            </div>
+
+            <div class="trello-meta-box">
+              <span class="trello-meta-label">PRIORIDAD</span>
+              <select class="trello-prio-select ${prio}" onchange="updateTaskField('${p.id}','${t.code}','priority',this.value)">
+                ${['Alta','Media','Baja'].map(pr=>`<option value="${pr}" ${prioLabel===pr?'selected':''}>${pr}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="trello-meta-box">
+              <span class="trello-meta-label">ETIQUETA</span>
+              <input class="trello-meta-input" value="${escapeHtml(t.tag||'')}" placeholder="+ Tag" 
+                onchange="updateTaskField('${p.id}','${t.code}','tag',this.value)" style="width:100px;border-bottom:1px solid var(--border)"/>
+            </div>
+
+            <div class="trello-meta-box">
+              <span class="trello-meta-label">VENCIMIENTO</span>
+              <input type="text" class="trello-date-input" value="${escapeHtml(t.due||'')}" placeholder="ej: 18 Oct" 
+                onchange="updateTaskField('${p.id}','${t.code}','due',this.value)" style="width:95px"/>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="trello-section">
+            <div class="trello-sec-header">
+              <span class="trello-sec-icon">📝</span>
+              <h4 class="trello-sec-title">Descripción</h4>
+            </div>
+            <textarea class="trello-desc-textarea" placeholder="Añadir una descripción más detallada sobre los objetivos, alcance o requerimientos..."
+              onchange="updateTaskField('${p.id}','${t.code}','description',this.value);updateTaskField('${p.id}','${t.code}','desc',this.value)">${escapeHtml(t.description||t.desc||'')}</textarea>
+          </div>
+
+          <!-- Checklist -->
+          <div class="trello-section">
+            <div class="trello-sec-header">
+              <span class="trello-sec-icon">☑️</span>
+              <h4 class="trello-sec-title">Lista de comprobación</h4>
+              <span class="trello-chk-pct">${pct}%</span>
+            </div>
+            <!-- Progress Bar -->
+            <div class="trello-prog-track">
+              <div class="trello-prog-fill ${pct===100?'complete':''}" style="width:${pct}%"></div>
+            </div>
+            <!-- Checklist items -->
+            <div class="trello-chk-list">
+              ${cl.map((c,i)=>`
+                <div class="trello-chk-item ${c.done?'is-done':''}">
+                  <input type="checkbox" class="trello-chk-cb" ${c.done?'checked':''} 
+                    onchange="toggleChkItem('${p.id}','${t.code}',${i})"/>
+                  <span class="trello-chk-text" onclick="toggleChkItem('${p.id}','${t.code}',${i})">${escapeHtml(c.text)}</span>
+                  <button class="trello-item-del" onclick="deleteChkItem('${p.id}','${t.code}',${i})" title="Eliminar elemento">✕</button>
+                </div>
+              `).join('')}
+            </div>
+            <div class="trello-add-item-row">
+              <input id="trello-new-chk" class="trello-sub-input" placeholder="Añadir un elemento a la lista..." 
+                onkeydown="if(event.key==='Enter')addChkItemFromModal('${p.id}','${t.code}')"/>
+              <button class="trello-btn-sm" onclick="addChkItemFromModal('${p.id}','${t.code}')">Añadir</button>
+            </div>
+          </div>
+
+          <!-- Attachments & Links -->
+          <div class="trello-section">
+            <div class="trello-sec-header">
+              <span class="trello-sec-icon">📎</span>
+              <h4 class="trello-sec-title">Adjuntos y Enlaces</h4>
+            </div>
+            <div class="trello-links-list">
+              ${(lk.length || fi.length)?`
+                ${lk.map((l,i)=>`
+                  <div class="trello-link-row">
+                    <span class="trello-link-icon">🔗</span>
+                    <a href="${escapeHtml(l.url||l.href||'#')}" target="_blank" class="trello-link-name">${escapeHtml(l.label||l.name||l.url)}</a>
+                    <button class="trello-item-del" onclick="deleteLinkItem('${p.id}','${t.code}',${i})">✕</button>
+                  </div>
+                `).join('')}
+                ${fi.map((f,i)=>`
+                  <div class="trello-link-row">
+                    <span class="trello-link-icon">📄</span>
+                    <span class="trello-link-name">${escapeHtml(f.name)}</span>
+                    <button class="trello-item-del" onclick="deleteFileItem('${p.id}','${t.code}',${i})">✕</button>
+                  </div>
+                `).join('')}
+              `:`<div class="trello-empty-hint">No hay archivos ni enlaces adjuntos.</div>`}
+            </div>
+            <div class="trello-add-link-box">
+              <input id="trello-link-url" class="trello-sub-input" placeholder="URL (ej: https://...)" style="flex:2"/>
+              <input id="trello-link-lbl" class="trello-sub-input" placeholder="Texto del enlace (opcional)" style="flex:1"/>
+              <button class="trello-btn-sm" onclick="addLinkFromModal('${p.id}','${t.code}')">Adjuntar</button>
+            </div>
+          </div>
+
+          <!-- Activity & Comments -->
+          <div class="trello-section">
+            <div class="trello-sec-header">
+              <span class="trello-sec-icon">💬</span>
+              <h4 class="trello-sec-title">Actividad y Comentarios</h4>
+            </div>
+            <div class="trello-comment-box">
+              <div class="trello-avatar sm">${(S.defaultUser||'J').charAt(0).toUpperCase()}</div>
+              <div class="trello-comment-in-wrap">
+                <textarea id="trello-comment-in" class="trello-comment-textarea" placeholder="Escribe un comentario o actualización de estado..."></textarea>
+                <button class="trello-btn-sm brand" onclick="addCommentFromModal('${p.id}','${t.code}')">Comentar</button>
+              </div>
+            </div>
+            <div class="trello-comments-stream">
+              ${comments.length ? comments.slice().reverse().map(cm=>`
+                <div class="trello-comment-item">
+                  <div class="trello-avatar sm">${(cm.author||'J').charAt(0).toUpperCase()}</div>
+                  <div class="trello-comment-content">
+                    <div class="trello-comment-meta">
+                      <strong>${escapeHtml(cm.author||'Jesús')}</strong>
+                      <span class="trello-comment-time">${escapeHtml(cm.date||'Hoy')}</span>
+                    </div>
+                    <div class="trello-comment-body">${escapeHtml(cm.text)}</div>
+                  </div>
+                </div>
+              `).join('') : `<div class="trello-empty-hint" style="margin-top:10px">No hay comentarios en esta tarjeta todavía.</div>`}
+            </div>
+          </div>
+        </div>
+
+        <!-- Right side actions -->
+        <div class="trello-actions-col">
+          <div class="trello-act-label">ACCIONES RÁPIDAS</div>
+          <button class="trello-act-btn ${isDone?'is-done':''}" onclick="updateTaskField('${p.id}','${t.code}','status','${isDone?'Por hacer':'Listo'}')">
+            <span>${isDone?'↩️ Reabrir tarea':'✅ Marcar como Listo'}</span>
+          </button>
+
+          <div class="trello-act-label" style="margin-top:16px">MOVER A LISTA</div>
+          ${['Por hacer','En curso','Detenido','Listo'].map(st=>`
+            <button class="trello-move-btn ${t.status===st?'active':''}" onclick="updateTaskField('${p.id}','${t.code}','status','${st}')">
+              <span>${st==='Por hacer'?'📋':st==='En curso'?'⚡':st==='Detenido'?'⏸️':'✅'} ${st}</span>
+            </button>
+          `).join('')}
+
+          <div class="trello-act-label" style="margin-top:20px">PELIGRO</div>
+          <button class="trello-act-btn danger" onclick="deleteTaskFromModal('${p.id}','${t.code}')">
+            <span>🗑️ Eliminar tarjeta</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>`
@@ -2375,7 +3032,7 @@ function tkTaskRow(p,t){
       <div class="tk-id">${t.code}</div>
       <div class="tk-name-cell"><div class="tk-name-txt ${isDone?'done':''}">${escapeHtml(taskTitle)}</div></div>
       <div class="tk-actions" onclick="event.stopPropagation()">
-        <button class="tk-act" title="Editar">✏️</button>
+        <button class="tk-act" title="Ver detalle Trello" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">✏️</button>
         <button class="tk-act del" title="Eliminar" onclick="deleteTask('${p.id}','${t.code}',event)">🗑</button>
       </div>
       <div class="tk-due">${dueFormatted}</div>
@@ -2460,42 +3117,98 @@ function tkTaskRow(p,t){
 }
 
 function kanban(p){
-  const t=p.tasks||[]
-  return `<div class="kanban">${['En curso','Detenido','Listo'].map(s=>{
-    const col=t.filter(x=>x.status===s)
-    const chipClass = s==='En curso'?'chip-orange':s==='Listo'?'chip-green':'chip-red'
-    return `<div class="k-col">
-      <div class="k-col-h">
-        <span class="k-col-title">${s}</span>
-        <span class="k-count">${col.length}</span>
-      </div>
-      ${col.map(x=>{
-        const cl=x.checklist||[]
-        const done=cl.filter(c=>c.done).length
-        const hasExtras=cl.length||x.link||x.attachment
-        return `<div class="kc ${x.priority.toLowerCase()}">
-        <div class="kc-code">${x.code}</div>
-        <div class="kc-name">${x.name}</div>
-        ${cl.length?`<div class="kc-chklist">${cl.map(c=>`
-          <div class="kc-chk-item ${c.done?'done':''}">
-            <div class="kc-chk-box ${c.done?'done':''}">${c.done?'✓':''}</div>
-            ${c.text}
-          </div>`).join('')}</div>`:''}
-        ${hasExtras?`<div class="kc-extras">
-          ${cl.length?`<div class="kc-prog-wrap">
-            <div class="kc-prog-bar"><div class="kc-prog-fill" style="width:${Math.round(done/cl.length*100)}%"></div></div>
-            <span class="kc-prog-txt">${done}/${cl.length}</span>
-          </div>`:''}
-          ${x.link?`<span class="kc-link">🔗 ${x.link.label}</span>`:''}
-          ${x.attachment?`<span class="kc-att">📎 ${x.attachment.name}</span>`:''}
-        </div>`:''}
-        <div class="kc-foot">
-          <span class="kc-owner">${x.owner}</span>
-          <span class="pri ${x.priority.toLowerCase()}">${x.priority}</span>
-        </div>
-      </div>`}).join('')||`<div class="k-empty">Sin tareas</div>`}
-    </div>`
-  }).join('')}</div>`
+  const rawTasks = p.tasks || []
+  const tasks = rawTasks.map((t, i) => normTask(t, i, p))
+
+  const columns = [
+    { id: 'Por hacer', title: 'Por hacer', icon: '📋', accent: '#64748B', bgLight: 'rgba(100,116,139,0.1)' },
+    { id: 'En curso',   title: 'En curso',   icon: '⚡', accent: 'var(--brand)', bgLight: 'rgba(240,78,35,0.1)' },
+    { id: 'Detenido',   title: 'Detenido',   icon: '⏸️', accent: '#EF4444', bgLight: 'rgba(239,68,68,0.1)' },
+    { id: 'Listo',      title: 'Listo',      icon: '✅', accent: '#16A34A', bgLight: 'rgba(22,163,74,0.1)' }
+  ]
+
+  return `<div class="kanban-wrapper">
+    <div class="kanban-board">
+      ${columns.map(col => {
+        const colTasks = tasks.filter(t => t.status === col.id)
+        const isAdding = S._addingCardCol === col.id
+        return `<div class="k-col" data-col="${col.id}"
+                     ondragover="handleColDragOver(event)" 
+                     ondragleave="handleColDragLeave(event)" 
+                     ondrop="handleColDrop(event, '${col.id}')">
+          <!-- Column Header -->
+          <div class="k-col-h">
+            <div class="k-col-title-wrap">
+              <span class="k-col-icon">${col.icon}</span>
+              <span class="k-col-title">${col.title}</span>
+              <span class="k-count" style="border-left: 2px solid ${col.accent}">${colTasks.length}</span>
+            </div>
+            <button class="k-col-add-btn" onclick="startQuickCard('${col.id}')" title="Añadir tarjeta a ${col.title}">+</button>
+          </div>
+
+          <!-- Cards List -->
+          <div class="k-card-list">
+            ${colTasks.map(t => {
+              const cl = t.checklist || t.checklists || []
+              const clDone = cl.filter(c => c.done).length
+              const prio = (t.pri || t.priority || 'Media').toLowerCase()
+              const prioLabel = t.pri || t.priority || 'Media'
+              const isComplete = t.status === 'Listo'
+              const linksCount = (t.links?.length || 0) + (t.files?.length || 0)
+              const commentsCount = t.comments?.length || 0
+
+              return `<div class="k-card ${prio} ${isComplete?'is-complete':''}" 
+                           id="card-${t.code || t.id}"
+                           draggable="true" 
+                           ondragstart="handleCardDragStart(event, '${p.id}', '${t.code || t.id}')"
+                           ondragend="handleCardDragEnd(event)"
+                           ondrop="handleCardDrop(event, '${col.id}', '${t.code || t.id}')"
+                           onclick="openTaskDetail('${p.id}', '${t.code || t.id}')">
+                <!-- Top row: tags / priority / code -->
+                <div class="k-card-top">
+                  ${t.tag ? `<span class="k-card-tag">${escapeHtml(t.tag)}</span>` : ''}
+                  <span class="pri ${prio}">${prioLabel}</span>
+                  <span class="k-card-code">${escapeHtml(t.code || '')}</span>
+                </div>
+
+                <!-- Title -->
+                <div class="k-card-title">${escapeHtml(t.title || t.name || 'Sin título')}</div>
+
+                <!-- Optional snippet -->
+                ${(t.description || t.desc) ? `<div class="k-card-desc-snippet">${escapeHtml(t.description || t.desc)}</div>` : ''}
+
+                <!-- Badges Row -->
+                <div class="k-card-badges">
+                  ${t.due ? `<span class="k-badge ${isComplete?'badge-done':''}" title="Vencimiento: ${escapeHtml(t.due)}">📅 ${fmtDue(t.due)}</span>` : ''}
+                  ${cl.length ? `<span class="k-badge ${clDone===cl.length?'badge-done':''}" title="Checklist ${clDone}/${cl.length}">☑ ${clDone}/${cl.length}</span>` : ''}
+                  ${linksCount ? `<span class="k-badge" title="${linksCount} adjuntos / enlaces">📎 ${linksCount}</span>` : ''}
+                  ${commentsCount ? `<span class="k-badge" title="${commentsCount} comentarios">💬 ${commentsCount}</span>` : ''}
+                  <div class="k-card-avatar" title="${escapeHtml(t.owner || 'Jesús')}">${(t.owner||'J').charAt(0).toUpperCase()}</div>
+                </div>
+              </div>`
+            }).join('')}
+            ${!colTasks.length && !isAdding ? `<div class="k-empty-col">Arrastra tarjetas aquí</div>` : ''}
+          </div>
+
+          <!-- Bottom: Add card trigger or inline box -->
+          ${isAdding ? `
+            <div class="k-add-card-box">
+              <textarea id="k-add-input-${col.id}" class="k-add-textarea" placeholder="Escribe un título para esta tarjeta..." 
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitQuickCard('${p.id}','${col.id}')}"></textarea>
+              <div class="k-add-actions">
+                <button class="k-add-confirm-btn" onclick="submitQuickCard('${p.id}','${col.id}')">Añadir tarjeta</button>
+                <button class="k-add-cancel-btn" onclick="cancelQuickCard()">✕</button>
+              </div>
+            </div>
+          ` : `
+            <button class="k-add-card-trigger" onclick="startQuickCard('${col.id}')">
+              <span>+ Añadir una tarjeta</span>
+            </button>
+          `}
+        </div>`
+      }).join('')}
+    </div>
+  </div>`
 }
 
 function tabla(p){
@@ -2855,7 +3568,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v6'
+const STORE_VERSION='v7'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
@@ -2865,6 +3578,14 @@ try{
   const savedData=JSON.parse(localStorage.getItem('ligrow_data')||'null')
   if(Array.isArray(savedData) && savedData.length) DATA=savedData
 }catch(e){}
+
+// Normalizar siempre todas las tareas cargadas para prevenir inconsistencias
+DATA.forEach(p=>{
+  if(p.type==='cliente' && p.tasks){
+    p.tasks = p.tasks.map((t,idx)=>normTask(t, idx, p))
+  }
+})
+
 try{
   const savedTheme=localStorage.getItem('ligrow_theme')
   if(savedTheme && ['light','dark','auto'].includes(savedTheme)) S.theme=savedTheme
@@ -2879,8 +3600,27 @@ try{
   if(st.theme)S.theme=st.theme
   if(st.defaultUser)S.defaultUser=st.defaultUser
 }catch(e){}
+try{
+  const urlParams = new URLSearchParams(window.location.search)
+  if(urlParams.get('proj')){
+    const pFound = DATA.find(x => x.id === urlParams.get('proj'))
+    if(pFound) S.proj = pFound
+  }
+  if(urlParams.get('view')) S.view = urlParams.get('view')
+  if(urlParams.get('theme')) S.theme = urlParams.get('theme')
+  if(urlParams.get('task')){
+    S.modal = 'taskDetail'
+    S._taskDetail = { clientId: S.proj?.id || 'cpb', taskCode: urlParams.get('task') }
+  }
+}catch(e){}
+
 // Guard against a stale S.proj reference
 if(!DATA.find(x=>x.id===S.proj?.id)) S.proj=DATA[0]||null
+
+// Atajo de teclado: Escape cierra cualquier modal
+window.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && S.modal) closeModal()
+})
 
 // Initialize theme (default: warm light)
 applyTheme(S.theme)
