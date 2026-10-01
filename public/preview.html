@@ -345,6 +345,17 @@ body{
 
 /* ── Trello Kanban Board ─────────────────────────────────────────────────── */
 .kanban-wrapper{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+.k-subtabs-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;overflow-x:auto;padding:2px 0 6px;flex-shrink:0}
+.k-subtabs-bar::-webkit-scrollbar{height:4px}
+.k-subtabs-bar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.k-subtabs-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-3);margin-right:2px;white-space:nowrap}
+.k-subtab{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s ease;white-space:nowrap;user-select:none}
+.k-subtab:hover{background:var(--surface-2);border-color:var(--text-3);color:var(--text-1)}
+.k-subtab.active{background:var(--brand);border-color:var(--brand);color:#FFFFFF !important;box-shadow:0 2px 6px rgba(240,78,35,0.25)}
+.k-subtab.active .k-subtab-badge{background:rgba(255,255,255,0.25);color:#FFFFFF}
+.k-subtab-avatar{width:18px;height:18px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;color:var(--text-1)}
+.k-subtab.active .k-subtab-avatar{background:rgba(255,255,255,0.25);border-color:transparent;color:#FFFFFF}
+.k-subtab-badge{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--surface-2);color:var(--text-3);font-variant-numeric:tabular-nums}
 .kanban-board{display:grid;grid-template-columns:repeat(4,minmax(270px,1fr));gap:16px;align-items:flex-start;overflow-x:auto;padding-bottom:20px;height:100%}
 .kanban-board::-webkit-scrollbar{height:6px}
 .kanban-board::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
@@ -367,6 +378,7 @@ body{
 .k-card.is-complete{opacity:0.88}
 .k-card.is-complete .k-card-title{color:var(--text-2);text-decoration:none}
 .k-card-top{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.k-card-client{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--surface-2);color:var(--text-1);letter-spacing:0.3px}
 .k-card-tag{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.3px;background:var(--accent-light);color:var(--accent-text)}
 .k-card-code{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--text-3);margin-left:auto}
 .k-card-title{font-size:13.5px;font-weight:600;color:var(--text-1);line-height:1.35;margin-bottom:6px;word-break:break-word}
@@ -374,7 +386,9 @@ body{
 .k-card-badges{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-top:6px;border-top:1px solid var(--border-2)}
 .k-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-3);padding:2px 5px;border-radius:4px;font-weight:500;font-variant-numeric:tabular-nums;background:var(--surface-2)}
 .k-badge.badge-done{background:rgba(22,163,74,0.12);color:#16A34A;font-weight:600}
-.k-card-avatar{width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto}
+.k-card-owner{display:inline-flex;align-items:center;gap:5px;margin-left:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:1px 6px 1px 2px;max-width:125px}
+.k-card-avatar{width:18px;height:18px;border-radius:50%;background:var(--brand);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.k-card-owner-name{font-size:10.5px;font-weight:600;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .k-empty-col{padding:24px 10px;text-align:center;font-size:11.5px;color:var(--text-3);border:1.5px dashed var(--border);border-radius:8px;background:rgba(255,255,255,0.2)}
 .k-add-card-trigger{width:100%;border:none;background:transparent;color:var(--text-2);font-size:12.5px;font-weight:500;border-radius:7px;padding:8px 10px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:6px;margin-top:4px;transition:all .15s;flex-shrink:0}
 .k-add-card-trigger:hover{background:var(--surface);color:var(--text-1)}
@@ -734,7 +748,7 @@ body{
 .tk-s-badge{font-size:9.5px;font-weight:700;border-radius:20px;padding:2px 8px;margin-left:auto;white-space:nowrap}
 
 .tk-table{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
-.tk-head-row{display:grid;grid-template-columns:80px 1fr 44px 120px 96px 114px 160px;align-items:center;padding:7px 14px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+.tk-head-row{display:grid;grid-template-columns:75px 1fr 44px 130px 105px 95px 110px 150px;align-items:center;padding:7px 14px;background:var(--surface-2);border-bottom:1px solid var(--border)}
 .tk-th{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)}
 
 /* priority stripe on the left */
@@ -746,7 +760,7 @@ body{
 
 .tk-task-row{
   display:grid;
-  grid-template-columns:80px 1fr 44px 120px 96px 114px 160px;
+  grid-template-columns:75px 1fr 44px 130px 105px 95px 110px 150px;
   align-items:center;
   padding:10px 14px;
   cursor:pointer;
@@ -756,6 +770,11 @@ body{
 }
 .tk-task-row:hover{background:var(--surface-2)}
 .tk-task-row.open{background:var(--accent-light)}
+
+.tk-owner-cell{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:2px 6px;max-width:122px;transition:border-color .15s}
+.tk-owner-cell:hover,.tk-owner-cell:focus-within{border-color:var(--brand);background:var(--surface)}
+.tk-owner-av{width:17px;height:17px;border-radius:50%;background:var(--brand);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tk-owner-input{border:none;background:transparent;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--text-1);outline:none;width:100%;min-width:0}
 
 .tk-id{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text-3);white-space:nowrap}
 .tk-name-cell{min-width:0}
@@ -938,8 +957,8 @@ let DATA = [
         status:'En curso', pri:'Alta', priority:'Alta', tag:'UX/UI',
         desc:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.',
         description:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.',
-        due:'18 Oct', owner:'Jesús',
-        comments:[{author:'Jesús', text:'Ajustando sección de acceso rápido a centros asistenciales.', date:'Hoy a las 11:30'}],
+        due:'18 Oct', owner:'Marta',
+        comments:[{author:'Marta', text:'Ajustando sección de acceso rápido a centros asistenciales.', date:'Hoy a las 11:30'}],
         checklists:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}],
         checklist:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}],
         links:[], files:[]
@@ -949,7 +968,7 @@ let DATA = [
         status:'Por hacer', pri:'Media', priority:'Media', tag:'Contenidos',
         desc:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
         description:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
-        due:'24 Oct', owner:'Jesús',
+        due:'24 Oct', owner:'Carlos',
         comments:[],
         checklists:[{text:'Fichas de servicios psiquiátricos',done:false},{text:'Revisión con equipo médico',done:false}],
         checklist:[{text:'Fichas de servicios psiquiátricos',done:false},{text:'Revisión con equipo médico',done:false}],
@@ -987,7 +1006,7 @@ let DATA = [
   {
     id:'dh', type:'cliente', color:'#2C3E50', initials:'DD',
     name:'DHOMO DESIGN', sub:'Branding corporativo',
-    responsable:'Jesús',
+    responsable:'Marta',
     proyectosCount:1,
     ultimaActividad:'Hace 3 días',
     semaforo:'naranja',
@@ -999,7 +1018,7 @@ let DATA = [
         status:'Por hacer', pri:'Alta', priority:'Alta', tag:'Branding',
         desc:'Selección de texturas, paleta y aplicaciones corporativas.',
         description:'Selección de texturas, paleta y aplicaciones corporativas.',
-        due:'28 Oct', owner:'Jesús',
+        due:'28 Oct', owner:'Marta',
         comments:[],
         checklists:[{text:'Definición de paleta',done:true},{text:'Guía de aplicación',done:false}],
         checklist:[{text:'Definición de paleta',done:true},{text:'Guía de aplicación',done:false}],
@@ -1238,6 +1257,7 @@ let S = {
   _chkItems: ['',''],  // checklist items draft
   expandedTask: null,  // task code currently expanded in table
   addingRec: false,    // showing new recordatorio form
+  kanbanOwnerFilter: 'all', // 'all' or specific owner name
 }
 
 // ── Theme management ─────────────────────────────────────────────────────────
@@ -1327,6 +1347,7 @@ function applyAccent(type){
 
 // ── Event handlers ────────────────────────────────────────────────────────────
 function setNavView(v){ S.navView=v; applyAccent('cliente'); render() }
+function setKanbanOwnerFilter(owner){ S.kanbanOwnerFilter=owner; render() }
 function setFilter(f){ S.filter=f; const fl=filtered(); if(!fl.find(p=>p.id===S.proj?.id)) S.proj=fl[0]; render() }
 function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.navView=null; S.view=defaultView(S.proj); S.provCat=null; S.open={}; S.addingCat=false; render() }
 function setView(v){ S.view=v; render() }
@@ -1598,35 +1619,39 @@ function submitQuickCard(pid, colId){
   const el=document.getElementById('k-add-input-'+colId)
   const val=(el?.value||'').trim()
   if(!val)return
-  const p=DATA.find(x=>x.id===pid)
-  if(!p)return
-  if(!p.tasks)p.tasks=[]
-  const nextNum=p.tasks.length+1
-  const code=(p.initials||p.id.toUpperCase().slice(0,3))+'-'+String(nextNum).padStart(2,'0')
-  const newTask={
-    id:'t_'+Date.now(),
+  let p = DATA.find(x=>x.id===pid)
+  if(!p) p = S.proj || DATA.find(x=>x.type==='cliente')
+  if(!p) return
+  if(!p.tasks) p.tasks=[]
+  const nextNum = p.tasks.length + 1
+  const code = (p.initials || p.id.toUpperCase().slice(0,3)) + '-' + String(nextNum).padStart(2,'0')
+  const defaultOwner = (S.kanbanOwnerFilter && S.kanbanOwnerFilter !== 'all')
+    ? S.kanbanOwnerFilter
+    : (p.responsable || S.defaultUser || 'Jesús')
+  const newTask = {
+    id: 't_' + Date.now(),
     code,
-    title:val,
-    name:val,
-    status:colId,
-    pri:'Media',
-    priority:'Media',
-    owner:p.responsable || S.defaultUser || 'Jesús',
-    due:'',
-    tag:'',
-    desc:'',
-    description:'',
-    checklist:[],
-    checklists:[],
-    links:[],
-    comments:[],
-    files:[]
+    title: val,
+    name: val,
+    status: colId,
+    pri: 'Media',
+    priority: 'Media',
+    owner: defaultOwner,
+    due: '',
+    tag: '',
+    desc: '',
+    description: '',
+    checklist: [],
+    checklists: [],
+    links: [],
+    comments: [],
+    files: []
   }
   p.tasks.push(newTask)
   save()
-  S._addingCardCol=colId
+  S._addingCardCol = colId
   render()
-  setTimeout(()=>document.getElementById('k-add-input-'+colId)?.focus(),50)
+  setTimeout(()=>document.getElementById('k-add-input-'+colId)?.focus(), 50)
 }
 
 // ── Drag & Drop Handlers (HTML5 Native estilo Trello) ────────────────────────
@@ -1854,23 +1879,37 @@ function addChkItem(){ S._chkItems.push(''); render(); setTimeout(()=>{const inp
 function submitNewTask(){
   const name=(document.getElementById('nt-name')?.value||'').trim()
   if(!name)return
+  let p=S.proj
+  if(!p||p.type!=='cliente') p=DATA.find(x=>x.type==='cliente')
+  if(!p)return
   const priority=document.getElementById('nt-priority')?.value||'Media'
-  const owner=(document.getElementById('nt-owner')?.value||'').trim()||'—'
+  const handwrittenOwner=(document.getElementById('nt-owner')?.value||'').trim()
+  const defaultOwner = handwrittenOwner || ((S.kanbanOwnerFilter && S.kanbanOwnerFilter !== 'all') ? S.kanbanOwnerFilter : (p.responsable || S.defaultUser || 'Jesús'))
   const due=document.getElementById('nt-due')?.value||''
   const link=(document.getElementById('nt-link')?.value||'').trim()
   const attach=(document.getElementById('nt-attach')?.value||'').trim()
   const chkInputs=[...document.querySelectorAll('.modal-chk-in')].map(i=>i.value.trim()).filter(Boolean)
-  const p=S.proj
-  if(!p||p.type!=='cliente')return
-  const nextCode=p.id.toUpperCase()+'-'+(String((p.tasks?.length||0)+1).padStart(3,'0'))
+  const nextNum=(p.tasks?.length||0)+1
+  const nextCode=(p.initials||p.id.toUpperCase().slice(0,3))+'-'+String(nextNum).padStart(2,'0')
   const task={
-    code:nextCode, name, owner, status:'En curso', priority, due,
-    ...(chkInputs.length?{checklist:chkInputs.map(t=>({text:t,done:false}))}:{}),
-    ...(link?{link:{label:link.replace(/https?:\/\//,'').split('/')[0],href:link}}:{}),
-    ...(attach?{attachment:{name:attach,size:'—'}}:{})
+    id:'t_'+Date.now(),
+    code:nextCode,
+    name,
+    title:name,
+    owner:defaultOwner,
+    status:'Por hacer',
+    priority,
+    pri:priority,
+    due,
+    checklist:chkInputs.map(t=>({text:t,done:false})),
+    checklists:chkInputs.map(t=>({text:t,done:false})),
+    links:link?[{label:link.replace(/https?:\/\//,'').split('/')[0],href:link,url:link}]:[],
+    files:attach?[{name:attach,size:'—',href:'#'}]:[],
+    comments:[]
   }
   if(!p.tasks)p.tasks=[]
   p.tasks.push(task)
+  save()
   S.modal=null
   render()
 }
@@ -2233,7 +2272,8 @@ function save(){
       filter:S.filter,
       navView:S.navView,
       theme:S.theme,
-      defaultUser:S.defaultUser
+      defaultUser:S.defaultUser,
+      kanbanOwnerFilter:S.kanbanOwnerFilter
     }))
   }catch(e){}
 }
@@ -2717,6 +2757,7 @@ function sidebar(){
   const ap = fl.filter(p=>p.type==='app')
   const pr = fl.filter(p=>p.type==='proveedor')
   const activeTasks = DATA.filter(p=>p.type==='cliente').reduce((a,p)=>a+(p.tasks?.filter(t=>t.status==='En curso').length||0),0)
+  const totalTasks = DATA.filter(p=>p.type==='cliente').reduce((a,p)=>a+(p.tasks?.length||0),0)
   return `<div class="sb">
     <div class="sb-head">
       <div class="logo">LIGROW</div>
@@ -2731,6 +2772,10 @@ function sidebar(){
       <div class="nv ${S.navView==='dashboard'?'on':''}" onclick="setNavView('dashboard')">
         <svg class="nv-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
         Dashboard <span class="nv-badge">${activeTasks}</span>
+      </div>
+      <div class="nv ${S.navView==='kanbanGlobal'?'on':''}" onclick="setNavView('kanbanGlobal')">
+        <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1.5" y="2" width="3.5" height="12" rx="1"/><rect x="6.25" y="2" width="3.5" height="8" rx="1"/><rect x="11" y="2" width="3.5" height="10" rx="1"/></svg>
+        Kanban Global <span class="nv-badge">${totalTasks}</span>
       </div>
       <div class="nv ${S.navView==='proyectos'?'on':''}" onclick="setNavView('proyectos')">
         <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M14 12.667a1.333 1.333 0 0 1-1.333 1.333H3.333A1.333 1.333 0 0 1 2 12.667V3.333A1.333 1.333 0 0 1 3.333 2h3.334L8 4h6v8.667z"/></svg>
@@ -2803,9 +2848,10 @@ function pi(p){
 
 // ─ Main
 function main(){
-  if(S.navView==='dashboard')  return navDashboard()
-  if(S.navView==='proyectos')  return navProyectos()
-  if(S.navView==='calendario') return navCalendario()
+  if(S.navView==='dashboard')     return navDashboard()
+  if(S.navView==='kanbanGlobal')  return navKanbanGlobal()
+  if(S.navView==='proyectos')     return navProyectos()
+  if(S.navView==='calendario')    return navCalendario()
   const p = S.proj
   if(!p) return `<div class="mn"><div class="ct"><p style="color:var(--text-3)">Selecciona un proyecto</p></div></div>`
   const tabs = tabsFor(p)
@@ -3004,6 +3050,7 @@ function tkSection(p,key,tasks,title,desc,dotColor,badgeBg,badgeColor){
         <div class="tk-th" style="color:${badgeColor}">ID</div>
         <div class="tk-th" style="color:${badgeColor}">TAREA</div>
         <div class="tk-th"></div>
+        <div class="tk-th" style="color:${badgeColor}">RESPONSABLE</div>
         <div class="tk-th" style="color:${badgeColor}">VENCIMIENTO</div>
         <div class="tk-th" style="color:${badgeColor}">PRIORIDAD</div>
         <div class="tk-th" style="color:${badgeColor}">ESTADO</div>
@@ -3034,6 +3081,10 @@ function tkTaskRow(p,t){
       <div class="tk-actions" onclick="event.stopPropagation()">
         <button class="tk-act" title="Ver detalle Trello" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">✏️</button>
         <button class="tk-act del" title="Eliminar" onclick="deleteTask('${p.id}','${t.code}',event)">🗑</button>
+      </div>
+      <div class="tk-owner-cell" onclick="event.stopPropagation()">
+        <span class="tk-owner-av">${(t.owner||'J').charAt(0).toUpperCase()}</span>
+        <input class="tk-owner-input" value="${escapeHtml(t.owner||'Jesús')}" placeholder="Escribir..." title="Editar responsable a mano" onchange="updateTaskField('${p.id}','${t.code}','owner',this.value)"/>
       </div>
       <div class="tk-due">${dueFormatted}</div>
       <div onclick="event.stopPropagation()">
@@ -3116,9 +3167,37 @@ function tkTaskRow(p,t){
   </div>`
 }
 
-function kanban(p){
-  const rawTasks = p.tasks || []
-  const tasks = rawTasks.map((t, i) => normTask(t, i, p))
+function kanban(p, isGlobal = false){
+  // 1. Recopilar tareas en el ámbito actual vinculadas a su cliente correspondiente
+  let allScopeTasks = []
+  if(isGlobal || !p){
+    isGlobal = true
+    DATA.filter(cl => cl.type === 'cliente').forEach(cl => {
+      (cl.tasks || []).forEach((t, i) => {
+        normTask(t, i, cl)
+        allScopeTasks.push({ t, client: cl })
+      })
+    })
+  } else {
+    (p.tasks || []).forEach((t, i) => {
+      normTask(t, i, p)
+      allScopeTasks.push({ t, client: p })
+    })
+  }
+
+  // 2. Extraer dinámicamente todos los responsables únicos y el recuento de tareas por cada uno
+  const ownerCounts = {}
+  allScopeTasks.forEach(({ t }) => {
+    const owner = (t.owner || '').trim() || 'Sin asignar'
+    ownerCounts[owner] = (ownerCounts[owner] || 0) + 1
+  })
+  const uniqueOwners = Object.keys(ownerCounts).sort((a,b) => a.localeCompare(b))
+
+  // 3. Segmentación: Exactamente 1 solo Kanban visible en pantalla según la pestaña seleccionada
+  const activeFilter = S.kanbanOwnerFilter || 'all'
+  const displayedTasks = (activeFilter === 'all')
+    ? allScopeTasks
+    : allScopeTasks.filter(({ t }) => ((t.owner || '').trim() || 'Sin asignar') === activeFilter)
 
   const columns = [
     { id: 'Por hacer', title: 'Por hacer', icon: '📋', accent: '#64748B', bgLight: 'rgba(100,116,139,0.1)' },
@@ -3127,10 +3206,29 @@ function kanban(p){
     { id: 'Listo',      title: 'Listo',      icon: '✅', accent: '#16A34A', bgLight: 'rgba(22,163,74,0.1)' }
   ]
 
+  const quickTargetClient = p || S.proj || DATA.find(c => c.type === 'cliente')
+
   return `<div class="kanban-wrapper">
+    <!-- Pestañitas dinámicas de responsables (Segmentación de Kanban en 1 solo tablero) -->
+    <div class="k-subtabs-bar">
+      <span class="k-subtabs-label">👤 Responsables:</span>
+      <button class="k-subtab ${activeFilter === 'all' ? 'active' : ''}" onclick="setKanbanOwnerFilter('all')" title="Ver todas las tareas">
+        <span>🌐 Vista Global</span>
+        <span class="k-subtab-badge">${allScopeTasks.length}</span>
+      </button>
+      ${uniqueOwners.map(owner => `
+        <button class="k-subtab ${activeFilter === owner ? 'active' : ''}" onclick="setKanbanOwnerFilter('${escapeHtml(owner)}')" title="Filtrar tareas de ${escapeHtml(owner)}">
+          <span class="k-subtab-avatar">${escapeHtml(owner.charAt(0).toUpperCase())}</span>
+          <span>${escapeHtml(owner)}</span>
+          <span class="k-subtab-badge">${ownerCounts[owner]}</span>
+        </button>
+      `).join('')}
+    </div>
+
+    <!-- Tablero Kanban único interactivo -->
     <div class="kanban-board">
       ${columns.map(col => {
-        const colTasks = tasks.filter(t => t.status === col.id)
+        const colItems = displayedTasks.filter(({ t }) => t.status === col.id)
         const isAdding = S._addingCardCol === col.id
         return `<div class="k-col" data-col="${col.id}"
                      ondragover="handleColDragOver(event)" 
@@ -3141,14 +3239,14 @@ function kanban(p){
             <div class="k-col-title-wrap">
               <span class="k-col-icon">${col.icon}</span>
               <span class="k-col-title">${col.title}</span>
-              <span class="k-count" style="border-left: 2px solid ${col.accent}">${colTasks.length}</span>
+              <span class="k-count" style="border-left: 2px solid ${col.accent}">${colItems.length}</span>
             </div>
             <button class="k-col-add-btn" onclick="startQuickCard('${col.id}')" title="Añadir tarjeta a ${col.title}">+</button>
           </div>
 
           <!-- Cards List -->
           <div class="k-card-list">
-            ${colTasks.map(t => {
+            ${colItems.map(({ t, client }) => {
               const cl = t.checklist || t.checklists || []
               const clDone = cl.filter(c => c.done).length
               const prio = (t.pri || t.priority || 'Media').toLowerCase()
@@ -3160,12 +3258,13 @@ function kanban(p){
               return `<div class="k-card ${prio} ${isComplete?'is-complete':''}" 
                            id="card-${t.code || t.id}"
                            draggable="true" 
-                           ondragstart="handleCardDragStart(event, '${p.id}', '${t.code || t.id}')"
+                           ondragstart="handleCardDragStart(event, '${client.id}', '${t.code || t.id}')"
                            ondragend="handleCardDragEnd(event)"
                            ondrop="handleCardDrop(event, '${col.id}', '${t.code || t.id}')"
-                           onclick="openTaskDetail('${p.id}', '${t.code || t.id}')">
-                <!-- Top row: tags / priority / code -->
+                           onclick="openTaskDetail('${client.id}', '${t.code || t.id}')">
+                <!-- Top row: client badge (if global) / tag / priority / code -->
                 <div class="k-card-top">
+                  ${isGlobal ? `<span class="k-card-client" style="border-left:2px solid ${client.color||'var(--brand)'}">${escapeHtml(client.initials || client.name.slice(0,3))}</span>` : ''}
                   ${t.tag ? `<span class="k-card-tag">${escapeHtml(t.tag)}</span>` : ''}
                   <span class="pri ${prio}">${prioLabel}</span>
                   <span class="k-card-code">${escapeHtml(t.code || '')}</span>
@@ -3183,20 +3282,23 @@ function kanban(p){
                   ${cl.length ? `<span class="k-badge ${clDone===cl.length?'badge-done':''}" title="Checklist ${clDone}/${cl.length}">☑ ${clDone}/${cl.length}</span>` : ''}
                   ${linksCount ? `<span class="k-badge" title="${linksCount} adjuntos / enlaces">📎 ${linksCount}</span>` : ''}
                   ${commentsCount ? `<span class="k-badge" title="${commentsCount} comentarios">💬 ${commentsCount}</span>` : ''}
-                  <div class="k-card-avatar" title="${escapeHtml(t.owner || 'Jesús')}">${(t.owner||'J').charAt(0).toUpperCase()}</div>
+                  <div class="k-card-owner" title="Responsable: ${escapeHtml(t.owner || 'Sin asignar')}">
+                    <div class="k-card-avatar">${((t.owner||'J').trim().charAt(0)||'?').toUpperCase()}</div>
+                    <span class="k-card-owner-name">${escapeHtml(t.owner || 'Jesús')}</span>
+                  </div>
                 </div>
               </div>`
             }).join('')}
-            ${!colTasks.length && !isAdding ? `<div class="k-empty-col">Arrastra tarjetas aquí</div>` : ''}
+            ${!colItems.length && !isAdding ? `<div class="k-empty-col">Arrastra tarjetas aquí</div>` : ''}
           </div>
 
           <!-- Bottom: Add card trigger or inline box -->
           ${isAdding ? `
             <div class="k-add-card-box">
               <textarea id="k-add-input-${col.id}" class="k-add-textarea" placeholder="Escribe un título para esta tarjeta..." 
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitQuickCard('${p.id}','${col.id}')}"></textarea>
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitQuickCard('${quickTargetClient?.id||''}','${col.id}')}"></textarea>
               <div class="k-add-actions">
-                <button class="k-add-confirm-btn" onclick="submitQuickCard('${p.id}','${col.id}')">Añadir tarjeta</button>
+                <button class="k-add-confirm-btn" onclick="submitQuickCard('${quickTargetClient?.id||''}','${col.id}')">Añadir tarjeta</button>
                 <button class="k-add-cancel-btn" onclick="cancelQuickCard()">✕</button>
               </div>
             </div>
@@ -3430,6 +3532,37 @@ function provContent(p){
     '</div></div><div class="prov-content"><div class="prov-folder-bar"><span class="folder-ico">'+esc(cat?.ico||'📁')+'</span><div><div class="folder-title">'+esc(cat?.name||'Sin categorías')+'</div><div class="folder-sub">'+(cat?.provs?.length||0)+' proveedores</div></div><button class="add-btn" type="button" data-provider-project="'+esc(p.id)+'" data-provider-category="'+esc(cat?.id||'')+'">+ Añadir proveedor</button></div><div class="prov-cards">'+cards+'</div></div></div>'
 }
 
+// ─ NAV: Kanban Global ────────────────────────────────────────────────────────
+function navKanbanGlobal(){
+  const allTasks = DATA.filter(p=>p.type==='cliente').flatMap(p=>p.tasks||[])
+  const enCurso  = allTasks.filter(t=>t.status==='En curso')
+  return `<div class="mn">
+    <div class="tb" style="padding-bottom:12px">
+      <div class="tb-row1">
+        <div style="flex:1">
+          <div class="proj-title-row">
+            <h1 class="proj-title" style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px">Kanban Global</h1>
+            <span class="type-pill">Flujo de Trabajo</span>
+          </div>
+          <div class="proj-operational-meta">
+            <span class="meta-item"><strong class="meta-val">${allTasks.length} tareas totales</strong></span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item"><strong class="meta-val">${enCurso.length} en curso</strong></span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item"><span class="meta-live-dot"></span><span class="meta-val">Todas las tareas sincronizadas en tiempo real</span></span>
+          </div>
+        </div>
+        <div class="tb-actions-group">
+          <button class="tb-action" onclick="openNewTask()">+ Nueva tarea</button>
+        </div>
+      </div>
+    </div>
+    <div class="ct" style="display:flex;flex-direction:column;height:calc(100vh - 125px);padding-top:14px">
+      ${kanban(null, true)}
+    </div>
+  </div>`
+}
+
 // ─ NAV: Dashboard ────────────────────────────────────────────────────────────
 function navDashboard(){
   const clientes = DATA.filter(p=>p.type==='cliente')
@@ -3568,7 +3701,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v7'
+const STORE_VERSION='v8'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
@@ -3599,6 +3732,7 @@ try{
   if(st.navView!==undefined)S.navView=st.navView
   if(st.theme)S.theme=st.theme
   if(st.defaultUser)S.defaultUser=st.defaultUser
+  if(st.kanbanOwnerFilter)S.kanbanOwnerFilter=st.kanbanOwnerFilter
 }catch(e){}
 try{
   const urlParams = new URLSearchParams(window.location.search)
@@ -3607,6 +3741,8 @@ try{
     if(pFound) S.proj = pFound
   }
   if(urlParams.get('view')) S.view = urlParams.get('view')
+  if(urlParams.get('navView')) S.navView = urlParams.get('navView')
+  if(urlParams.get('owner')) S.kanbanOwnerFilter = urlParams.get('owner')
   if(urlParams.get('theme')) S.theme = urlParams.get('theme')
   if(urlParams.get('task')){
     S.modal = 'taskDetail'
