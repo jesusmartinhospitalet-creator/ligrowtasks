@@ -15,49 +15,44 @@ button{font-family:inherit;cursor:pointer}
 a{text-decoration:none}
 
 /* ── Tokens ─────────────────────────────────────────────────────────────── */
-:root{
-  --ink:        #131210;
-  --paper:      #F7F6F3;
-  --surface:    #FFFFFF;
-  --surface-2:  #FAFAF8;
-  --border:     #E4E2DC;
-  --border-2:   #EDECE8;
-  --text-1:     #1A1916;
-  --text-2:     #5C5A55;
-  --text-3:     #9A9890;
-  --sidebar-bg: #131210;
-  --sidebar-border: rgba(255,255,255,.07);
-  --sidebar-text: rgba(255,255,255,.45);
-  --sidebar-text-hover: rgba(255,255,255,.8);
-  --sidebar-active-bg: rgba(255,255,255,.08);
-  /* brand color — always Ligrow orange, never changes */
+:root {
+  --ink:        #11100E;
+  --paper:      #F5F4F1; /* Fondo central claro ligeramente cálido evitando blanco puro */
+  --surface:    #FFFFFF; /* Tarjetas y módulos blancos */
+  --surface-2:  #FAF9F6; /* Sub-superficies, hovers e inputs */
+  --border:     #E5E3DF; /* Bordes muy suaves principales */
+  --border-2:   #EDEBE6; /* Separadores internos suaves */
+  --text-1:     #171614; /* Texto principal de alto contraste y legibilidad */
+  --text-2:     #57554E; /* Texto secundario */
+  --text-3:     #8E8B83; /* Metadatos sutiles */
+  --sidebar-bg: #11100E; /* Negro como elemento de identidad de marca */
+  --sidebar-border: rgba(255,255,255,.08);
+  --sidebar-text: rgba(255,255,255,.52);
+  --sidebar-text-hover: rgba(255,255,255,.9);
+  --sidebar-active-bg: rgba(255,255,255,.09);
+  /* Marca Ligrow — Naranja corporativo vibrante */
   --brand:        #F04E23;
-  /* accent shifts per project type in main area only */
+  --brand-light:  #FFF0EB;
+  /* Accent por tipo de proyecto */
   --accent:       #F04E23;
-  --accent-light: #FFF1EC;
-  --accent-text:  #F04E23;
+  --accent-light: #FFF0EB;
+  --accent-text:  #D63A0F;
 }
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --paper:      #1C1B18;
-    --surface:    #232220;
-    --surface-2:  #1A1916;
-    --border:     #33312A;
-    --border-2:   #2B2925;
-    --text-1:     #F0EDE7;
-    --text-2:     #A09D97;
-    --text-3:     #605E58;
-  }
-}
-:root[data-theme="dark"]{
-  --paper:      #1C1B18;
-  --surface:    #232220;
-  --surface-2:  #1A1916;
-  --border:     #33312A;
-  --border-2:   #2B2925;
-  --text-1:     #F0EDE7;
-  --text-2:     #A09D97;
-  --text-3:     #605E58;
+
+/* Modo oscuro opcional cuando se activa data-theme="dark" */
+:root[data-theme="dark"], html[data-theme="dark"] {
+  --paper:      #18181B; /* Superficie de trabajo oscura con tono carbón */
+  --surface:    #242428; /* Tarjetas elevadas con contraste visible */
+  --surface-2:  #2D2D32; /* Hovers, sub-elementos e inputs */
+  --border:     #383842; /* Bordes suaves perfectamente legibles */
+  --border-2:   #303038;
+  --text-1:     #FDFDFD; /* Máxima legibilidad */
+  --text-2:     #D4D4D8;
+  --text-3:     #9CA3AF;
+  --sidebar-bg: #0D0D0F; /* Negro absoluto identidad Ligrow */
+  --sidebar-border: rgba(255,255,255,.08);
+  --accent-light: rgba(240,78,35,.18);
+  --accent-text:  #FF7A45;
 }
 
 /* ── Layout shell ────────────────────────────────────────────────────────── */
@@ -155,29 +150,105 @@ body{
 .pi.on .pi-name{color:#fff}
 .pi-sub{font-size:10.5px;color:rgba(255,255,255,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.5px}
 .pi-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;opacity:.6}
-.pi.sem-verde {background:rgba(34,197,94,.13)}
-.pi.sem-verde.on{background:rgba(34,197,94,.22)}
-.pi.sem-naranja{background:rgba(245,158,11,.13)}
-.pi.sem-naranja.on{background:rgba(245,158,11,.22)}
-.pi.sem-rojo   {background:rgba(239,68,68,.13)}
-.pi.sem-rojo.on{background:rgba(239,68,68,.22)}
-/* sidebar legend */
-.sb-legend{padding:10px 8px 12px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
-.sb-legend-row{display:flex;align-items:center;gap:7px;padding:3px 8px;font-size:10.5px;color:rgba(255,255,255,.32);line-height:1.4}
+.pi.sem-verde   { background: rgba(34,197,94,.08); border-left: 2.5px solid #22C55E; }
+.pi.sem-verde:hover { background: rgba(34,197,94,.13); }
+.pi.sem-verde.on { background: rgba(34,197,94,.16); border-left: 2.5px solid #22C55E; }
+
+.pi.sem-naranja { background: rgba(245,158,11,.08); border-left: 2.5px solid #F59E0B; }
+.pi.sem-naranja:hover { background: rgba(245,158,11,.13); }
+.pi.sem-naranja.on { background: rgba(245,158,11,.16); border-left: 2.5px solid #F59E0B; }
+
+.pi.sem-rojo   { background: rgba(239,68,68,.08); border-left: 2.5px solid #EF4444; }
+.pi.sem-rojo:hover { background: rgba(239,68,68,.13); }
+.pi.sem-rojo.on { background: rgba(239,68,68,.16); border-left: 2.5px solid #EF4444; }
+
+.pi.sem-verde .pi-name, .pi.sem-naranja .pi-name, .pi.sem-rojo .pi-name {
+  color: rgba(255, 255, 255, 0.92);
+}
+.pi.sem-verde.on .pi-name, .pi.sem-naranja.on .pi-name, .pi.sem-rojo.on .pi-name {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* sidebar footer, legend & theme switch */
+.sb-footer{
+  border-top:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
+  background:rgba(0,0,0,.25);
+  display:flex;
+  flex-direction:column;
+}
+.sb-legend{padding:9px 10px 8px}
+.sb-legend-row{display:flex;align-items:center;gap:7px;padding:2.5px 6px;font-size:10px;color:rgba(255,255,255,.45);line-height:1.4}
 .sb-legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.sb-config-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px 12px 10px;
+  border-top:1px solid rgba(255,255,255,.05);
+  gap:8px;
+}
+.sb-config-btn{
+  background:transparent;
+  border:none;
+  color:rgba(255,255,255,.5);
+  font-size:11px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+  padding:4px 6px;
+  border-radius:6px;
+  transition:all .15s;
+}
+.sb-config-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.theme-pills{
+  display:flex;
+  background:rgba(255,255,255,.07);
+  border-radius:16px;
+  padding:2px;
+  gap:2px;
+}
+.theme-pill{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  border:none;
+  background:transparent;
+  font-size:10px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all .15s;
+  opacity:.5;
+}
+.theme-pill:hover{opacity:.85}
+.theme-pill.on{
+  background:rgba(255,255,255,.2);
+  opacity:1;
+  box-shadow:0 1px 3px rgba(0,0,0,0.25);
+}
 
 /* ── Main ────────────────────────────────────────────────────────────────── */
 .mn{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
 
-/* topbar */
+/* topbar — Zona 2: Contexto del cliente (pedestal claro separado) */
 .tb{
   background:var(--surface);
   border-bottom:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(0,0,0,0.02);
   padding:0 28px;
   flex-shrink:0;
+  position:relative;
+  z-index:10;
 }
 .tb-row1{display:flex;align-items:center;gap:14px;padding:16px 0 12px}
-.proj-av-lg-wrap{position:relative;flex-shrink:0;width:40px;height:40px}
+.proj-av-lg-wrap{position:relative;flex-shrink:0;width:42px;height:42px}
 .proj-av-lg{
   position:absolute;inset:0;
   font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
@@ -196,10 +267,31 @@ body{
   background:var(--surface);border:2px solid var(--border);
   display:flex;align-items:center;justify-content:center;font-size:8px;line-height:1
 }
-.proj-title-wrap{flex:1}
-.proj-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;color:var(--text-1);letter-spacing:-.1px;line-height:1.2}
+.proj-title-wrap{flex:1;min-width:0}
+.proj-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.proj-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:17.5px;color:var(--text-1);letter-spacing:-.2px;line-height:1.2;margin:0}
+.proj-edit-meta-btn{
+  background:transparent;border:none;cursor:pointer;font-size:11px;padding:3px 6px;border-radius:5px;
+  opacity:0;transition:opacity .15s, background .15s;color:var(--text-3)
+}
+.tb-row1:hover .proj-edit-meta-btn{opacity:1}
+.proj-edit-meta-btn:hover{background:var(--surface-2);color:var(--accent-text)}
+
+.proj-operational-meta{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:4px;
+  font-size:12px;color:var(--text-2);line-height:1.4;
+  flex-wrap:wrap;
+}
+.proj-operational-meta .meta-item{display:inline-flex;align-items:center;gap:4px}
+.proj-operational-meta .meta-lbl{color:var(--text-3);font-weight:500}
+.proj-operational-meta .meta-val{color:var(--text-1);font-weight:600}
+.proj-operational-meta .meta-sep{color:var(--border);font-size:13px;line-height:1}
+.proj-operational-meta .meta-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#22C55E;margin-right:2px}
 .proj-sub-text{font-size:12px;color:var(--text-3);margin-top:2px}
 .type-pill{padding:3px 9px;border-radius:20px;font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:var(--accent-light);color:var(--accent-text);transition:all .3s}
+
+.tb-actions-group{display:flex;align-items:center;gap:8px;margin-left:auto}
 .tb-action{padding:8px 15px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;transition:background .3s;white-space:nowrap}
 .tb-action:hover{opacity:.9}
 .tb-del-btn{width:33px;height:33px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
@@ -456,14 +548,43 @@ body{
 .color-swatch.on{border-color:var(--surface);box-shadow:0 0 0 2px var(--accent)}
 
 /* ── Semáforo ────────────────────────────────────────────────────────────── */
-.semaforo-wrap{display:flex;align-items:center;gap:7px}
-.semaforo-lbl{font-size:9.5px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-right:2px}
-.sem-btn{width:14px;height:14px;border-radius:50%;opacity:.3;cursor:pointer;transition:all .15s;border:2px solid transparent}
-.sem-btn.on{opacity:1;border-color:rgba(255,255,255,.5);transform:scale(1.15)}
-.sem-btn:hover:not(.on){opacity:.65}
-.sem-verde{background:#22C55E}
-.sem-naranja{background:#F59E0B}
-.sem-rojo{background:#EF4444}
+.semaforo-wrap{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:var(--surface-2);
+  border:1px solid var(--border-2);
+  border-radius:20px;
+  padding:4px 10px;
+}
+.semaforo-lbl{
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  color:var(--text-3);
+  margin-right:2px;
+}
+.sem-btn{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  opacity:.35;
+  cursor:pointer;
+  transition:all .18s ease;
+  border:2px solid transparent;
+  outline:none;
+}
+.sem-btn:hover{opacity:.75;transform:scale(1.1)}
+.sem-btn.on{
+  opacity:1;
+  border-color:#fff;
+  box-shadow:0 0 0 1.5px currentColor, 0 2px 6px rgba(0,0,0,0.18);
+  transform:scale(1.2);
+}
+.sem-verde{background:#22C55E;color:#22C55E}
+.sem-naranja{background:#F59E0B;color:#F59E0B}
+.sem-rojo{background:#EF4444;color:#EF4444}
 
 /* ── Recordatorios section ───────────────────────────────────────────────── */
 .rec-section{margin-bottom:20px}
@@ -686,34 +807,57 @@ body{
 let DATA = [
   // ─ CLIENTES
   {
-    id:'cpb', type:'cliente', color:'#0F9460', initials:'CS',
-    name:'CPB SERVEIS MENTALS', sub:'',
-    semaforo:null,
-    description:'',
-    recordatorios:[],
-    tasks:[]
+    id:'cpb', type:'cliente', color:'#004E9C', initials:'CPB',
+    name:'CPB SERVEIS MENTALS', sub:'Rediseño web & salud comunitaria',
+    responsable:'Jesús',
+    proyectosCount:3,
+    ultimaActividad:'Actualizado hoy',
+    semaforo:'verde',
+    description:'Entidad sin ánimo de lucro proveedora de servicios asistenciales integrales de salud mental en Barcelona.',
+    recordatorios:[
+      {id:'r1', text:'Revisar propuesta de diseño web con dirección asistencial', detail:'Validar accesos para pacientes, familias y profesionales', due:'Mañana', done:false},
+      {id:'r2', text:'Validar colores corporativos (#004E9C y #A03C8B) en cabecera', detail:'Asegurar rigor institucional y calidez humana', due:'Viernes', done:false}
+    ],
+    tasks:[
+      {id:'t1', code:'CPB-01', title:'Propuesta y concepto visual web', status:'Listo', pri:'Alta', tag:'Diseño', desc:'Definición de arquitectura, paleta cromática (#004E9C / #A03C8B) y tipografías (Signika Bold + Open Sans).', due:'10 Oct', comments:[], checklists:[{text:'Paleta de colores',done:true},{text:'Tipografía y estilo',done:true},{text:'Wireframes home',done:true}], links:[{label:'PDF Propuesta',url:'#'}]},
+      {id:'t2', code:'CPB-02', title:'Estructura y wireframes de Home', status:'En curso', pri:'Alta', tag:'UX/UI', desc:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.', due:'18 Oct', comments:[], checklists:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}], links:[]},
+      {id:'t3', code:'CPB-03', title:'Catálogo de servicios asistenciales', status:'Pendiente', pri:'Media', tag:'Contenidos', desc:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.', due:'24 Oct', comments:[], checklists:[{text:'Fichas de servicios',done:false},{text:'Revisión con equipo médico',done:false}], links:[]}
+    ],
+    docs:[
+      {name:'Propuesta Rediseño Web CPB.pdf', desc:'Presentación completa de concepto visual, colores y wireframes', href:'#', type:'file'},
+      {name:'Guía de Estilo y Tipografías CPB', desc:'Signika Bold para titulares + Open Sans para textos + Caveat detalles', href:'#', type:'file'}
+    ]
   },
   {
     id:'ab', type:'cliente', color:'#1D6FA4', initials:'AB',
-    name:'AsistecBCN', sub:'',
-    semaforo:null,
-    description:'',
+    name:'AsistecBCN', sub:'Mantenimiento web & SEO',
+    responsable:'Jesús',
+    proyectosCount:2,
+    ultimaActividad:'Ayer',
+    semaforo:'verde',
+    description:'Servicio técnico y mantenimiento informático para empresas.',
     recordatorios:[],
     tasks:[]
   },
   {
     id:'dh', type:'cliente', color:'#2C3E50', initials:'DD',
-    name:'DHOMO DESIGN', sub:'',
-    semaforo:null,
-    description:'',
+    name:'DHOMO DESIGN', sub:'Branding corporativo',
+    responsable:'Jesús',
+    proyectosCount:1,
+    ultimaActividad:'Hace 3 días',
+    semaforo:'naranja',
+    description:'Estudio de arquitectura interior y diseño de espacios.',
     recordatorios:[],
     tasks:[]
   },
   {
     id:'cm', type:'cliente', color:'#A8385D', initials:'CM',
-    name:'CARMEN MOMENT', sub:'',
-    semaforo:null,
-    description:'',
+    name:'CARMEN MOMENT', sub:'Estrategia redes sociales',
+    responsable:'Jesús',
+    proyectosCount:1,
+    ultimaActividad:'Hace 1 semana',
+    semaforo:'rojo',
+    description:'Agencia de eventos y comunicación de marca.',
     recordatorios:[],
     tasks:[]
   },
@@ -901,19 +1045,90 @@ const TYPE_ICON   = {cliente:'🏢', app:'⚡', proveedor:'🗂️'}
 // Palette offered when creating a new client
 const CLIENT_COLORS = ['#1D6FA4','#2C3E50','#A8385D','#0F9460','#B45309','#7C3AED','#DB2777','#0EA5E9']
 
+function escapeHtml(str=''){
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;')
+}
+
 // ── State ────────────────────────────────────────────────────────────────────
 let S = {
-  navView: 'dashboard', // dashboard | proyectos | calendario | null (= project view)
+  navView: null, // null (= client view) | dashboard | proyectos | calendario
   filter: 'todos',
   proj:   DATA[0],
   view:   'resumen',
   provCat: null,
   open:   {},
   addingCat: false,
-  modal: null,  // null | 'newTask'
+  modal: null,  // null | 'newTask' | 'config' | 'editClient'
+  theme: 'light', // light | dark | auto
+  defaultUser: 'Jesús',
   _chkItems: ['',''],  // checklist items draft
   expandedTask: null,  // task code currently expanded in table
   addingRec: false,    // showing new recordatorio form
+}
+
+// ── Theme management ─────────────────────────────────────────────────────────
+function applyTheme(theme){
+  const t = theme || S.theme || 'light'
+  let activeTheme = t
+  if(t === 'auto'){
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    activeTheme = prefersDark ? 'dark' : 'light'
+  }
+  document.documentElement.setAttribute('data-theme', activeTheme)
+}
+function setTheme(theme){
+  S.theme = theme
+  try{ localStorage.setItem('ligrow_theme', theme) }catch(e){}
+  applyTheme(theme)
+  save()
+  render()
+}
+function openConfigModal(){
+  S.modal = 'config'
+  render()
+}
+
+// ── Client metadata editing ──────────────────────────────────────────────────
+function openEditClient(id){
+  const p = DATA.find(x=>x.id===id)
+  if(!p) return
+  S._editClientDraft = {
+    id: p.id,
+    name: p.name,
+    sub: p.sub || '',
+    responsable: p.responsable || S.defaultUser || 'Jesús',
+    proyectosCount: p.proyectosCount ?? (p.tasks?.length ? p.tasks.length : 3),
+    ultimaActividad: p.ultimaActividad || 'Actualizado hoy',
+    color: p.color
+  }
+  S.modal = 'editClient'
+  render()
+}
+function saveEditClient(){
+  const d = S._editClientDraft
+  if(!d) return
+  const p = DATA.find(x=>x.id===d.id)
+  if(p){
+    const nameEl = document.getElementById('ec-name')
+    const subEl = document.getElementById('ec-sub')
+    const respEl = document.getElementById('ec-resp')
+    const projsEl = document.getElementById('ec-projs')
+    const actEl = document.getElementById('ec-act')
+    if(nameEl && nameEl.value.trim()) p.name = nameEl.value.trim()
+    if(subEl) p.sub = subEl.value.trim()
+    if(respEl) p.responsable = respEl.value.trim() || 'Jesús'
+    if(projsEl) p.proyectosCount = parseInt(projsEl.value, 10) || 1
+    if(actEl) p.ultimaActividad = actEl.value.trim() || 'Actualizado hoy'
+    if(d.color) p.color = d.color
+    save()
+  }
+  closeModal()
+  render()
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -973,8 +1188,11 @@ function deleteRec(pid,idx){
 }
 function setSemaforo(pid,col){
   const p=DATA.find(x=>x.id===pid)
-  if(p)p.semaforo=col
-  render()
+  if(p){
+    p.semaforo = (p.semaforo === col) ? null : col
+    save()
+    render()
+  }
 }
 // ── Task table interactions ────────────────────────────────────────────────
 function toggleTaskRow(code){
@@ -1065,20 +1283,26 @@ function submitNewClient(){
   const name=(document.getElementById('nc-name')?.value||'').trim()
   if(!name)return
   const sub=(document.getElementById('nc-sub')?.value||'').trim()
+  const resp=(document.getElementById('nc-resp')?.value||'').trim() || S.defaultUser || 'Jesús'
+  const projs=parseInt(document.getElementById('nc-projs')?.value, 10) || 1
   const color=S._newClientColor||CLIENT_COLORS[0]
   const initials=name.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('')||'CL'
   const client={
     id:'c_'+Date.now().toString(36),
     type:'cliente', color, initials, name, sub,
-    semaforo:null, description:'', recordatorios:[], tasks:[]
+    responsable: resp,
+    proyectosCount: projs,
+    ultimaActividad: 'Creado hoy',
+    semaforo:'verde', description:'', recordatorios:[], tasks:[]
   }
-  DATA.push(client)
+  DATA.unshift(client)
   S.modal=null
   S._newClientColor=null
   S.proj=client
   S.navView=null
   S.view='resumen'
   if(S.filter==='apps'||S.filter==='proveedores')S.filter='todos'
+  save()
   render()
 }
 function deleteClient(id,e){
@@ -1549,7 +1773,9 @@ function save(){
       projId:S.proj?.id,
       view:S.view,
       filter:S.filter,
-      navView:S.navView
+      navView:S.navView,
+      theme:S.theme,
+      defaultUser:S.defaultUser
     }))
   }catch(e){}
 }
@@ -1565,6 +1791,8 @@ function render(){
   else if(S.modal==='addDoc') ov.innerHTML=addDocModal()
   else if(S.modal==='newClient') ov.innerHTML=newClientModal()
   else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
+  else if(S.modal==='config') ov.innerHTML=configModal()
+  else if(S.modal==='editClient') ov.innerHTML=editClientModal()
   else ov.innerHTML=''
 }
 
@@ -1573,20 +1801,33 @@ function newClientModal(){
   return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal-panel">
       <div class="modal-head">
-        <div class="modal-title">+ Nuevo cliente</div>
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">NUEVO REGISTRO</div>
+          <div class="modal-title">+ Nuevo cliente</div>
+        </div>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <div class="modal-body">
         <div class="modal-field">
-          <div class="modal-lbl">Nombre del cliente</div>
-          <input id="nc-name" class="modal-in" placeholder="Ej. Nombre del cliente o marca…" onkeydown="if(event.key==='Enter')submitNewClient()"/>
+          <div class="modal-lbl">Nombre del cliente *</div>
+          <input id="nc-name" class="modal-in" placeholder="Ej. CPB SERVEIS MENTALS…" onkeydown="if(event.key==='Enter')submitNewClient()"/>
         </div>
         <div class="modal-field">
-          <div class="modal-lbl">Descripción (opcional)</div>
-          <input id="nc-sub" class="modal-in" placeholder="Ej. Campaña otoño 2026…"/>
+          <div class="modal-lbl">Descripción o especialidad (opcional)</div>
+          <input id="nc-sub" class="modal-in" placeholder="Ej. Rediseño web &amp; branding…"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="modal-field">
+            <div class="modal-lbl">Responsable</div>
+            <input id="nc-resp" class="modal-in" placeholder="Ej. Jesús" value="${escapeHtml(S.defaultUser||'Jesús')}"/>
+          </div>
+          <div class="modal-field">
+            <div class="modal-lbl">Proyectos iniciales</div>
+            <input id="nc-projs" type="number" min="1" max="99" class="modal-in" value="1"/>
+          </div>
         </div>
         <div class="modal-field">
-          <div class="modal-lbl">Color</div>
+          <div class="modal-lbl">Color corporativo</div>
           <div class="color-swatches">
             ${CLIENT_COLORS.map(c=>`<div class="color-swatch ${c===sel?'on':''}" data-color="${c}" style="background:${c}" onclick="pickNewClientColor('${c}')"></div>`).join('')}
           </div>
@@ -1595,6 +1836,111 @@ function newClientModal(){
       <div class="modal-foot">
         <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
         <button class="modal-ok" onclick="submitNewClient()">Crear cliente</button>
+      </div>
+    </div>
+  </div>`
+}
+
+function editClientModal(){
+  const d = S._editClientDraft || {}
+  const selColor = d.color || CLIENT_COLORS[0]
+  return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-panel" style="max-width:480px">
+      <div class="modal-head">
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">ENCABEZADO OPERATIVO</div>
+          <div class="modal-title">Editar Cliente</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <div class="modal-lbl">Nombre del cliente *</div>
+          <input id="ec-name" class="modal-in" value="${escapeHtml(d.name||'')}" />
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Subtítulo / Especialidad</div>
+          <input id="ec-sub" class="modal-in" value="${escapeHtml(d.sub||'')}" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="modal-field">
+            <div class="modal-lbl">Responsable</div>
+            <input id="ec-resp" class="modal-in" value="${escapeHtml(d.responsable||'Jesús')}" />
+          </div>
+          <div class="modal-field">
+            <div class="modal-lbl">Proyectos activos</div>
+            <input id="ec-projs" type="number" min="0" max="99" class="modal-in" value="${d.proyectosCount||1}" />
+          </div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Última actividad</div>
+          <input id="ec-act" class="modal-in" value="${escapeHtml(d.ultimaActividad||'Actualizado hoy')}" placeholder="Ej. Actualizado hoy, Ayer, Hace 2 horas..." />
+        </div>
+        <div class="modal-field" style="margin-bottom:0">
+          <div class="modal-lbl">Color distintivo</div>
+          <div class="color-swatches">
+            ${CLIENT_COLORS.map(c=>`<div class="color-swatch ${c===selColor?'on':''}" style="background:${c}" onclick="S._editClientDraft.color='${c}';render()"></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="modal-ok" onclick="saveEditClient()">Guardar cambios</button>
+      </div>
+    </div>
+  </div>`
+}
+
+function configModal(){
+  return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-panel" style="max-width:440px">
+      <div class="modal-head">
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">PREFERENCIAS DEL SISTEMA</div>
+          <div class="modal-title">Configuración</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <div class="modal-lbl">Modo de apariencia</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+            <div class="theme-opt ${S.theme==='light'?'on':''}" onclick="setTheme('light')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
+              <span style="font-size:18px">☀️</span>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Modo Claro (Recomendado)</div>
+                <div style="font-size:11px;color:var(--text-3)">Fondo cálido #F5F4F1, tarjetas blancas #FFFFFF y sidebar negro</div>
+              </div>
+            </div>
+            <div class="theme-opt ${S.theme==='dark'?'on':''}" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
+              <span style="font-size:18px">🌙</span>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Modo Oscuro</div>
+                <div style="font-size:11px;color:var(--text-3)">Superficies de trabajo oscuras de baja luminosidad</div>
+              </div>
+            </div>
+            <div class="theme-opt ${S.theme==='auto'?'on':''}" onclick="setTheme('auto')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
+              <span style="font-size:18px">💻</span>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Automático</div>
+                <div style="font-size:11px;color:var(--text-3)">Sincronizado con la configuración de tu sistema operativo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-lbl">Responsable predeterminado</div>
+          <input id="cfg-user" class="modal-in" value="${escapeHtml(S.defaultUser||'Jesús')}" onchange="S.defaultUser=this.value;save()"/>
+        </div>
+        <div class="modal-field" style="margin-bottom:0">
+          <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:var(--surface-2);border-radius:7px;border:1px solid var(--border-2);line-height:1.5">
+            <strong style="color:var(--text-1)">LIGROW TASK &amp; PROJECT HUB</strong><br>
+            Área de trabajo optimizada: navegación general, contexto de cliente y módulos operativos.
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="modal-ok" onclick="closeModal()">Guardar y cerrar</button>
       </div>
     </div>
   </div>`
@@ -1749,11 +2095,24 @@ function sidebar(){
       ${ap.length?`<div class="sl-label">Apps</div>${ap.map(pi).join('')}`:''}
       ${pr.length?`<div class="sl-label">Proveedores</div>${pr.map(pi).join('')}`:''}
     </div>
-    ${cl.length?`<div class="sb-legend">
-      <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#22C55E"></div>Verde: cliente activo</div>
-      <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#F59E0B"></div>Naranja: cliente standby</div>
-      <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#EF4444"></div>Rojo: cliente inactivo</div>
-    </div>`:''}
+    <div class="sb-footer">
+      ${cl.length?`<div class="sb-legend">
+        <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#22C55E"></div>Verde: cliente activo</div>
+        <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#F59E0B"></div>Naranja: cliente standby</div>
+        <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#EF4444"></div>Rojo: cliente inactivo</div>
+      </div>`:''}
+      <div class="sb-config-row">
+        <button type="button" class="sb-config-btn" onclick="openConfigModal()" title="Configuración de preferencias">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Ajustes</span>
+        </button>
+        <div class="theme-pills">
+          <button type="button" class="theme-pill ${S.theme==='light'?'on':''}" onclick="setTheme('light')" title="Modo Claro">☀️</button>
+          <button type="button" class="theme-pill ${S.theme==='dark'?'on':''}" onclick="setTheme('dark')" title="Modo Oscuro">🌙</button>
+          <button type="button" class="theme-pill ${S.theme==='auto'?'on':''}" onclick="setTheme('auto')" title="Automático">💻</button>
+        </div>
+      </div>
+    </div>
   </div>`
 }
 function pi(p){
@@ -1812,19 +2171,33 @@ function main(){
           <div class="proj-av-badge">${badge}</div>
         </div>
         <div class="proj-title-wrap">
-          <div class="proj-title">${p.name}</div>
+          <div class="proj-title-row">
+            <h1 class="proj-title">${escapeHtml(p.name)}</h1>
+            <span class="type-pill">${typeName}</span>
+            ${p.type==='cliente'?`<button class="proj-edit-meta-btn" onclick="openEditClient('${p.id}')" title="Editar datos del cliente">✏️</button>`:''}
+          </div>
+          ${p.type==='cliente' ? `
+          <div class="proj-operational-meta">
+            <span class="meta-item"><span class="meta-lbl">Responsable:</span> <strong class="meta-val">${escapeHtml(p.responsable || S.defaultUser || 'Jesús')}</strong></span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item"><strong class="meta-val">${p.proyectosCount ?? (p.tasks?.length ? p.tasks.length : 3)} proyectos activos</strong></span>
+            <span class="meta-sep">·</span>
+            <span class="meta-item"><span class="meta-live-dot"></span><span class="meta-val">${escapeHtml(p.ultimaActividad || 'Actualizado hoy')}</span></span>
+          </div>` : `
           <div class="proj-sub-text">${p.sub}</div>
+          `}
         </div>
-        <span class="type-pill">${typeName}</span>
         ${p.type==='cliente'?`
-        <div class="semaforo-wrap">
-          <span class="semaforo-lbl">SEMÁFORO</span>
-          <div class="sem-btn sem-verde ${p.semaforo==='verde'?'on':''}" onclick="setSemaforo('${p.id}','verde')" title="Verde"></div>
-          <div class="sem-btn sem-naranja ${p.semaforo==='naranja'?'on':''}" onclick="setSemaforo('${p.id}','naranja')" title="Naranja"></div>
-          <div class="sem-btn sem-rojo ${p.semaforo==='rojo'?'on':''}" onclick="setSemaforo('${p.id}','rojo')" title="Rojo"></div>
+        <div class="semaforo-wrap" title="Semáforo de estado">
+          <span class="semaforo-lbl">ESTADO</span>
+          <button type="button" class="sem-btn sem-verde ${p.semaforo==='verde'?'on':''}" onclick="setSemaforo('${p.id}','verde')" title="Verde: cliente activo"></button>
+          <button type="button" class="sem-btn sem-naranja ${p.semaforo==='naranja'?'on':''}" onclick="setSemaforo('${p.id}','naranja')" title="Naranja: standby"></button>
+          <button type="button" class="sem-btn sem-rojo ${p.semaforo==='rojo'?'on':''}" onclick="setSemaforo('${p.id}','rojo')" title="Rojo: cliente inactivo"></button>
         </div>`:''}
-        <button class="tb-action" ${providerButtonAttrs}>${btnLabel}</button>
-        ${p.type==='cliente'?`<button class="tb-del-btn" onclick="deleteClient('${p.id}')" title="Eliminar cliente">🗑</button>`:''}
+        <div class="tb-actions-group">
+          <button class="tb-action" ${providerButtonAttrs}>${btnLabel}</button>
+          ${p.type==='cliente'?`<button class="tb-del-btn" onclick="deleteClient('${p.id}')" title="Eliminar cliente">🗑</button>`:''}
+        </div>
       </div>
       <div class="tabs">
         ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
@@ -1908,8 +2281,11 @@ function resumen(p){
 // ── Recordatorios section ──────────────────────────────────────────────────
 function fmtDue(due){
   if(!due)return ''
-  try{return new Date(due+'T00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}
-  catch{return due}
+  if(typeof due==='string' && due.includes('-') && due.length===10){
+    const d=new Date(due+'T00:00')
+    if(!isNaN(d.getTime())) return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})
+  }
+  return due
 }
 function recordatoriosSection(p){
   const recs=p.recordatorios||[]
@@ -1923,8 +2299,8 @@ function recordatoriosSection(p){
       <div class="rec-row ${r.done?'done-row':''}">
         <div class="rec-cb ${r.done?'on':''}" onclick="toggleRec('${p.id}',${i})">${r.done?'✓':''}</div>
         <div class="rec-body">
-          <div class="rec-text" onclick="toggleRec('${p.id}',${i})">${r.text}</div>
-          ${r.detail?`<div class="rec-detail">${r.detail}</div>`:''}
+          <div class="rec-text" onclick="toggleRec('${p.id}',${i})">${escapeHtml(r.text||'')}</div>
+          ${r.detail?`<div class="rec-detail">${escapeHtml(r.detail)}</div>`:''}
         </div>
         ${r.due?`<div class="rec-date">${fmtDue(r.due)}</div>`:''}
         <button class="rec-del-btn" onclick="deleteRec('${p.id}',${i})">🗑</button>
@@ -1983,15 +2359,21 @@ function tkSection(p,key,tasks,title,desc,dotColor,badgeBg,badgeColor){
 
 function tkTaskRow(p,t){
   const isOpen=S.expandedTask===t.code
-  const cl=t.checklist||[];const lk=t.links||[];const fi=t.files||[]
+  const cl=t.checklist||t.checklists||[];const lk=t.links||[];const fi=t.files||[]
   const clDone=cl.filter(x=>x.done).length
   const isDone=t.status==='Listo'
-  const dueFormatted=t.due?new Date(t.due+'T00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):''
-  const prioClass=(t.priority||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+  const taskTitle=t.title||t.name||'Tarea'
+  let dueFormatted=t.due||''
+  if(typeof t.due==='string' && t.due.includes('-') && t.due.length===10){
+    const d=new Date(t.due+'T00:00')
+    if(!isNaN(d.getTime())) dueFormatted=d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})
+  }
+  const prio=t.pri||t.priority||'Media'
+  const prioClass=prio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
   return `<div class="tk-task-wrap ${prioClass}">
     <div class="tk-task-row ${isOpen?'open':''}" onclick="toggleTaskRow('${t.code}')">
       <div class="tk-id">${t.code}</div>
-      <div class="tk-name-cell"><div class="tk-name-txt ${isDone?'done':''}">${t.name}</div></div>
+      <div class="tk-name-cell"><div class="tk-name-txt ${isDone?'done':''}">${escapeHtml(taskTitle)}</div></div>
       <div class="tk-actions" onclick="event.stopPropagation()">
         <button class="tk-act" title="Editar">✏️</button>
         <button class="tk-act del" title="Eliminar" onclick="deleteTask('${p.id}','${t.code}',event)">🗑</button>
@@ -1999,7 +2381,7 @@ function tkTaskRow(p,t){
       <div class="tk-due">${dueFormatted}</div>
       <div onclick="event.stopPropagation()">
         <select class="tk-sel" onchange="updateTaskField('${p.id}','${t.code}','priority',this.value)">
-          ${['Alta','Media','Baja'].map(v=>`<option ${t.priority===v?'selected':''}>${v}</option>`).join('')}
+          ${['Alta','Media','Baja'].map(v=>`<option ${(t.pri||t.priority)===v?'selected':''}>${v}</option>`).join('')}
         </select>
       </div>
       <div onclick="event.stopPropagation()">
@@ -2373,10 +2755,10 @@ function navDashboard(){
             ${det.length?`<span class="chip chip-red">${det.length} detenida${det.length>1?'s':''}</span>`:''}
           </div>
           ${en.slice(0,3).map(x=>`<div class="t-row">
-            <div class="t-dot" style="background:${x.priority==='Alta'?'#D63A0F':x.priority==='Media'?'#D48000':'#0F9460'}"></div>
-            <div class="t-name">${x.name}</div>
-            <div class="t-owner">${x.owner}</div>
-            <span style="font-size:11px;color:var(--text-3)">${x.due}</span>
+            <div class="t-dot" style="background:${(x.pri||x.priority)==='Alta'?'#D63A0F':(x.pri||x.priority)==='Media'?'#D48000':'#0F9460'}"></div>
+            <div class="t-name">${escapeHtml(x.title||x.name||'Tarea')}</div>
+            <div class="t-owner">${escapeHtml(x.tag||x.owner||'')}</div>
+            <span style="font-size:11px;color:var(--text-3)">${x.due||''}</span>
           </div>`).join('')}
           ${en.length>3?`<div style="font-size:11px;color:var(--text-3);padding:6px 0">+${en.length-3} más...</div>`:''}
         </div>`
@@ -2473,7 +2855,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v5'
+const STORE_VERSION='v6'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
@@ -2484,15 +2866,29 @@ try{
   if(Array.isArray(savedData) && savedData.length) DATA=savedData
 }catch(e){}
 try{
+  const savedTheme=localStorage.getItem('ligrow_theme')
+  if(savedTheme && ['light','dark','auto'].includes(savedTheme)) S.theme=savedTheme
+  else S.theme='light'
+}catch(e){ S.theme='light' }
+try{
   const st=JSON.parse(localStorage.getItem('ligrow_state')||'{}')
   if(st.filter&&['todos','clientes','apps','proveedores'].includes(st.filter))S.filter=st.filter
   if(st.projId){const found=DATA.find(x=>x.id===st.projId);if(found)S.proj=found}
   if(st.view)S.view=st.view
   if(st.navView!==undefined)S.navView=st.navView
+  if(st.theme)S.theme=st.theme
+  if(st.defaultUser)S.defaultUser=st.defaultUser
 }catch(e){}
-// Guard against a stale S.proj reference (e.g. the previously active client
-// was deleted, or points at data from before a version bump).
+// Guard against a stale S.proj reference
 if(!DATA.find(x=>x.id===S.proj?.id)) S.proj=DATA[0]||null
+
+// Initialize theme (default: warm light)
+applyTheme(S.theme)
+if(window.matchMedia){
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+    if(S.theme==='auto') applyTheme('auto')
+  })
+}
 
 // Start with brand orange
 applyAccent('cliente')
