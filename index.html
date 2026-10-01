@@ -297,16 +297,42 @@ body{
 .tb-del-btn{width:29px;height:29px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
 .tb-del-btn:hover{border-color:#EF4444;color:#EF4444;background:rgba(239,68,68,.07)}
 
-/* tabs */
-.tabs{display:flex;gap:0;margin:0 -28px;padding:0 28px}
+/* tabs & topbar stats */
+.tb-tabs-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-top:1px solid var(--border-2);
+  margin:0 -28px;
+  padding:0 28px;
+}
+.tabs{display:flex;gap:0;margin:0;padding:0}
 .tab{
   padding:7px 14px;border:none;background:transparent;
   font-size:12px;font-weight:500;color:var(--text-3);
   border-bottom:2px solid transparent;
-  transition:all .15s;white-space:nowrap
+  transition:all .15s;white-space:nowrap;cursor:pointer
 }
 .tab:hover{color:var(--text-2)}
 .tab.on{color:var(--accent-text);border-bottom-color:var(--accent);font-weight:600}
+
+/* stats strip in topbar */
+.tb-stats-strip{display:flex;align-items:center;gap:7px;padding:3px 0;overflow-x:auto}
+.tb-stats-strip::-webkit-scrollbar{display:none}
+.tb-stat-pill{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--surface);border:1px solid var(--border);border-radius:7px;
+  padding:3.5px 9px;transition:all .15s;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,0.02)
+}
+.tb-stat-pill:hover{border-color:var(--border-2);background:var(--surface-2)}
+.tb-stat-lbl{font-size:9.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-3);display:inline-flex;align-items:center;gap:4px}
+.tb-stat-val{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text-1);line-height:1}
+.tb-stat-val.val-red{color:#D63A0F}
+.tb-stat-val.val-amber{color:#D97706}
+.tb-stat-val.val-green{color:#0F9460}
+.tb-stat-pill.pill-waiting{border-color:rgba(217,119,6,0.38);background:#FFFDF7}
+.tb-stat-pill.pill-waiting .tb-stat-lbl{color:#B45309}
 
 /* content area */
 .ct{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 24px 20px}
@@ -316,23 +342,6 @@ body{
 /* ── Shared content components ───────────────────────────────────────────── */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .section-title{font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3)}
-
-/* stats row — compact single-line pills */
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
-.stat{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:7px;
-  padding:6px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-}
-.stat-lbl{font-size:9px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);margin-bottom:0;white-space:nowrap}
-.stat-val{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text-1);line-height:1}
-.stat-val.accent{color:var(--accent)}
-.stat-val.green{color:#0F9460}
 
 /* two-col info grid */
 .info-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -3481,11 +3490,47 @@ function main(){
           ${p.type==='cliente'?`<button class="tb-del-btn" onclick="deleteClient('${p.id}')" title="Eliminar cliente">🗑</button>`:''}
         </div>
       </div>
-      <div class="tabs">
-        ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
+      <div class="tb-tabs-bar">
+        <div class="tabs">
+          ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
+        </div>
+        ${p.type==='cliente'?renderTopStatsPills(p):''}
       </div>
     </div>
     <div class="ct">${content(p)}</div>
+  </div>`
+}
+
+// ─ Topbar stats strip for client view
+function renderTopStatsPills(p){
+  const tasks = p.tasks || []
+  const docs = p.docs || []
+  const pendingTasks = tasks.filter(x=>x.status!=='Listo').length
+  const workingTasks = tasks.filter(x=>x.status==='Trabajando').length
+  const waitingClient = tasks.filter(x=>x.status==='Esperando feedback').length
+  const doneTasks = tasks.filter(x=>x.status==='Listo').length
+
+  return `<div class="tb-stats-strip">
+    <div class="tb-stat-pill" title="Tareas pendientes">
+      <span class="tb-stat-lbl">PENDIENTES</span>
+      <span class="tb-stat-val ${pendingTasks>0?'val-red':''}">${pendingTasks}</span>
+    </div>
+    <div class="tb-stat-pill" title="Tareas en curso activo">
+      <span class="tb-stat-lbl">⚡ TRABAJANDO</span>
+      <span class="tb-stat-val ${workingTasks>0?'val-red':''}">${workingTasks}</span>
+    </div>
+    <div class="tb-stat-pill ${waitingClient>0?'pill-waiting':''}" title="Tareas en espera de feedback o contenido del cliente">
+      <span class="tb-stat-lbl">⏳ ESPERANDO CLIENTE</span>
+      <span class="tb-stat-val ${waitingClient>0?'val-amber':''}">${waitingClient}</span>
+    </div>
+    <div class="tb-stat-pill" title="Tareas completadas">
+      <span class="tb-stat-lbl">✅ COMPLETADAS</span>
+      <span class="tb-stat-val ${doneTasks>0?'val-green':''}">${doneTasks}</span>
+    </div>
+    <div class="tb-stat-pill" title="Documentos y recursos vinculados">
+      <span class="tb-stat-lbl">📁 BIBLIOTECA</span>
+      <span class="tb-stat-val">${docs.length}</span>
+    </div>
   </div>`
 }
 
@@ -3506,39 +3551,39 @@ function clienteContent(p){
 function necesitaAtencionSection(p){
   const items = getAttentionItems(p)
   if(!items.length){
-    return `<div class="attention-card all-good" style="margin-bottom:18px">
-      <div style="display:flex;align-items:center;gap:12px">
+    return `<div class="attention-card all-good" style="margin-bottom:0;height:100%;box-sizing:border-box;display:flex;align-items:center">
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
         <div class="att-ico-box good">✓</div>
         <div style="flex:1">
-          <div style="font-size:13.5px;font-weight:700;color:#16A34A;display:flex;align-items:center;gap:6px">
+          <div style="font-size:13px;font-weight:700;color:#16A34A;display:flex;align-items:center;gap:6px">
             <span>Todo al día</span>
-            <span style="font-size:11px;font-weight:600;color:var(--text-3);background:var(--surface-2);padding:2px 8px;border-radius:10px">0 incidencias activas</span>
+            <span style="font-size:10px;font-weight:600;color:var(--text-3);background:var(--surface-2);padding:1px 7px;border-radius:10px">0 incidencias activas</span>
           </div>
-          <div style="font-size:11.5px;color:var(--text-3);margin-top:2px">No hay tareas vencidas, feedback pendiente de cliente ni recordatorios críticos sin atender.</div>
+          <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.35">No hay tareas vencidas, feedback pendiente de cliente ni recordatorios críticos sin atender.</div>
         </div>
       </div>
     </div>`
   }
 
-  return `<div class="attention-card has-issues">
-    <div style="display:flex;align-items:center;justify-content:space-between">
+  return `<div class="attention-card has-issues" style="margin-bottom:0;height:100%;box-sizing:border-box;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:7px">
         <div class="att-ico-box warn">⚠️</div>
-        <div style="font-size:12.5px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:6px">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:6px">
           <span>Necesita atención</span>
           <span class="att-count-badge">${items.length} asunto${items.length>1?'s':''}</span>
         </div>
-        <span style="font-size:11px;color:var(--text-3);display:inline-block">· Asuntos críticos que requieren acción o seguimiento</span>
       </div>
+      <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">Asuntos críticos</span>
     </div>
-    <div class="att-items-grid">
+    <div class="att-items-grid" style="flex:1;overflow-y:auto;max-height:165px">
       ${items.map(it => {
         if(it.task){
           const t = it.task
           return `<div class="att-item-row" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">
             <span class="att-badge ${it.cls}">${it.badge}</span>
             <div class="att-item-content">
-              <div class="att-item-title">${escapeHtml(t.title||t.name||'Tarea')} <span style="font-size:10.5px;font-weight:500;color:var(--text-3)">(${t.code||''})</span></div>
+              <div class="att-item-title">${escapeHtml(t.title||t.name||'Tarea')} <span style="font-size:10px;font-weight:500;color:var(--text-3)">(${t.code||''})</span></div>
               <div class="att-item-msg">${escapeHtml(it.msg)}</div>
             </div>
             <div class="att-item-meta">
@@ -3566,44 +3611,33 @@ function necesitaAtencionSection(p){
 }
 
 function resumen(p){
-  const tasks=p.tasks||[]
-  const recs=p.recordatorios||[]
-  const docs=p.docs||[]
-  const pendingTasks=tasks.filter(x=>x.status!=='Listo').length
-  const workingTasks=tasks.filter(x=>x.status==='Trabajando').length
-  const waitingClient=tasks.filter(x=>x.status==='Esperando feedback').length
-  const doneTasks=tasks.filter(x=>x.status==='Listo').length
-
-  // 1. Bloque superior diferenciador "Necesita atención" (compacto)
+  // 1. Fila superior 50/50: Necesita atención a la izquierda y Recordatorios a la derecha
   const attentionBlock = necesitaAtencionSection(p)
+  const recsSection = recordatoriosSection(p)
 
-  // 2. Barra de métricas compacta en píldoras horizontales
-  const statsBar=`<div class="stats">
-    <div class="stat">
-      <span class="stat-lbl">Pendientes</span>
-      <span class="stat-val ${pendingTasks>0?'accent':'green'}">${pendingTasks}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-lbl">⚡ Trabajando</span>
-      <span class="stat-val" style="color:var(--brand)">${workingTasks}</span>
-    </div>
-    <div class="stat" style="${waitingClient>0?'border-color:rgba(217,119,6,0.4);background:#FFFDF7':''}">
-      <span class="stat-lbl" style="${waitingClient>0?'color:#B45309;font-weight:700':''}">⏳ Esperando cliente</span>
-      <span class="stat-val" style="${waitingClient>0?'color:#D97706;font-weight:800':''}">${waitingClient}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-lbl">✅ Completadas</span>
-      <span class="stat-val green">${doneTasks}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-lbl">📁 Biblioteca</span>
-      <span class="stat-val">${docs.length}</span>
-    </div>
-  </div>`
+  // 2. Fila central ancho completo: Bloque de tareas (POR COMPLETAR + COMPLETADAS plegable)
+  const tasksSection = `<div style="margin-bottom:12px">${taskTableView(p)}</div>`
 
-  // 3. Biblioteca Documentos & Recursos con identificación visual por plataforma y visor online
-  const docsSection=`<div class="card" style="display:flex;flex-direction:column;gap:0">
-    <div class="doc-card-header">
+  // 3. Fila inferior ancho completo: Biblioteca de Documentación & Recursos
+  const docsSection = docsLibrarySection(p)
+
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;align-items:stretch">
+      ${attentionBlock}
+      ${recsSection}
+    </div>
+    ${tasksSection}
+    <div>
+      ${docsSection}
+    </div>
+  `
+}
+
+// ── Documentos & Recursos (full width) ──────────────────────────────────────
+function docsLibrarySection(p){
+  const docs = p.docs || []
+  return `<div class="card" style="display:flex;flex-direction:column;gap:0;margin-top:2px">
+    <div class="doc-card-header" style="margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--text-1)">
         <span style="font-size:15px">📚</span> Documentos &amp; Recursos
         <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--surface-2);color:var(--text-3)">${docs.length}</span>
@@ -3616,14 +3650,14 @@ function resumen(p){
         ${docs.map((d,i)=>{
           const plat = getDocPlatform(d)
           const isViewable = plat.isPreviewable || plat.type === 'pdf' || plat.type === 'image' || (d.name && d.name.toLowerCase().endsWith('.pdf'))
-          return `<div class="doc-item-row">
+          return `<div class="doc-item-row" style="padding:6px 12px">
             <span class="doc-platform-badge" style="background:${plat.bg};color:${plat.color};border:1px solid ${plat.color}33" title="Plataforma: ${plat.name}">
               <span>${plat.ico}</span>
               <span>${plat.name}</span>
             </span>
-            <div class="doc-info-wrap">
-              <div class="doc-title-text" title="${escapeHtml(d.name)}">${escapeHtml(d.name)}</div>
-              ${d.desc?`<div class="doc-sub-text" title="${escapeHtml(d.desc)}">${escapeHtml(d.desc)}</div>`:''}
+            <div class="doc-info-wrap" style="margin-left:4px">
+              <div class="doc-title-text" title="${escapeHtml(d.name)}" style="font-size:12px">${escapeHtml(d.name)}</div>
+              ${d.desc?`<div class="doc-sub-text" title="${escapeHtml(d.desc)}" style="font-size:11px">${escapeHtml(d.desc)}</div>`:''}
             </div>
             <div class="doc-actions-wrap">
               ${isViewable ? `
@@ -3646,10 +3680,6 @@ function resumen(p){
       <span style="font-size:11px;color:var(--text-3)">Añade PDFs, imágenes, Figma, Google Drive, Canva, Notion, URLs de Staging...</span>
     </div>`}
   </div>`
-
-  const recsSection=recordatoriosSection(p)
-  const tasksSection=`<div style="margin-bottom:12px">${taskTableView(p)}</div>`
-  return attentionBlock + statsBar + tasksSection + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">${docsSection}${recsSection}</div>`
 }
 
 // ── Recordatorios section ──────────────────────────────────────────────────
@@ -3664,24 +3694,29 @@ function fmtDue(due){
 function recordatoriosSection(p){
   const recs=p.recordatorios||[]
   const inner = `
-    <div class="rec-head" style="margin-bottom:8px">
-      <div class="rec-title" style="font-size:12.5px">🔔 Recordatorios / Temas pendientes</div>
-      <button class="rec-new-btn" style="padding:3px 9px;font-size:11px" onclick="startAddRec()">+ Nuevo</button>
-    </div>
-    ${!recs.length?`<div style="font-size:12px;color:var(--text-3);padding:0 14px 14px">Sin recordatorios. Añade temas pendientes o avisos importantes.</div>`:''}
-    ${recs.map((r,i)=>`
-      <div class="rec-row ${r.done?'done-row':''}" style="padding:6px 0">
-        <div class="rec-cb ${r.done?'on':''}" onclick="toggleRec('${p.id}',${i})">${r.done?'✓':''}</div>
-        <div class="rec-body">
-          <div class="rec-text" onclick="toggleRec('${p.id}',${i})">${escapeHtml(r.text||'')}</div>
-          ${r.detail?`<div class="rec-detail">${escapeHtml(r.detail)}</div>`:''}
-        </div>
-        ${r.due?`<div class="rec-date">${fmtDue(r.due)}</div>`:''}
-        <button class="rec-del-btn" onclick="deleteRec('${p.id}',${i})">🗑</button>
+    <div class="rec-head" style="margin-bottom:6px">
+      <div class="rec-title" style="font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px">
+        <span>🔔</span> <span>Recordatorios / Temas pendientes</span>
+        ${recs.length ? `<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--surface-2);color:var(--text-3)">${recs.length}</span>` : ''}
       </div>
-    `).join('')}
+      <button class="rec-new-btn" style="padding:2px 8px;font-size:11px" onclick="startAddRec()">+ Nuevo</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;max-height:165px">
+      ${!recs.length?`<div style="font-size:11.5px;color:var(--text-3);padding:12px 0">Sin recordatorios. Añade temas pendientes o avisos importantes.</div>`:''}
+      ${recs.map((r,i)=>`
+        <div class="rec-row ${r.done?'done-row':''}" style="padding:5px 0">
+          <div class="rec-cb ${r.done?'on':''}" onclick="toggleRec('${p.id}',${i})">${r.done?'✓':''}</div>
+          <div class="rec-body">
+            <div class="rec-text" onclick="toggleRec('${p.id}',${i})" style="font-size:12px">${escapeHtml(r.text||'')}</div>
+            ${r.detail?`<div class="rec-detail" style="font-size:10.5px">${escapeHtml(r.detail)}</div>`:''}
+          </div>
+          ${r.due?`<div class="rec-date" style="font-size:10px">${fmtDue(r.due)}</div>`:''}
+          <button class="rec-del-btn" onclick="deleteRec('${p.id}',${i})">🗑</button>
+        </div>
+      `).join('')}
+    </div>
     ${S.addingRec?`
-      <div class="rec-add-row" style="padding:8px 0">
+      <div class="rec-add-row" style="padding:8px 0 0">
         <input id="rec-txt-in" class="rec-in" placeholder="Tarea o recordatorio…" style="flex:2" onkeydown="if(event.key==='Enter')confirmAddRec('${p.id}')"/>
         <input id="rec-det-in" class="rec-in" placeholder="Detalle (opcional)…" style="flex:2"/>
         <input id="rec-due-in" type="date" class="rec-in" style="width:130px;flex:none"/>
@@ -3690,7 +3725,7 @@ function recordatoriosSection(p){
       </div>
     `:''}
   `
-  return `<div class="card" style="padding:12px 14px;overflow:hidden">
+  return `<div class="card" style="padding:10px 14px;overflow:hidden;height:100%;box-sizing:border-box;display:flex;flex-direction:column;margin-bottom:0">
     ${inner}
   </div>`
 }
