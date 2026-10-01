@@ -522,6 +522,78 @@ body{
 .doc-name{font-size:13px;font-weight:500;color:var(--text-1)}
 .doc-link{font-size:11.5px;font-weight:600;color:var(--accent);cursor:pointer}
 
+/* ── Necesita atención ────────────────────────────────────────────────────── */
+.attention-card{border-radius:12px;padding:16px 20px;transition:all .15s}
+.attention-card.has-issues{background:var(--surface);border:1px solid rgba(240,78,35,0.25);border-left:4px solid var(--brand);box-shadow:0 2px 10px rgba(240,78,35,0.06)}
+.attention-card.all-good{background:var(--surface);border:1px solid rgba(22,163,74,0.25);border-left:4px solid #16A34A;box-shadow:0 2px 10px rgba(22,163,74,0.04)}
+.att-ico-box{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.att-ico-box.warn{background:#FFF0EB;color:#D63A0F}
+.att-ico-box.good{background:#EDFAF2;color:#16A34A}
+.att-count-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:2px 8px;border-radius:12px;background:#FFF0EB;color:#D63A0F}
+.att-items-grid{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.att-item-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border-2);cursor:pointer;transition:all .15s}
+.att-item-row:hover{border-color:var(--brand);background:var(--surface)}
+.att-badge{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.att-badge.prio-red{background:#FFF0F0;color:#DC2626;border:1px solid rgba(220,38,38,0.2)}
+.att-badge.prio-orange{background:#FFF7ED;color:#EA580C;border:1px solid rgba(234,88,12,0.2)}
+.att-badge.prio-amber{background:#FFFBEB;color:#D97706;border:1px solid rgba(217,119,6,0.2)}
+.att-badge.prio-purple{background:#FAF5FF;color:#9333EA;border:1px solid rgba(147,51,234,0.2)}
+.att-item-content{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.att-item-title{font-size:12.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-item-msg{font-size:11px;color:var(--text-3);line-height:1.3}
+.att-item-meta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.att-owner-pill{font-size:10.5px;font-weight:600;color:var(--text-2);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:12px}
+.att-act-btn{font-size:11px;font-weight:600;color:var(--brand);background:transparent;border:none;cursor:pointer;white-space:nowrap}
+
+/* ── Biblioteca de Recursos & Plataformas ────────────────────────────────── */
+.doc-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+.doc-filters-bar{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--border-2)}
+.doc-filters-bar::-webkit-scrollbar{height:3px}
+.doc-filter-pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.doc-filter-pill:hover{background:var(--surface);color:var(--text-1)}
+.doc-filter-pill.active{background:var(--brand);color:#FFFFFF !important;border-color:var(--brand)}
+.doc-item-row{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border-2);margin-bottom:6px;transition:all .15s}
+.doc-item-row:hover{background:var(--surface-2);border-color:var(--border)}
+.doc-platform-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;letter-spacing:0.2px}
+.doc-info-wrap{flex:1;min-width:0}
+.doc-title-text{font-size:12.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-sub-text{font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-actions-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.doc-viewer-btn{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:6px;background:var(--brand);color:#FFFFFF;border:none;cursor:pointer;transition:opacity .15s}
+.doc-viewer-btn:hover{opacity:0.9}
+.doc-external-link{font-size:11px;font-weight:600;color:var(--accent-text);padding:4px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+.doc-external-link:hover{text-decoration:underline}
+
+/* ── Visor Online de Documentos e Imágenes ────────────────────────────────── */
+.doc-viewer-overlay{position:fixed;inset:0;background:rgba(17,16,14,0.78);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
+.doc-viewer-modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:960px;height:88vh;max-height:850px;box-shadow:0 30px 60px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden;animation:trelloModalIn .2s cubic-bezier(0.16,1,0.3,1)}
+.doc-viewer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface-2);flex-shrink:0}
+.doc-viewer-title-group{display:flex;align-items:center;gap:10px;min-width:0}
+.doc-viewer-title{font-size:14px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-viewer-tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;background:var(--brand);color:#fff}
+.doc-viewer-tools{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.doc-viewer-btn-tool{padding:5px 11px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:11.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+.doc-viewer-btn-tool:hover{border-color:var(--brand);color:var(--text-1)}
+.doc-viewer-body{flex:1;background:#525659;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;position:relative}
+.doc-viewer-body.img-mode{background:#11100E}
+.doc-viewer-iframe{width:100%;height:100%;border:none;background:#fff;border-radius:4px}
+.doc-pdf-mock-page{width:100%;max-width:680px;min-height:760px;background:#FFFFFF;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.25);padding:44px 48px;display:flex;flex-direction:column;color:#11100E;font-family:'DM Sans',sans-serif}
+.doc-pdf-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #E5E3DF;padding-bottom:16px;margin-bottom:24px}
+.doc-pdf-watermark{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#8E8B83}
+.doc-pdf-h1{font-size:22px;font-weight:800;color:#11100E;margin-bottom:8px;line-height:1.25}
+.doc-pdf-sub{font-size:13px;color:#57554E;line-height:1.5;margin-bottom:20px}
+.doc-pdf-block{background:#FAF9F6;border:1px solid #EDEBE6;border-radius:8px;padding:16px;margin-bottom:18px}
+.doc-pdf-block h4{font-size:12px;font-weight:700;color:#11100E;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.doc-pdf-block p{font-size:12px;color:#57554E;line-height:1.6}
+.doc-pdf-foot{margin-top:auto;border-top:1px solid #E5E3DF;padding-top:14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#8E8B83}
+.doc-viewer-img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+
+/* Chips de los 4 estados canónicos */
+.chip-slate{background:#F1F5F9;color:#475569}
+.chip-working{background:#FFF0EB;color:#D63A0F;font-weight:700}
+.chip-waiting{background:#FFFBEB;color:#D97706;border:1px solid rgba(217,119,6,0.3);font-weight:700}
+.chip-ready{background:#EDFAF2;color:#0F9460;font-weight:700}
+
 /* App: env vars */
 .env-table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace}
 .env-table td{padding:8px 12px;border-bottom:1px solid var(--border-2);font-size:12px;vertical-align:middle}
@@ -954,18 +1026,18 @@ let DATA = [
       },
       {
         id:'t2', code:'CPB-02', title:'Estructura y wireframes de Home', name:'Estructura y wireframes de Home',
-        status:'En curso', pri:'Alta', priority:'Alta', tag:'UX/UI',
-        desc:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.',
-        description:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales, qué necesitas y servicios asistenciales.',
+        status:'Esperando feedback', pri:'Alta', priority:'Alta', tag:'UX/UI',
+        desc:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales y servicios. Pendiente de validación por dirección médica.',
+        description:'Desarrollo de bloques principales: bienvenida, accesos Fundación/Pacientes/Profesionales y servicios. Pendiente de validación por dirección médica.',
         due:'18 Oct', owner:'Marta',
-        comments:[{author:'Marta', text:'Ajustando sección de acceso rápido a centros asistenciales.', date:'Hoy a las 11:30'}],
+        comments:[{author:'Marta', text:'Wireframes enviados al cliente. Esperando feedback para avanzar a maquetación.', date:'Hoy a las 11:30'}],
         checklists:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}],
         checklist:[{text:'Header global con buscador',done:true},{text:'Hero humano con call-to-actions',done:true},{text:'Bloque qué necesitas',done:false}],
         links:[], files:[]
       },
       {
         id:'t3', code:'CPB-03', title:'Catálogo de servicios asistenciales', name:'Catálogo de servicios asistenciales',
-        status:'Por hacer', pri:'Media', priority:'Media', tag:'Contenidos',
+        status:'Sin empezar', pri:'Media', priority:'Media', tag:'Contenidos',
         desc:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
         description:'Redacción y organización de las áreas de psiquiatría, salud comunitaria, adicciones y rehabilitación psicosocial.',
         due:'24 Oct', owner:'Carlos',
@@ -973,11 +1045,27 @@ let DATA = [
         checklists:[{text:'Fichas de servicios psiquiátricos',done:false},{text:'Revisión con equipo médico',done:false}],
         checklist:[{text:'Fichas de servicios psiquiátricos',done:false},{text:'Revisión con equipo médico',done:false}],
         links:[], files:[]
+      },
+      {
+        id:'t4b', code:'CPB-04', title:'Integración de formulario asistencial y RGPD', name:'Integración de formulario asistencial y RGPD',
+        status:'Trabajando', pri:'Alta', priority:'Alta', tag:'Dev',
+        desc:'Desarrollo de endpoints de derivación con cifrado de datos sanitarios y validación de consentimiento.',
+        description:'Desarrollo de endpoints de derivación con cifrado de datos sanitarios y validación de consentimiento.',
+        due:'19 Oct', owner:'Jesús',
+        comments:[{author:'Jesús', text:'Conectando con base de datos segura y validando campos.', date:'Hoy a las 15:10'}],
+        checklists:[{text:'Esquema de campos clínicos',done:true},{text:'Cifrado y envío seguro',done:false}],
+        checklist:[{text:'Esquema de campos clínicos',done:true},{text:'Cifrado y envío seguro',done:false}],
+        links:[], files:[]
       }
     ],
     docs:[
-      {name:'Propuesta Rediseño Web CPB.pdf', desc:'Presentación completa de concepto visual, colores y wireframes', href:'#', type:'file'},
-      {name:'Guía de Estilo y Tipografías CPB', desc:'Signika Bold para titulares + Open Sans para textos + Caveat detalles', href:'#', type:'file'}
+      {name:'Propuesta Rediseño Web CPB.pdf', desc:'Presentación completa de concepto visual, colores y wireframes', href:'#', platform:'pdf', type:'file'},
+      {name:'Guía de Estilo y Tipografías CPB', desc:'Signika Bold para titulares + Open Sans para textos + Caveat detalles', href:'#', platform:'pdf', type:'file'},
+      {name:'Figma UI Kit & Sistema de Diseño', desc:'Componentes atómicos, auto-layouts y librerías interactivas', href:'https://figma.com/@cpb-design', platform:'figma', type:'link'},
+      {name:'Google Drive · Activos y Recursos Gráficos', desc:'Banco de imágenes de centros, logotipos vectoriales y actas', href:'https://drive.google.com/drive/folders/cpb', platform:'drive', type:'link'},
+      {name:'Moodboard y Concepto Visual.png', desc:'Captura de previsualización visual de pantalla inicial y paleta', href:'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80', platform:'image', type:'file'},
+      {name:'Notion · Base de Conocimiento y Textos', desc:'Directorio de servicios asistenciales y redacción de textos clínicos', href:'https://notion.so/cpb-asistencial', platform:'notion', type:'link'},
+      {name:'Staging · Servidor de Pruebas Web', desc:'Despliegue preliminar para revisión con dirección', href:'https://staging.cpb-salut.org', platform:'staging', type:'link'}
     ]
   },
   {
@@ -992,7 +1080,7 @@ let DATA = [
     tasks:[
       {
         id:'t4', code:'AB-01', title:'Auditoría SEO on-page y Core Web Vitals', name:'Auditoría SEO on-page y Core Web Vitals',
-        status:'En curso', pri:'Media', priority:'Media', tag:'SEO',
+        status:'Trabajando', pri:'Media', priority:'Media', tag:'SEO',
         desc:'Optimización de velocidad de carga y meta etiquetas principales.',
         description:'Optimización de velocidad de carga y meta etiquetas principales.',
         due:'22 Oct', owner:'Jesús',
@@ -1015,7 +1103,7 @@ let DATA = [
     tasks:[
       {
         id:'t5', code:'DH-01', title:'Moodboard y manual de marca interior', name:'Moodboard y manual de marca interior',
-        status:'Por hacer', pri:'Alta', priority:'Alta', tag:'Branding',
+        status:'Sin empezar', pri:'Alta', priority:'Alta', tag:'Branding',
         desc:'Selección de texturas, paleta y aplicaciones corporativas.',
         description:'Selección de texturas, paleta y aplicaciones corporativas.',
         due:'28 Oct', owner:'Marta',
@@ -1038,7 +1126,7 @@ let DATA = [
     tasks:[
       {
         id:'t6', code:'CM-01', title:'Calendario editorial para Instagram Reels', name:'Calendario editorial para Instagram Reels',
-        status:'Detenido', pri:'Baja', priority:'Baja', tag:'Social',
+        status:'Esperando feedback', pri:'Baja', priority:'Baja', tag:'Social',
         desc:'Planificación de publicaciones mensuales.',
         description:'Planificación de publicaciones mensuales.',
         due:'30 Oct', owner:'Jesús',
@@ -1389,6 +1477,129 @@ function toggleTaskRow(code){
   S.expandedTask=S.expandedTask===code?null:code
   render()
 }
+// ── Biblioteca de Plataformas y Recursos ────────────────────────────────────
+const PLATFORMS = {
+  pdf:        { id:'pdf',        name:'PDF',          ico:'📕', color:'#E11D48', bg:'rgba(225,29,72,0.1)', isPreviewable:true, type:'pdf' },
+  image:      { id:'image',      name:'Imagen',       ico:'🖼️', color:'#0284C7', bg:'rgba(2,132,199,0.1)', isPreviewable:true, type:'image' },
+  figma:      { id:'figma',      name:'Figma',        ico:'🎨', color:'#A855F7', bg:'rgba(168,85,247,0.1)', isPreviewable:false },
+  drive:      { id:'drive',      name:'Google Drive', ico:'📁', color:'#16A34A', bg:'rgba(22,163,74,0.1)', isPreviewable:false },
+  notion:     { id:'notion',     name:'Notion',       ico:'📓', color:'#374151', bg:'rgba(55,65,81,0.1)', isPreviewable:false },
+  canva:      { id:'canva',      name:'Canva',        ico:'✨', color:'#06B6D4', bg:'rgba(6,182,212,0.1)', isPreviewable:false },
+  dropbox:    { id:'dropbox',    name:'Dropbox',      ico:'📦', color:'#2563EB', bg:'rgba(37,99,235,0.1)', isPreviewable:false },
+  word:       { id:'word',       name:'Word DOCX',    ico:'📘', color:'#2563EB', bg:'rgba(37,99,235,0.1)', isPreviewable:false },
+  excel:      { id:'excel',      name:'Excel XLSX',   ico:'📗', color:'#16A34A', bg:'rgba(22,163,74,0.1)', isPreviewable:false },
+  powerpoint: { id:'powerpoint', name:'PowerPoint',   ico:'📙', color:'#EA580C', bg:'rgba(234,88,12,0.1)', isPreviewable:false },
+  video:      { id:'video',      name:'Vídeo / Loom', ico:'🎬', color:'#7C3AED', bg:'rgba(124,58,237,0.1)', isPreviewable:false },
+  zip:        { id:'zip',        name:'Archivo ZIP',  ico:'🗜️', color:'#64748B', bg:'rgba(100,116,139,0.1)', isPreviewable:false },
+  wordpress:  { id:'wordpress',  name:'WordPress',    ico:'🅿️', color:'#0073AA', bg:'rgba(0,115,170,0.1)', isPreviewable:false },
+  staging:    { id:'staging',    name:'Staging / Web',ico:'🌐', color:'#D97706', bg:'rgba(217,119,6,0.1)', isPreviewable:false },
+  url:        { id:'url',        name:'Enlace Web',   ico:'🔗', color:'#475569', bg:'rgba(71,85,105,0.1)', isPreviewable:false },
+}
+
+function getDocPlatform(doc){
+  if(doc.platform && PLATFORMS[doc.platform]) return PLATFORMS[doc.platform]
+  const name = (doc.name || '').toLowerCase()
+  const href = (doc.href || '').toLowerCase()
+
+  if(name.endsWith('.pdf') || href.includes('.pdf') || href.startsWith('data:application/pdf')) return PLATFORMS.pdf
+  if(name.match(/\.(png|jpe?g|svg|webp|gif)$/) || href.match(/\.(png|jpe?g|svg|webp|gif)$/) || href.startsWith('data:image/')) return PLATFORMS.image
+  if(href.includes('figma.com') || name.includes('figma')) return PLATFORMS.figma
+  if(href.includes('drive.google.com') || href.includes('docs.google.com') || name.includes('drive')) return PLATFORMS.drive
+  if(href.includes('notion.so') || href.includes('notion.site') || name.includes('notion')) return PLATFORMS.notion
+  if(href.includes('canva.com') || name.includes('canva')) return PLATFORMS.canva
+  if(href.includes('dropbox.com') || name.includes('dropbox')) return PLATFORMS.dropbox
+  if(name.match(/\.(docx?|doc)$/)) return PLATFORMS.word
+  if(name.match(/\.(xlsx?|csv)$/)) return PLATFORMS.excel
+  if(name.match(/\.(pptx?|ppt)$/)) return PLATFORMS.powerpoint
+  if(href.includes('loom.com') || href.includes('youtube') || href.includes('vimeo') || name.match(/\.(mp4|mov)$/)) return PLATFORMS.video
+  if(name.match(/\.(zip|rar|7z|tar\.gz)$/)) return PLATFORMS.zip
+  if(href.includes('wp-admin') || href.includes('wordpress') || name.includes('wordpress')) return PLATFORMS.wordpress
+  if(href.includes('staging') || href.includes('dev.') || href.includes('test.') || name.includes('staging')) return PLATFORMS.staging
+  return PLATFORMS.url
+}
+
+function openDocViewer(title, url, type, desc){
+  S.modal = 'docViewer'
+  S._docViewer = { title, url, type: type || 'pdf', desc: desc || '' }
+  render()
+}
+
+// ── Detección de asuntos que Necesitan Atención ─────────────────────────────
+function getAttentionItems(p){
+  const tasks = p.tasks || []
+  const recs = p.recordatorios || []
+  const items = []
+  const now = new Date()
+
+  tasks.forEach(t => {
+    if(t.status === 'Listo') return
+
+    // 1. Tareas sin responsable
+    const owner = (t.owner || '').trim()
+    if(!owner || owner === '—' || owner === 'Sin asignar'){
+      items.push({
+        type: 'no_owner',
+        badge: '👤 Sin responsable',
+        cls: 'prio-purple',
+        task: t,
+        msg: `La tarea "${t.title || t.name}" no tiene responsable asignado.`
+      })
+    }
+
+    // 2. Feedback pendiente / Esperando respuesta del cliente
+    if(t.status === 'Esperando feedback'){
+      items.push({
+        type: 'waiting_feedback',
+        badge: '⏳ Esperando feedback',
+        cls: 'prio-amber',
+        task: t,
+        msg: `Detenida esperando aprobación, material o respuesta del cliente.`
+      })
+    }
+
+    // 3. Fechas y vencimiento
+    if(t.due){
+      if(t.due.includes('-') && t.due.length === 10){
+        const dueD = new Date(t.due + 'T23:59:59')
+        const diffDays = Math.ceil((dueD - now) / (1000 * 60 * 60 * 24))
+        if(diffDays < 0){
+          items.push({
+            type: 'overdue',
+            badge: '🚨 Vencida',
+            cls: 'prio-red',
+            task: t,
+            msg: `Plazo superado el ${fmtDue(t.due)}. Requiere acción inmediata.`
+          })
+        } else if(diffDays <= 3){
+          items.push({
+            type: 'due_soon',
+            badge: '⏰ Vence pronto',
+            cls: 'prio-orange',
+            task: t,
+            msg: `Vence el ${fmtDue(t.due)}. En plazo crítico.`
+          })
+        }
+      }
+    }
+  })
+
+  recs.forEach(r => {
+    if(r.done) return
+    const txtDue = (r.due || '').toLowerCase()
+    if(txtDue.includes('hoy') || txtDue.includes('ayer') || txtDue.includes('mañana')){
+      items.push({
+        type: 'rec_urgent',
+        badge: '🔔 Recordatorio',
+        cls: 'prio-red',
+        rec: r,
+        msg: `${r.text} (${r.due})`
+      })
+    }
+  })
+
+  return items
+}
+
 // ── Normalización de tareas y persistencia ──────────────────────────────────
 function normTask(t, idx, client){
   if(!t) return t
@@ -1408,13 +1619,13 @@ function normTask(t, idx, client){
   if(!t.files) t.files = t.attachment ? [t.attachment] : []
   if(!t.owner) t.owner = client?.responsable || S.defaultUser || 'Jesús'
 
-  // Normalización canónica de los 4 estados Trello
-  const st = (t.status || 'Por hacer').trim()
-  if(st === 'Pendiente' || st === 'Por hacer' || st === 'Sin empezar' || st === 'To Do' || st === 'todo') t.status = 'Por hacer'
-  else if(st === 'En curso' || st === 'En progreso' || st === 'Doing' || st === 'doing') t.status = 'En curso'
-  else if(st === 'Detenido' || st === 'Standby' || st === 'Bloqueado' || st === 'Revisión') t.status = 'Detenido'
+  // Normalización canónica de los 4 estados: Sin empezar, Trabajando, Esperando feedback, Listo
+  const st = (t.status || 'Sin empezar').trim()
+  if(st === 'Sin empezar' || st === 'Por hacer' || st === 'Pendiente' || st === 'To Do' || st === 'todo') t.status = 'Sin empezar'
+  else if(st === 'Trabajando' || st === 'En curso' || st === 'En progreso' || st === 'Doing' || st === 'doing') t.status = 'Trabajando'
+  else if(st === 'Esperando feedback' || st === 'Detenido' || st === 'Standby' || st === 'Bloqueado' || st === 'Revisión' || st === 'Esperando cliente' || st === 'Feedback') t.status = 'Esperando feedback'
   else if(st === 'Listo' || st === 'Completada' || st === 'Hecho' || st === 'Done' || st === 'done') t.status = 'Listo'
-  else t.status = 'Por hacer'
+  else t.status = 'Sin empezar'
   return t
 }
 
@@ -1426,7 +1637,9 @@ function updateTaskField(pid,code,field,val){
     if(field==='priority'||field==='pri'){ t.priority=val; t.pri=val }
     if(field==='title'||field==='name'){ t.title=val; t.name=val }
     if(field==='status'){
-      if(val==='Pendiente') t.status='Por hacer'
+      if(val==='Por hacer'||val==='Pendiente') t.status='Sin empezar'
+      else if(val==='En curso') t.status='Trabajando'
+      else if(val==='Detenido') t.status='Esperando feedback'
     }
     normTask(t, 0, p)
     save()
@@ -1858,21 +2071,68 @@ function moveProject(sourceId,targetId,before){
 }
 
 // ── Documentos ────────────────────────────────────────────────────────────
-function openAddDoc(pid){ S.modal='addDoc'; S._docPid=pid; S._docTab='link'; render(); setTimeout(()=>document.getElementById('doc-name-in')?.focus(),50) }
+function openAddDoc(pid){ 
+  S.modal='addDoc'
+  S._docPid=pid
+  S._docTab='link'
+  S._docUploadedDataUrl=null
+  render()
+  setTimeout(()=>document.getElementById('doc-name-in')?.focus(),50) 
+}
 function switchDocTab(tab){ S._docTab=tab; render() }
+function handleDocFileUpload(e){
+  const file = e.target.files?.[0]
+  if(!file) return
+  const nameIn = document.getElementById('doc-name-in')
+  if(nameIn && (!nameIn.value.trim() || nameIn.value.trim().startsWith('Ej.'))){
+    nameIn.value = file.name
+  }
+  const reader = new FileReader()
+  reader.onload = function(evt){
+    S._docUploadedDataUrl = evt.target.result
+    const plat = getDocPlatform({ name: file.name, href: S._docUploadedDataUrl })
+    const sel = document.getElementById('doc-platform-in')
+    if(sel && plat) sel.value = plat.id
+    const hint = document.getElementById('doc-file-uploaded-hint')
+    if(hint){
+      hint.style.display = 'block'
+      hint.innerHTML = `✓ Archivo cargado: <b>${escapeHtml(file.name)}</b> (${(file.size/1024).toFixed(1)} KB)`
+    }
+  }
+  reader.readAsDataURL(file)
+}
 function confirmAddDoc(){
-  const pid=S._docPid
-  const name=(document.getElementById('doc-name-in')?.value||'').trim()
-  if(!name)return
-  const href=(document.getElementById('doc-href-in')?.value||'').trim()
-  const desc=(document.getElementById('doc-desc-in')?.value||'').trim()
-  const p=DATA.find(x=>x.id===pid)
-  if(p){if(!p.docs)p.docs=[];p.docs.push({id:'doc_'+Date.now(),name,href:href||'#',desc,type:'link'})}
-  S.modal=null;render()
+  const pid = S._docPid
+  const name = (document.getElementById('doc-name-in')?.value||'').trim()
+  if(!name) return
+  let href = (document.getElementById('doc-href-in')?.value||'').trim()
+  if(S._docUploadedDataUrl){
+    href = S._docUploadedDataUrl
+  }
+  const desc = (document.getElementById('doc-desc-in')?.value||'').trim()
+  const platVal = document.getElementById('doc-platform-in')?.value
+  const platform = (platVal && platVal !== 'auto') ? platVal : undefined
+  const p = DATA.find(x=>x.id===pid)
+  if(p){
+    if(!p.docs) p.docs = []
+    p.docs.push({
+      id: 'doc_' + Date.now(),
+      name,
+      href: href || '#',
+      desc,
+      platform,
+      type: S._docUploadedDataUrl ? 'file' : 'link'
+    })
+  }
+  S._docUploadedDataUrl = null
+  S.modal = null
+  save()
+  render()
 }
 function deleteDoc(pid,idx){
   const p=DATA.find(x=>x.id===pid)
   if(p?.docs)p.docs.splice(idx,1)
+  save()
   render()
 }
 function addChkItem(){ S._chkItems.push(''); render(); setTimeout(()=>{const inputs=document.querySelectorAll('.modal-chk-in');inputs[inputs.length-1]?.focus()},30) }
@@ -1897,7 +2157,7 @@ function submitNewTask(){
     name,
     title:name,
     owner:defaultOwner,
-    status:'Por hacer',
+    status:'Sin empezar',
     priority,
     pri:priority,
     due,
@@ -2287,6 +2547,7 @@ function render(){
   if(!ov){ov=document.createElement('div');ov.id='modal-root';document.body.appendChild(ov)}
   if(S.modal==='newTask') ov.innerHTML=newTaskModal()
   else if(S.modal==='addDoc') ov.innerHTML=addDocModal()
+  else if(S.modal==='docViewer') ov.innerHTML=docViewerModal()
   else if(S.modal==='newClient') ov.innerHTML=newClientModal()
   else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
   else if(S.modal==='config') ov.innerHTML=configModal()
@@ -2421,7 +2682,7 @@ function taskDetailModal(){
           <div class="trello-head-sub">
             en la lista 
             <select class="trello-list-select" onchange="updateTaskField('${p.id}','${t.code}','status',this.value)">
-              ${['Por hacer','En curso','Detenido','Listo'].map(st=>`
+              ${['Sin empezar','Trabajando','Esperando feedback','Listo'].map(st=>`
                 <option value="${st}" ${t.status===st?'selected':''}>${st}</option>
               `).join('')}
             </select>
@@ -2567,14 +2828,14 @@ function taskDetailModal(){
         <!-- Right side actions -->
         <div class="trello-actions-col">
           <div class="trello-act-label">ACCIONES RÁPIDAS</div>
-          <button class="trello-act-btn ${isDone?'is-done':''}" onclick="updateTaskField('${p.id}','${t.code}','status','${isDone?'Por hacer':'Listo'}')">
+          <button class="trello-act-btn ${isDone?'is-done':''}" onclick="updateTaskField('${p.id}','${t.code}','status','${isDone?'Sin empezar':'Listo'}')">
             <span>${isDone?'↩️ Reabrir tarea':'✅ Marcar como Listo'}</span>
           </button>
 
           <div class="trello-act-label" style="margin-top:16px">MOVER A LISTA</div>
-          ${['Por hacer','En curso','Detenido','Listo'].map(st=>`
+          ${['Sin empezar','Trabajando','Esperando feedback','Listo'].map(st=>`
             <button class="trello-move-btn ${t.status===st?'active':''}" onclick="updateTaskField('${p.id}','${t.code}','status','${st}')">
-              <span>${st==='Por hacer'?'📋':st==='En curso'?'⚡':st==='Detenido'?'⏸️':'✅'} ${st}</span>
+              <span>${st==='Sin empezar'?'📋':st==='Trabajando'?'⚡':st==='Esperando feedback'?'⏳':'✅'} ${st}</span>
             </button>
           `).join('')}
 
@@ -2650,45 +2911,156 @@ function addDocModal(){
       <div class="modal-head">
         <div>
           <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">DOCUMENTOS &amp; RECURSOS</div>
-          <div class="modal-title">Añadir Recurso al Proyecto</div>
+          <div class="modal-title">Añadir Recurso a la Biblioteca</div>
         </div>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
       <!-- Tabs -->
       <div style="display:flex;border-bottom:1px solid var(--border);padding:0 22px">
         <button onclick="switchDocTab('link')" style="padding:10px 16px;border:none;background:transparent;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;border-bottom:2px solid ${tab==='link'?'var(--accent)':'transparent'};color:${tab==='link'?'var(--accent-text)':'var(--text-3)'};margin-bottom:-1px;display:flex;align-items:center;gap:6px">
-          🔗 Enlace externo
+          🔗 Enlace o plataforma
         </button>
         <button onclick="switchDocTab('file')" style="padding:10px 16px;border:none;background:transparent;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;border-bottom:2px solid ${tab==='file'?'var(--accent)':'transparent'};color:${tab==='file'?'var(--accent-text)':'var(--text-3)'};margin-bottom:-1px;display:flex;align-items:center;gap:6px">
-          📎 Subir fichero
+          📎 Subir archivo / PDF
         </button>
       </div>
       <div class="modal-body">
+        <div class="modal-field">
+          <div class="modal-lbl">Plataforma / Tipo de recurso</div>
+          <select id="doc-platform-in" class="modal-sel">
+            <option value="auto">Auto (Detectar automáticamente)</option>
+            <option value="pdf">📕 PDF (Documento oficial)</option>
+            <option value="image">🖼️ Imagen (PNG, JPG, SVG, WebP)</option>
+            <option value="figma">🎨 Figma (Diseño y UI Kit)</option>
+            <option value="drive">📁 Google Drive / Docs / Sheets</option>
+            <option value="notion">📓 Notion (Documentación)</option>
+            <option value="canva">✨ Canva (Creatividades)</option>
+            <option value="dropbox">📦 Dropbox</option>
+            <option value="word">📘 Word (DOCX)</option>
+            <option value="excel">📗 Excel (XLSX / CSV)</option>
+            <option value="powerpoint">📙 PowerPoint (PPTX)</option>
+            <option value="video">🎬 Vídeo / Loom / MP4</option>
+            <option value="zip">🗜️ Archivo ZIP / Comprimido</option>
+            <option value="wordpress">🅿️ WordPress / CMS</option>
+            <option value="staging">🌐 Staging / Entorno Pruebas</option>
+            <option value="url">🔗 Enlace Web / URL</option>
+          </select>
+        </div>
+
         ${tab==='link'?`
           <div class="modal-field">
-            <div class="modal-lbl">URL del documento</div>
-            <input id="doc-href-in" class="modal-in" placeholder="https://drive.google.com/… · notion.so/… · figma.com/…"/>
+            <div class="modal-lbl">URL o enlace del recurso</div>
+            <input id="doc-href-in" class="modal-in" placeholder="https://drive.google.com/… · figma.com/… · notion.so/… · staging.…"/>
           </div>
         `:`
-          <div style="border:1.5px dashed var(--border);border-radius:9px;padding:28px 16px;text-align:center;margin-bottom:15px;color:var(--text-3)">
-            <div style="font-size:24px;margin-bottom:8px">📁</div>
-            <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:4px">Arrastra aquí tu fichero</div>
-            <div style="font-size:11.5px">O pega la URL del documento en el campo de abajo</div>
-            <input id="doc-href-in" class="modal-in" placeholder="https://…" style="margin-top:12px;text-align:left"/>
+          <input type="file" id="doc-file-upload" style="display:none" onchange="handleDocFileUpload(event)" accept=".pdf,image/*,.docx,.xlsx,.pptx,.zip">
+          <div onclick="document.getElementById('doc-file-upload').click()" style="border:1.5px dashed var(--border);border-radius:9px;padding:26px 16px;text-align:center;margin-bottom:15px;background:var(--surface-2);cursor:pointer;transition:all .15s">
+            <div style="font-size:26px;margin-bottom:6px">📁</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:3px">Haz clic para examinar o subir archivo</div>
+            <div style="font-size:11.5px;color:var(--text-3)">PDF, imágenes, Word, Excel, PowerPoint, ZIP...</div>
+            <div id="doc-file-uploaded-hint" style="display:none;margin-top:10px;font-size:11.5px;color:#16A34A;background:#EDFAF2;padding:6px 12px;border-radius:6px;font-weight:600"></div>
           </div>
         `}
         <div class="modal-field">
-          <div class="modal-lbl">Título del documento</div>
-          <input id="doc-name-in" class="modal-in" placeholder="Ej. Plan de producción final.pdf" onkeydown="if(event.key==='Enter')confirmAddDoc()"/>
+          <div class="modal-lbl">Título del documento / recurso</div>
+          <input id="doc-name-in" class="modal-in" placeholder="Ej. Propuesta Rediseño Web CPB.pdf" onkeydown="if(event.key==='Enter')confirmAddDoc()"/>
         </div>
         <div class="modal-field">
           <div class="modal-lbl">Descripción / Notas</div>
-          <input id="doc-desc-in" class="modal-in" placeholder="Detalles sobre este recurso…"/>
+          <input id="doc-desc-in" class="modal-in" placeholder="Detalles o especificaciones sobre este recurso…"/>
         </div>
       </div>
       <div class="modal-foot">
         <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
-        <button class="modal-ok" onclick="confirmAddDoc()">Guardar Documento</button>
+        <button class="modal-ok" onclick="confirmAddDoc()">Guardar en Biblioteca</button>
+      </div>
+    </div>
+  </div>`
+}
+
+function docViewerModal(){
+  const v = S._docViewer || {}
+  const title = v.title || 'Documento'
+  const url = v.url || ''
+  const type = v.type || 'pdf'
+  const desc = v.desc || ''
+  const isImage = type === 'image' || (/\.(png|jpe?g|svg|webp|gif)$/i.test(title)) || (url.startsWith('data:image/'))
+  const isRealUrl = url && url !== '#' && !url.startsWith('#')
+  const isPdfData = url.startsWith('data:application/pdf') || (url.toLowerCase().endsWith('.pdf') && isRealUrl)
+
+  return `<div class="doc-viewer-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="doc-viewer-modal">
+      <!-- Viewer Header -->
+      <div class="doc-viewer-head">
+        <div class="doc-viewer-title-group">
+          <span class="doc-viewer-tag" style="background:${isImage?'#0284C7':'#E11D48'}">${isImage?'IMAGEN':'PDF'}</span>
+          <div class="doc-viewer-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
+        </div>
+        <div class="doc-viewer-tools">
+          ${isRealUrl ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="doc-viewer-btn-tool" title="Abrir en pestaña nueva">↗ Abrir</a>` : ''}
+          <button class="doc-viewer-btn-tool" onclick="window.print()" title="Imprimir documento">🖨️ Imprimir</button>
+          <button class="modal-close" onclick="closeModal()" title="Cerrar visor">✕</button>
+        </div>
+      </div>
+
+      <!-- Viewer Body -->
+      <div class="doc-viewer-body ${isImage?'img-mode':''}">
+        ${isImage ? `
+          <img src="${isRealUrl ? escapeHtml(url) : 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80'}" alt="${escapeHtml(title)}" class="doc-viewer-img" />
+        ` : (isPdfData ? `
+          <iframe src="${escapeHtml(url)}#toolbar=0" class="doc-viewer-iframe" title="${escapeHtml(title)}"></iframe>
+        ` : `
+          <!-- Mockup Interactivo de Documento PDF de Agencia -->
+          <div class="doc-pdf-mock-page">
+            <div class="doc-pdf-head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:28px;height:28px;border-radius:6px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px">L</div>
+                <div>
+                  <div style="font-size:12px;font-weight:800;letter-spacing:0.5px;color:#11100E">LIGROW STUDIO</div>
+                  <div class="doc-pdf-watermark">AGENCIA &amp; PRODUCT DESIGN</div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:#EDFAF2;color:#0F9460;border:1px solid rgba(15,148,96,0.2)">✓ DOCUMENTO VIGENTE</span>
+                <div style="font-size:10px;color:#8E8B83;margin-top:3px">Ref: DOC-${Math.abs(title.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % 900 + 100} · Rev 1.2</div>
+              </div>
+            </div>
+
+            <div class="doc-pdf-h1">${escapeHtml(title)}</div>
+            <div class="doc-pdf-sub">${escapeHtml(desc || 'Documento oficial de entrega, especificaciones técnicas y acuerdos de diseño para validación de cliente.')}</div>
+
+            <div class="doc-pdf-block">
+              <h4>🎯 Resumen Ejecutivo &amp; Alcance</h4>
+              <p>Este documento recoge los requerimientos esenciales, directrices de identidad corporativa y arquitectura técnica definidas en las sesiones estratégicas. Cada entrega se sincroniza directamente con el panel Kanban de Ligrow Hub para garantizar el cumplimiento de los plazos comprometidos.</p>
+            </div>
+
+            <div class="doc-pdf-block" style="background:#FFFFFF;border:1px solid #E5E3DF">
+              <h4>📋 Estado de Validación &amp; Aprobaciones</h4>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px;font-size:11.5px">
+                <div style="padding:10px;border-radius:6px;background:#FAF9F6;border:1px solid #EDEBE6">
+                  <div style="color:#8E8B83;font-size:10px;font-weight:700">DIRECCIÓN CREATIVA</div>
+                  <div style="font-weight:700;color:#11100E;margin-top:3px">Jesús Martín</div>
+                  <div style="color:#0F9460;font-size:10.5px;margin-top:2px">● Validado</div>
+                </div>
+                <div style="padding:10px;border-radius:6px;background:#FAF9F6;border:1px solid #EDEBE6">
+                  <div style="color:#8E8B83;font-size:10px;font-weight:700">RESPONSABLE TÉCNICO</div>
+                  <div style="font-weight:700;color:#11100E;margin-top:3px">Marta Sala</div>
+                  <div style="color:#0F9460;font-size:10.5px;margin-top:2px">● Validado</div>
+                </div>
+                <div style="padding:10px;border-radius:6px;background:#FFFBEB;border:1px solid rgba(217,119,6,0.3)">
+                  <div style="color:#B45309;font-size:10px;font-weight:700">CLIENTE FINAL</div>
+                  <div style="font-weight:700;color:#11100E;margin-top:3px">Pendiente firma</div>
+                  <div style="color:#D97706;font-size:10.5px;margin-top:2px">⏳ Esperando feedback</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="doc-pdf-foot">
+              <span>Ligrow Tasks · Visor Integrado de Documentación</span>
+              <span>Página 1 de 1 · Generado automáticamente</span>
+            </div>
+          </div>
+        `)}
       </div>
     </div>
   </div>`
@@ -2923,62 +3295,156 @@ function clienteContent(p){
   return resumen(p)
 }
 
+// ── Bloque superior Necesita atención ───────────────────────────────────────
+function necesitaAtencionSection(p){
+  const items = getAttentionItems(p)
+  if(!items.length){
+    return `<div class="attention-card all-good" style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="att-ico-box good">✓</div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:700;color:#16A34A;display:flex;align-items:center;gap:6px">
+            <span>Todo al día</span>
+            <span style="font-size:11px;font-weight:600;color:var(--text-3);background:var(--surface-2);padding:2px 8px;border-radius:10px">0 incidencias activas</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--text-3);margin-top:2px">No hay tareas vencidas, feedback pendiente de cliente ni recordatorios críticos sin atender.</div>
+        </div>
+      </div>
+    </div>`
+  }
+
+  return `<div class="attention-card has-issues" style="margin-bottom:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="att-ico-box warn">⚠️</div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:8px">
+            <span>Necesita atención</span>
+            <span class="att-count-badge">${items.length} asunto${items.length>1?'s':''}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:1px">Elementos críticos que requieren acción o seguimiento inmediato con el cliente o equipo.</div>
+        </div>
+      </div>
+    </div>
+    <div class="att-items-grid">
+      ${items.map(it => {
+        if(it.task){
+          const t = it.task
+          return `<div class="att-item-row" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">
+            <span class="att-badge ${it.cls}">${it.badge}</span>
+            <div class="att-item-content">
+              <div class="att-item-title">${escapeHtml(t.title||t.name||'Tarea')} <span style="font-size:11px;font-weight:500;color:var(--text-3)">(${t.code||''})</span></div>
+              <div class="att-item-msg">${escapeHtml(it.msg)}</div>
+            </div>
+            <div class="att-item-meta">
+              <span class="att-owner-pill">👤 ${escapeHtml(t.owner||'Sin asignar')}</span>
+              <button class="att-act-btn" onclick="event.stopPropagation();openTaskDetail('${p.id}','${t.code||t.id}')">Abrir ↗</button>
+            </div>
+          </div>`
+        } else if(it.rec){
+          const r = it.rec
+          return `<div class="att-item-row" onclick="startAddRec()">
+            <span class="att-badge ${it.cls}">${it.badge}</span>
+            <div class="att-item-content">
+              <div class="att-item-title">${escapeHtml(r.text||'Recordatorio')}</div>
+              <div class="att-item-msg">${escapeHtml(it.msg)}</div>
+            </div>
+            <div class="att-item-meta">
+              <button class="att-act-btn">Revisar ↗</button>
+            </div>
+          </div>`
+        }
+        return ''
+      }).join('')}
+    </div>
+  </div>`
+}
+
 function resumen(p){
   const tasks=p.tasks||[]
   const recs=p.recordatorios||[]
   const docs=p.docs||[]
   const pendingTasks=tasks.filter(x=>x.status!=='Listo').length
-  const pendingRecs=recs.filter(x=>!x.done).length
-  const totalTasks=tasks.length
+  const workingTasks=tasks.filter(x=>x.status==='Trabajando').length
+  const waitingClient=tasks.filter(x=>x.status==='Esperando feedback').length
   const doneTasks=tasks.filter(x=>x.status==='Listo').length
 
-  // ── Stats bar ──
-  const statsBar=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+  // 1. Bloque superior diferenciador "Necesita atención"
+  const attentionBlock = necesitaAtencionSection(p)
+
+  // 2. Barra de métricas con "Esperando cliente" como KPI clave
+  const statsBar=`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">
     <div class="stat">
       <div class="stat-lbl">Tareas pendientes</div>
       <div class="stat-val ${pendingTasks>0?'accent':'green'}">${pendingTasks}</div>
     </div>
     <div class="stat">
-      <div class="stat-lbl">Completadas</div>
+      <div class="stat-lbl">⚡ Trabajando</div>
+      <div class="stat-val" style="color:var(--brand)">${workingTasks}</div>
+    </div>
+    <div class="stat" style="${waitingClient>0?'border-color:rgba(217,119,6,0.4);background:#FFFDF7':''}">
+      <div class="stat-lbl" style="${waitingClient>0?'color:#B45309;font-weight:700':''}">⏳ Esperando cliente</div>
+      <div class="stat-val" style="${waitingClient>0?'color:#D97706;font-weight:800':''}">${waitingClient}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">✅ Completadas</div>
       <div class="stat-val green">${doneTasks}</div>
     </div>
     <div class="stat">
-      <div class="stat-lbl">Recordatorios activos</div>
-      <div class="stat-val ${pendingRecs>0?'accent':'green'}">${pendingRecs}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-lbl">Documentos</div>
+      <div class="stat-lbl">📁 Biblioteca &amp; Docs</div>
       <div class="stat-val">${docs.length}</div>
     </div>
   </div>`
 
-  // ── Docs section ──
+  // 3. Biblioteca Documentos & Recursos con identificación visual por plataforma y visor online
   const docsSection=`<div class="card" style="display:flex;flex-direction:column;gap:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-1)">
-        <span style="font-size:16px">📄</span> Documentos &amp; Recursos
+    <div class="doc-card-header">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-1)">
+        <span style="font-size:16px">📚</span> Documentos &amp; Recursos
+        <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--surface-2);color:var(--text-3)">${docs.length}</span>
       </div>
-      <button onclick="openAddDoc('${p.id}')" style="padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;font-family:inherit;cursor:pointer">+ Añadir recurso</button>
+      <button onclick="openAddDoc('${p.id}')" style="padding:5px 12px;border-radius:7px;border:none;background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;font-family:inherit;cursor:pointer">+ Añadir recurso</button>
     </div>
-    ${docs.length?`<div style="display:flex;flex-direction:column;gap:0">
-      ${docs.map((d,i)=>`
-        <div class="doc-row" style="display:flex;align-items:center;gap:9px">
-          <span style="font-size:15px">${d.type==='file'?'📎':'🔗'}</span>
-          <div style="flex:1;min-width:0">
-            <div class="doc-name">${d.name}</div>
-            ${d.desc?`<div style="font-size:11px;color:var(--text-3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.desc}</div>`:''}
-          </div>
-          ${d.href&&d.href!=='#'?`<a href="${d.href}" target="_blank" rel="noopener" class="doc-link">Abrir ↗</a>`:''}
-          <button onclick="deleteDoc('${p.id}',${i})" style="background:transparent;border:none;color:var(--text-3);font-size:13px;cursor:pointer;padding:0 2px;opacity:0;transition:opacity .15s" class="doc-del">🗑</button>
-        </div>`).join('')}
-    </div>`:`<div class="dashed-box">Sin documentos vinculados.<br><span style="font-size:11px;color:var(--text-3)">Añade PDFs, links de Drive, Notion, Figma…</span></div>`}
+
+    ${docs.length?`
+      <div style="display:flex;flex-direction:column;gap:0">
+        ${docs.map((d,i)=>{
+          const plat = getDocPlatform(d)
+          const isViewable = plat.isPreviewable || plat.type === 'pdf' || plat.type === 'image' || (d.name && d.name.toLowerCase().endsWith('.pdf'))
+          return `<div class="doc-item-row">
+            <span class="doc-platform-badge" style="background:${plat.bg};color:${plat.color};border:1px solid ${plat.color}33" title="Plataforma: ${plat.name}">
+              <span>${plat.ico}</span>
+              <span>${plat.name}</span>
+            </span>
+            <div class="doc-info-wrap">
+              <div class="doc-title-text" title="${escapeHtml(d.name)}">${escapeHtml(d.name)}</div>
+              ${d.desc?`<div class="doc-sub-text" title="${escapeHtml(d.desc)}">${escapeHtml(d.desc)}</div>`:''}
+            </div>
+            <div class="doc-actions-wrap">
+              ${isViewable ? `
+                <button class="doc-viewer-btn" onclick="openDocViewer('${escapeHtml(d.name)}', '${escapeHtml(d.href||'')}', '${plat.type||'pdf'}', '${escapeHtml(d.desc||'')}')" title="Abrir visor integrado sin salir de la herramienta">
+                  👁️ Ver online
+                </button>
+              ` : ''}
+              ${d.href && d.href !== '#' ? `
+                <a href="${escapeHtml(d.href)}" target="_blank" rel="noopener" class="doc-external-link" title="Abrir enlace externo">
+                  Abrir ↗
+                </a>
+              ` : ''}
+              <button onclick="deleteDoc('${p.id}',${i})" style="background:transparent;border:none;color:var(--text-3);font-size:13px;cursor:pointer;padding:0 4px;opacity:0.6;transition:opacity .15s" title="Eliminar recurso" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
+            </div>
+          </div>`
+        }).join('')}
+      </div>
+    `:`<div class="dashed-box">
+      Sin recursos vinculados.<br>
+      <span style="font-size:11px;color:var(--text-3)">Añade PDFs, imágenes, Figma, Google Drive, Canva, Notion, URLs de Staging...</span>
+    </div>`}
   </div>`
 
-  // ── Recordatorios ──
   const recsSection=recordatoriosSection(p)
-
   const tasksSection=`<div style="margin-bottom:20px">${taskTableView(p)}</div>`
-  return statsBar + tasksSection + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">${docsSection}${recsSection}</div>`
+  return attentionBlock + statsBar + tasksSection + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">${docsSection}${recsSection}</div>`
 }
 
 // ── Recordatorios section ──────────────────────────────────────────────────
@@ -3094,7 +3560,7 @@ function tkTaskRow(p,t){
       </div>
       <div onclick="event.stopPropagation()">
         <select class="tk-sel" onchange="updateTaskField('${p.id}','${t.code}','status',this.value)">
-          ${['Sin empezar','En curso','Detenido','Listo'].map(v=>`<option ${t.status===v?'selected':''}>${v}</option>`).join('')}
+          ${['Sin empezar','Trabajando','Esperando feedback','Listo'].map(v=>`<option ${t.status===v?'selected':''}>${v}</option>`).join('')}
         </select>
       </div>
       <div class="tk-elems">
@@ -3200,10 +3666,10 @@ function kanban(p, isGlobal = false){
     : allScopeTasks.filter(({ t }) => ((t.owner || '').trim() || 'Sin asignar') === activeFilter)
 
   const columns = [
-    { id: 'Por hacer', title: 'Por hacer', icon: '📋', accent: '#64748B', bgLight: 'rgba(100,116,139,0.1)' },
-    { id: 'En curso',   title: 'En curso',   icon: '⚡', accent: 'var(--brand)', bgLight: 'rgba(240,78,35,0.1)' },
-    { id: 'Detenido',   title: 'Detenido',   icon: '⏸️', accent: '#EF4444', bgLight: 'rgba(239,68,68,0.1)' },
-    { id: 'Listo',      title: 'Listo',      icon: '✅', accent: '#16A34A', bgLight: 'rgba(22,163,74,0.1)' }
+    { id: 'Sin empezar',        title: 'Sin empezar',        icon: '📋', accent: '#64748B', bgLight: 'rgba(100,116,139,0.1)' },
+    { id: 'Trabajando',          title: 'Trabajando',          icon: '⚡', accent: 'var(--brand)', bgLight: 'rgba(240,78,35,0.1)' },
+    { id: 'Esperando feedback',  title: 'Esperando feedback',  icon: '⏳', accent: '#D97706', bgLight: 'rgba(217,119,6,0.1)' },
+    { id: 'Listo',               title: 'Listo',               icon: '✅', accent: '#16A34A', bgLight: 'rgba(22,163,74,0.1)' }
   ]
 
   const quickTargetClient = p || S.proj || DATA.find(c => c.type === 'cliente')
@@ -3315,7 +3781,7 @@ function kanban(p, isGlobal = false){
 
 function tabla(p){
   const t=p.tasks||[]
-  const chipOf=s=>s==='En curso'?'chip chip-orange':s==='Listo'?'chip chip-green':'chip chip-red'
+  const chipOf=s=>s==='Trabajando'?'chip chip-working':s==='Esperando feedback'?'chip chip-waiting':s==='Listo'?'chip chip-ready':'chip chip-slate'
   return `<table class="gtable">
     <thead><tr>
       <th>Código</th><th>Tarea</th><th>Responsable</th><th>Estado</th><th>Prioridad</th><th>Vence</th>
@@ -3567,8 +4033,9 @@ function navKanbanGlobal(){
 function navDashboard(){
   const clientes = DATA.filter(p=>p.type==='cliente')
   const allTasks = clientes.flatMap(p=>(p.tasks||[]).map(t=>({...t,clientName:p.name,clientColor:p.color})))
-  const enCurso  = allTasks.filter(t=>t.status==='En curso')
-  const detenido = allTasks.filter(t=>t.status==='Detenido')
+  const sinEmpezar = allTasks.filter(t=>t.status==='Sin empezar')
+  const trabajando  = allTasks.filter(t=>t.status==='Trabajando')
+  const esperandoFeedback = allTasks.filter(t=>t.status==='Esperando feedback')
   const listo    = allTasks.filter(t=>t.status==='Listo')
   return `<div class="mn">
     <div class="tb" style="padding-bottom:0">
@@ -3580,33 +4047,34 @@ function navDashboard(){
       </div>
     </div>
     <div class="ct">
-      <div class="stats" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stats" style="grid-template-columns:repeat(5,1fr)">
         <div class="stat"><div class="stat-lbl">Clientes activos</div><div class="stat-val">${clientes.length}</div></div>
-        <div class="stat"><div class="stat-lbl">En curso</div><div class="stat-val accent">${enCurso.length}</div></div>
-        <div class="stat"><div class="stat-lbl">Detenidas</div><div class="stat-val">${detenido.length}</div></div>
-        <div class="stat"><div class="stat-lbl">Completadas</div><div class="stat-val green">${listo.length}</div></div>
+        <div class="stat"><div class="stat-lbl">Sin empezar</div><div class="stat-val">${sinEmpezar.length}</div></div>
+        <div class="stat"><div class="stat-lbl">⚡ Trabajando</div><div class="stat-val accent">${trabajando.length}</div></div>
+        <div class="stat" style="${esperandoFeedback.length>0?'border-color:rgba(217,119,6,0.4);background:#FFFDF7':''}"><div class="stat-lbl" style="${esperandoFeedback.length>0?'color:#B45309;font-weight:700':''}">⏳ Esperando cliente</div><div class="stat-val" style="${esperandoFeedback.length>0?'color:#D97706;font-weight:800':''}">${esperandoFeedback.length}</div></div>
+        <div class="stat"><div class="stat-lbl">✅ Completadas</div><div class="stat-val green">${listo.length}</div></div>
       </div>
       <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:12px">Tareas activas por cliente</div>
       ${clientes.map(p=>{
         const t=p.tasks||[]
-        const en=t.filter(x=>x.status==='En curso')
-        const det=t.filter(x=>x.status==='Detenido')
+        const tr=t.filter(x=>x.status==='Trabajando')
+        const esp=t.filter(x=>x.status==='Esperando feedback')
         if(!t.length)return''
         return `<div class="card" style="margin-bottom:12px;padding:14px 18px;cursor:pointer" onclick="selectProj('${p.id}')">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
             <div style="width:26px;height:26px;border-radius:6px;background:${p.color};display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:#fff">${p.initials}</div>
             <div style="font-weight:700;font-size:14px;color:var(--text-1)">${p.name}</div>
             <span style="margin-left:auto;font-size:11px;color:var(--text-3)">${p.sub}</span>
-            <span class="chip chip-orange" style="margin-left:8px">${en.length} en curso</span>
-            ${det.length?`<span class="chip chip-red">${det.length} detenida${det.length>1?'s':''}</span>`:''}
+            ${tr.length?`<span class="chip chip-working" style="margin-left:8px">${tr.length} trabajando</span>`:''}
+            ${esp.length?`<span class="chip chip-waiting" style="margin-left:8px">${esp.length} esperando cliente</span>`:''}
           </div>
-          ${en.slice(0,3).map(x=>`<div class="t-row">
+          ${tr.slice(0,3).map(x=>`<div class="t-row">
             <div class="t-dot" style="background:${(x.pri||x.priority)==='Alta'?'#D63A0F':(x.pri||x.priority)==='Media'?'#D48000':'#0F9460'}"></div>
             <div class="t-name">${escapeHtml(x.title||x.name||'Tarea')}</div>
             <div class="t-owner">${escapeHtml(x.tag||x.owner||'')}</div>
             <span style="font-size:11px;color:var(--text-3)">${x.due||''}</span>
           </div>`).join('')}
-          ${en.length>3?`<div style="font-size:11px;color:var(--text-3);padding:6px 0">+${en.length-3} más...</div>`:''}
+          ${tr.length>3?`<div style="font-size:11px;color:var(--text-3);padding:6px 0">+${tr.length-3} más...</div>`:''}
         </div>`
       }).join('')}
     </div>
@@ -3701,7 +4169,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v8'
+const STORE_VERSION='v9'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
@@ -3747,6 +4215,18 @@ try{
   if(urlParams.get('task')){
     S.modal = 'taskDetail'
     S._taskDetail = { clientId: S.proj?.id || 'cpb', taskCode: urlParams.get('task') }
+  }
+  if(urlParams.get('modal')){
+    S.modal = urlParams.get('modal')
+    if(S.modal === 'addDoc') S._docPid = S.proj?.id || 'cpb'
+    if(S.modal === 'docViewer'){
+      S._docViewer = {
+        title: urlParams.get('docTitle') || 'Propuesta Rediseño Web CPB.pdf',
+        url: urlParams.get('docUrl') || '#',
+        type: urlParams.get('docType') || 'pdf',
+        desc: urlParams.get('docDesc') || 'Presentación completa de concepto visual, colores y wireframes'
+      }
+    }
   }
 }catch(e){}
 
