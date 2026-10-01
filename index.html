@@ -848,7 +848,15 @@ body{
 .tk-s-badge{font-size:9.5px;font-weight:700;border-radius:20px;padding:2px 8px;margin-left:auto;white-space:nowrap}
 
 .tk-table{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
-.tk-head-row{display:grid;grid-template-columns:75px 1fr 44px 130px 105px 95px 110px 150px;align-items:center;padding:7px 14px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+.tk-head-row{
+  display:grid;
+  grid-template-columns:65px 1fr 38px 125px 75px 85px 165px 135px;
+  gap:10px;
+  align-items:center;
+  padding:8px 14px;
+  background:var(--surface-2);
+  border-bottom:1px solid var(--border);
+}
 .tk-th{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)}
 
 /* priority stripe on the left */
@@ -860,12 +868,12 @@ body{
 
 .tk-task-row{
   display:grid;
-  grid-template-columns:75px 1fr 44px 130px 105px 95px 110px 150px;
+  grid-template-columns:65px 1fr 38px 125px 75px 85px 165px 135px;
+  gap:10px;
   align-items:center;
   padding:10px 14px;
   cursor:pointer;
   transition:background .1s;
-  gap:0;
   user-select:none;
 }
 .tk-task-row:hover{background:var(--surface-2)}
@@ -876,7 +884,7 @@ body{
 .tk-owner-av{width:17px;height:17px;border-radius:50%;background:var(--brand);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .tk-owner-input{border:none;background:transparent;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--text-1);outline:none;width:100%;min-width:0}
 
-.tk-id{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text-3);white-space:nowrap}
+.tk-id{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--text-3);white-space:nowrap}
 .tk-name-cell{min-width:0}
 .tk-name-txt{font-size:13px;font-weight:500;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tk-name-txt.done{color:var(--text-3);text-decoration:line-through}
@@ -888,13 +896,91 @@ body{
 .tk-act.del:hover{background:#FFE5E5}
 .tk-due{font-size:11px;color:var(--text-3);white-space:nowrap}
 .tk-sel{
-  border:1px solid var(--border-2);border-radius:5px;
-  padding:3px 6px;font-size:11px;font-family:inherit;
-  background:var(--surface-2);color:var(--text-1);
-  outline:none;cursor:pointer;appearance:none;
+  border:1px solid var(--border-2);
+  border-radius:6px;
+  padding:4px 20px 4px 9px;
+  font-size:11px;
+  font-family:inherit;
+  font-weight:600;
+  background-color:var(--surface-2);
+  color:var(--text-1);
+  outline:none;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 7px center;
+  transition:all .15s ease;
+  box-sizing:border-box;
 }
-.tk-sel:focus{border-color:var(--accent)}
-.tk-elems{display:flex;gap:4px;flex-wrap:nowrap;align-items:center}
+.tk-sel:hover{border-color:var(--border)}
+.tk-sel:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(224,90,71,.12)}
+
+/* Status pill styling */
+.tk-status-sel{
+  width:100%;
+  max-width:165px;
+  height:26px;
+  line-height:16px;
+}
+.tk-status-sel.status-sin-empezar{
+  background-color:#F1F3F5;
+  color:#495057;
+  border-color:#E2E6EA;
+}
+.tk-status-sel.status-trabajando{
+  background-color:#FEF3C7;
+  color:#92400E;
+  border-color:#FDE68A;
+}
+.tk-status-sel.status-esperando-feedback{
+  background-color:#FFF1EE;
+  color:#C2410C;
+  border-color:#FED7AA;
+}
+.tk-status-sel.status-listo{
+  background-color:#ECFDF5;
+  color:#065F46;
+  border-color:#A7F3D0;
+}
+
+/* Priority styling */
+.tk-prio-sel{
+  width:100%;
+  max-width:85px;
+  height:26px;
+  line-height:16px;
+}
+.tk-prio-sel.prio-alta{
+  color:#DC2626;
+  background-color:#FEF2F2;
+  border-color:#FECACA;
+  font-weight:700;
+}
+.tk-prio-sel.prio-media{
+  color:#D97706;
+  background-color:#FFFBEB;
+  border-color:#FDE68A;
+  font-weight:600;
+}
+.tk-prio-sel.prio-baja{
+  color:#16A34A;
+  background-color:#F0FDF4;
+  border-color:#BBF7D0;
+  font-weight:600;
+}
+
+[data-theme="dark"] .tk-status-sel.status-sin-empezar{background-color:#2A2D34;color:#9CA3AF;border-color:#374151}
+[data-theme="dark"] .tk-status-sel.status-trabajando{background-color:#3B2A15;color:#FBBF24;border-color:#78350F}
+[data-theme="dark"] .tk-status-sel.status-esperando-feedback{background-color:#3C2018;color:#FB923C;border-color:#7C2D12}
+[data-theme="dark"] .tk-status-sel.status-listo{background-color:#143224;color:#34D399;border-color:#065F46}
+
+[data-theme="dark"] .tk-prio-sel.prio-alta{background-color:#3B1C1C;color:#F87171;border-color:#7F1D1D}
+[data-theme="dark"] .tk-prio-sel.prio-media{background-color:#3B2A15;color:#FBBF24;border-color:#78350F}
+[data-theme="dark"] .tk-prio-sel.prio-baja{background-color:#143224;color:#4ADE80;border-color:#065F46}
+
+.tk-elems{display:flex;gap:5px;flex-wrap:nowrap;align-items:center;justify-content:flex-end}
 .tk-eb{font-size:9.5px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap;background:var(--surface-2);color:var(--text-3);border:1px solid var(--border-2)}
 .tk-eb.has{background:var(--accent-light);color:var(--accent-text);border-color:transparent}
 
@@ -1018,7 +1104,7 @@ body{
 /* fixed-width task table: scroll horizontally instead of clipping columns */
 @media (max-width:900px){
   .tk-table{overflow-x:auto}
-  .tk-head-row,.tk-task-row{min-width:734px}
+  .tk-head-row,.tk-task-row{min-width:770px}
 }
   </style>
 </head>
@@ -1554,17 +1640,17 @@ function openDocViewer(title, url, type, desc){
 
 // ── Semáforo de Urgencia en Tarjetas y Tareas ────────────────────────────────
 function getTaskSemaforo(t){
-  if(t.semaforo && ['rojo','naranja','verde'].includes(t.semaforo)) return t.semaforo
   if(t.status === 'Listo') return 'verde'
+  const pri = (t.pri || t.priority || 'Media').toLowerCase()
+  if(pri === 'alta' || pri === 'urgente') return 'rojo'
+  if(pri === 'baja') return 'verde'
+  if(pri === 'media') return 'naranja'
+  if(t.semaforo && ['rojo','naranja','verde'].includes(t.semaforo)) return t.semaforo
   if(t.status === 'Esperando feedback') return 'naranja'
   if(t.due && typeof t.due === 'string' && t.due.includes('-') && t.due.length === 10){
     const dueD = new Date(t.due + 'T23:59:59')
     if(dueD < new Date()) return 'rojo'
   }
-  const pri = (t.pri || t.priority || 'Media').toLowerCase()
-  if(pri === 'alta' || pri === 'urgente') return 'rojo'
-  if(pri === 'media') return 'naranja'
-  if(pri === 'baja') return 'verde'
   return 'verde'
 }
 
@@ -1574,7 +1660,10 @@ function setTaskSemaforo(clientId, taskId, col, e){
   if(!client || !client.tasks) return
   const t = client.tasks.find(x => x.id === taskId || x.code === taskId)
   if(t){
-    t.semaforo = (t.semaforo === col) ? null : col
+    t.semaforo = col
+    if(col === 'rojo'){ t.priority = 'Alta'; t.pri = 'Alta' }
+    else if(col === 'naranja'){ t.priority = 'Media'; t.pri = 'Media' }
+    else if(col === 'verde'){ t.priority = 'Baja'; t.pri = 'Baja' }
     save()
     render()
   }
@@ -1683,7 +1772,9 @@ function normTask(t, idx, client){
   else if(st === 'Listo' || st === 'Completada' || st === 'Hecho' || st === 'Done' || st === 'done') t.status = 'Listo'
   else t.status = 'Sin empezar'
 
-  if(!t.semaforo) t.semaforo = getTaskSemaforo(t)
+  if(!t.semaforo || (t.priority === 'Alta' && t.semaforo !== 'rojo') || (t.priority === 'Baja' && t.semaforo !== 'verde') || (t.priority === 'Media' && t.semaforo === 'rojo')){
+    t.semaforo = getTaskSemaforo(t)
+  }
   return t
 }
 
@@ -1692,7 +1783,10 @@ function updateTaskField(pid,code,field,val){
   const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
   if(t){
     t[field]=val
-    if(field==='priority'||field==='pri'){ t.priority=val; t.pri=val }
+    if(field==='priority'||field==='pri'){
+      t.priority=val; t.pri=val
+      t.semaforo = val === 'Alta' ? 'rojo' : (val === 'Baja' ? 'verde' : 'naranja')
+    }
     if(field==='title'||field==='name'){ t.title=val; t.name=val }
     if(field==='status'){
       if(val==='Por hacer'||val==='Pendiente') t.status='Sin empezar'
@@ -3597,7 +3691,7 @@ function tkSection(p,key,tasks,title,desc,dotColor,badgeBg,badgeColor){
         <div class="tk-th" style="color:${badgeColor}">VENCIMIENTO</div>
         <div class="tk-th" style="color:${badgeColor}">PRIORIDAD</div>
         <div class="tk-th" style="color:${badgeColor}">ESTADO</div>
-        <div class="tk-th" style="color:${badgeColor}">ELEMENTOS</div>
+        <div class="tk-th" style="color:${badgeColor};text-align:right">ELEMENTOS</div>
       </div>
       ${tasks.length?tasks.map(t=>tkTaskRow(p,t)).join(''):`<div style="padding:16px 14px;font-size:12px;color:var(--text-3)">Sin tareas en esta sección.</div>`}
     </div>
@@ -3617,12 +3711,10 @@ function tkTaskRow(p,t){
   }
   const prio=t.pri||t.priority||'Media'
   const prioClass=prio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  const statusSlug=(t.status||'Sin empezar').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-')
   return `<div class="tk-task-wrap ${prioClass}">
     <div class="tk-task-row ${isOpen?'open':''}" onclick="toggleTaskRow('${t.code}')">
-      <div class="tk-id" style="display:flex;align-items:center;gap:6px">
-        <span class="k-strip-dot dot-${getTaskSemaforo(t).charAt(0)} on" style="display:inline-block;cursor:pointer;flex-shrink:0" onclick="setTaskSemaforo('${p.id}','${t.code||t.id}',getTaskSemaforo(t)==='verde'?'naranja':getTaskSemaforo(t)==='naranja'?'rojo':'verde',event)" title="Urgencia (Semáforo): ${getTaskSemaforo(t)}. Clic para alternar"></span>
-        <span>${t.code}</span>
-      </div>
+      <div class="tk-id">${t.code}</div>
       <div class="tk-name-cell"><div class="tk-name-txt ${isDone?'done':''}">${escapeHtml(taskTitle)}</div></div>
       <div class="tk-actions" onclick="event.stopPropagation()">
         <button class="tk-act" title="Ver detalle Trello" onclick="openTaskDetail('${p.id}','${t.code||t.id}')">✏️</button>
@@ -3634,12 +3726,12 @@ function tkTaskRow(p,t){
       </div>
       <div class="tk-due">${dueFormatted}</div>
       <div onclick="event.stopPropagation()">
-        <select class="tk-sel" onchange="updateTaskField('${p.id}','${t.code}','priority',this.value)">
+        <select class="tk-sel tk-prio-sel prio-${prioClass}" onchange="updateTaskField('${p.id}','${t.code}','priority',this.value)">
           ${['Alta','Media','Baja'].map(v=>`<option ${(t.pri||t.priority)===v?'selected':''}>${v}</option>`).join('')}
         </select>
       </div>
       <div onclick="event.stopPropagation()">
-        <select class="tk-sel" onchange="updateTaskField('${p.id}','${t.code}','status',this.value)">
+        <select class="tk-sel tk-status-sel status-${statusSlug}" onchange="updateTaskField('${p.id}','${t.code}','status',this.value)">
           ${['Sin empezar','Trabajando','Esperando feedback','Listo'].map(v=>`<option ${t.status===v?'selected':''}>${v}</option>`).join('')}
         </select>
       </div>
@@ -4266,7 +4358,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v10'
+const STORE_VERSION='v11'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
