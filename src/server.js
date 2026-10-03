@@ -3,8 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
+const fs = require('fs');
 
 const authRoutes      = require('./routes/auth.routes');
+const syncRoutes      = require('./routes/sync.routes');
+const adminRoutes     = require('./routes/admin.routes');
 const clientRoutes    = require('./routes/clients.routes');
 const taskRoutes      = require('./routes/tasks.routes');
 const templateRoutes  = require('./routes/templates.routes');
@@ -19,6 +22,8 @@ app.use(express.json());
 
 // API routes
 app.use('/api/auth',      authRoutes);
+app.use('/api/sync',      syncRoutes);
+app.use('/api/admin',     adminRoutes);
 app.use('/api/clients',   clientRoutes);
 app.use('/api/tasks',     taskRoutes);
 app.use('/api/templates', templateRoutes);
@@ -32,6 +37,10 @@ app.get('/api', (req, res) => {
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get('*', (req, res) => {
+  const previewPath = path.join(__dirname, '..', 'public', 'preview.html');
+  if (fs.existsSync(previewPath)) {
+    return res.sendFile(previewPath);
+  }
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
