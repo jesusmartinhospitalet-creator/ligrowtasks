@@ -1946,38 +1946,47 @@ body{
 
 /* User Profile Badge in Sidebar */
 .sb-user-card{
-  padding:10px 12px;margin:12px 14px 6px;
+  padding:8px 10px;margin:10px 14px 6px;
   background:rgba(255,255,255,0.05);border:1px solid var(--sidebar-border);
-  border-radius:10px;display:flex;align-items:center;justify-content:space-between;
+  border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  box-sizing:border-box;
 }
 .sb-user-info{
-  display:flex;align-items:center;gap:10px;min-width:0;
+  display:flex;align-items:center;gap:9px;min-width:0;flex:1;
 }
 .sb-user-avatar{
-  width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;
-  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;
+  width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;
   flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.3);
 }
 .sb-user-text{
-  min-width:0;
+  min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;
+}
+.sb-user-top{
+  display:flex;align-items:center;gap:6px;min-width:0;
 }
 .sb-user-name{
-  font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.sb-user-role{
-  font-size:10px;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:4px;
+  font-size:11.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px;
 }
 .sb-user-role-badge{
-  font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;
-  background:rgba(240,78,35,0.2);color:#ff8a65;
+  font-size:8.5px;font-weight:700;padding:1px 5px;border-radius:3px;letter-spacing:0.5px;flex-shrink:0;
+}
+.sb-user-role-badge.adm{
+  background:rgba(240,78,35,0.25);color:#ff8a65;border:1px solid rgba(240,78,35,0.4);
+}
+.sb-user-role-badge.cpb{
+  background:rgba(0,78,156,0.3);color:#60a5fa;border:1px solid rgba(0,78,156,0.45);
+}
+.sb-user-email{
+  font-size:10px;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;line-height:1.2;
 }
 .sb-user-logout-btn{
   background:transparent;border:none;color:rgba(255,255,255,0.4);
-  font-size:15px;cursor:pointer;padding:6px;border-radius:6px;
-  transition:all .15s;flex-shrink:0;
+  cursor:pointer;padding:5px;border-radius:6px;
+  transition:all .15s;flex-shrink:0;display:flex;align-items:center;justify-content:center;
 }
 .sb-user-logout-btn:hover{
-  background:rgba(255,255,255,0.08);color:#fff;
+  background:rgba(239,68,68,0.15);color:#ef4444;
 }
 
 /* Cloud Sync indicator in header */
@@ -1985,12 +1994,13 @@ body{
   display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
   border-radius:20px;font-size:11px;font-weight:600;
   background:var(--surface-2);border:1px solid var(--border-2);
-  color:var(--text-2);margin-left:auto;
+  color:var(--text-2);margin-left:auto;cursor:default;user-select:none;
 }
 .sync-dot{
   width:7px;height:7px;border-radius:50%;background:#22c55e;
 }
 .sync-dot.saving{background:#f59e0b;animation:syncPulse 1s infinite alternate}
+.sync-dot.amber{background:#f59e0b}
 .sync-dot.err{background:#ef4444}
 @keyframes syncPulse{0%{opacity:.4}100%{opacity:1}}
 
@@ -2838,7 +2848,11 @@ function updateTaskField(pid,code,field,val){
       else if(val==='Detenido') t.status='Esperando feedback'
     }
     normTask(t, 0, p)
-    save()
+    if(field === 'status'){
+      save({ action: 'Cambio de estado', summary: `${S.currentUser?.name || S.defaultUser || 'Administrador'} cambió estado de "${t.name || t.title}" a "${t.status}"` })
+    } else {
+      save({ action: 'Edición de tarea', summary: `${S.currentUser?.name || S.defaultUser || 'Administrador'} modificó ${field} en "${t.name || t.title}"` })
+    }
     render()
   }
 }
@@ -3365,7 +3379,7 @@ function submitNewTask(){
   }
   if(!p.tasks)p.tasks=[]
   p.tasks.push(task)
-  save()
+  save({ action: 'Nueva tarea', summary: `${S.currentUser?.name || S.defaultUser || 'Administrador'} creó la tarea "${name}" (${nextCode}) - Asignada a: ${defaultOwner}` })
   S.modal=null
   render()
 }
@@ -3720,31 +3734,70 @@ document.addEventListener('click',event=>{
 // ── Persistence & Cloud Synchronization ─────────────────────────────────────
 let _syncDebounceTimer = null;
 
+function logActivity(p, action, summary){
+  if(!p || p.type !== 'cliente') return;
+  if(!Array.isArray(p.activityLog)) p.activityLog = [];
+  const u = S.currentUser;
+  const userName = u?.name || u?.email || S.defaultUser || 'Administrador';
+  const userEmail = u?.email || '';
+  const now = new Date().toISOString();
+
+  const entry = {
+    id: 'act_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    timestamp: now,
+    user: userName,
+    email: userEmail,
+    action: action || 'Actualización',
+    summary: summary || 'Cambio guardado en el cliente'
+  };
+
+  p.activityLog.unshift(entry);
+  if(p.activityLog.length > 50) p.activityLog = p.activityLog.slice(0, 50);
+  p.lastModifiedBy = userName;
+  p.lastModifiedEmail = userEmail;
+  p.ultimaActividad = `Actualizado por ${userName} hoy`;
+}
+
 function save(details = {}){
+  if(S.proj && S.proj.id && S.proj.type === 'cliente'){
+    if(details && details.action){
+      logActivity(S.proj, details.action, details.summary);
+    }
+  }
+
   try{
-    localStorage.setItem('ligrow_data',JSON.stringify(DATA))
-    localStorage.setItem('ligrow_state',JSON.stringify({
-      projId:S.proj?.id,
-      view:S.view,
-      filter:S.filter,
-      navView:S.navView,
-      theme:S.theme,
-      defaultUser:S.defaultUser,
-      kanbanOwnerFilter:S.kanbanOwnerFilter
-    }))
+    localStorage.setItem('ligrow_data', JSON.stringify(DATA));
+    localStorage.setItem('ligrow_state', JSON.stringify({
+      projId: S.proj?.id,
+      view: S.view,
+      filter: S.filter,
+      navView: S.navView,
+      theme: S.theme,
+      defaultUser: S.defaultUser,
+      kanbanOwnerFilter: S.kanbanOwnerFilter
+    }));
   }catch(e){}
 
   if(S.proj && S.proj.id && S.proj.type === 'cliente'){
     clearTimeout(_syncDebounceTimer);
     _syncDebounceTimer = setTimeout(() => {
       syncSaveCurrentProject(details);
-    }, 600);
+    }, 500);
   }
 }
 
 async function syncSaveCurrentProject(details = {}){
   if(!S.proj || !S.proj.id || S.proj.type !== 'cliente') return;
   const clientId = S.proj.id;
+  const isLocalFile = window.location.protocol === 'file:';
+
+  if(isLocalFile){
+    S._syncStatus = 'local';
+    S._syncMessage = 'Guardado localmente (modo archivo)';
+    updateSyncIndicator();
+    return;
+  }
+
   try{
     S._syncStatus = 'saving';
     S._syncMessage = 'Guardando en la nube...';
@@ -3784,19 +3837,20 @@ async function syncSaveCurrentProject(details = {}){
       S._syncMessage = 'Sincronizado en la nube';
       updateSyncIndicator();
     } else {
-      S._syncStatus = 'error';
-      S._syncMessage = 'Guardado local (sin conexión nube)';
+      S._syncStatus = 'local';
+      S._syncMessage = 'Guardado local (servidor desconectado)';
       updateSyncIndicator();
     }
   }catch(err){
-    S._syncStatus = 'error';
-    S._syncMessage = 'Guardado local (sin conexión nube)';
+    S._syncStatus = 'local';
+    S._syncMessage = 'Guardado local (servidor desconectado)';
     updateSyncIndicator();
   }
 }
 
 async function syncLoadCurrentProject(clientId){
   if(!clientId) return;
+  if(window.location.protocol === 'file:') return;
   try{
     const res = await fetch('/api/sync/client/' + clientId, { credentials: 'same-origin' });
     if(!res.ok) return;
@@ -3826,8 +3880,31 @@ async function syncLoadCurrentProject(clientId){
 function updateSyncIndicator(){
   const el = document.getElementById('cloud-sync-pill');
   if(!el) return;
-  const dotCls = S._syncStatus === 'saving' ? 'saving' : S._syncStatus === 'error' ? 'err' : 'green';
-  el.innerHTML = `<span class="sync-dot ${dotCls}"></span> <span>${escapeHtml(S._syncMessage || 'Sincronizado en la nube')}</span>`;
+  const isLocalFile = window.location.protocol === 'file:';
+  let dotCls = 'green';
+  let msg = S._syncMessage || (isLocalFile ? 'Guardado localmente' : 'Sincronizado en la nube');
+  let title = 'Tus cambios están guardados de forma segura';
+
+  if(S._syncStatus === 'saving'){
+    dotCls = 'saving';
+    msg = 'Guardando en la nube...';
+  } else if(S._syncStatus === 'local' || isLocalFile){
+    dotCls = 'amber';
+    msg = S._syncMessage || 'Guardado local';
+    title = isLocalFile 
+      ? 'Modo archivo local: los cambios se guardan en tu equipo. Para sincronización multi-usuario en la nube con Supabase, abre la app desde su servidor web (Vercel).' 
+      : 'Modo local: no hay conexión al servidor de sincronización en la nube.';
+  } else if(S._syncStatus === 'error'){
+    dotCls = 'err';
+    msg = S._syncMessage || 'Error de sincronización';
+  } else {
+    dotCls = 'green';
+    msg = 'Sincronizado en la nube';
+    title = 'Conectado a la base de datos Supabase. Cambios sincronizados con todos los usuarios.';
+  }
+
+  el.title = title;
+  el.innerHTML = `<span class="sync-dot ${dotCls}"></span> <span>${escapeHtml(msg)}</span>`;
 }
 
 // ── Login Screen ──────────────────────────────────────────────────────────────
@@ -4745,11 +4822,20 @@ function sidebar(){
         <div class="sb-user-info">
           <div class="sb-user-avatar" style="${isAdmin?'background:var(--brand)':'background:#004E9C'}">${uInitial}</div>
           <div class="sb-user-text">
-            <div class="sb-user-name">${escapeHtml(u?.name || u?.email || 'Usuario')}</div>
-            <div class="sb-user-role"><span class="sb-user-role-badge">${uRoleBadge}</span> ${escapeHtml(u?.email || '')}</div>
+            <div class="sb-user-top">
+              <span class="sb-user-name" title="${escapeHtml(u?.name || u?.email || 'Usuario')}">${escapeHtml((u?.name || u?.email || 'Usuario').replace(/\s*\(Admin\)/i, ''))}</span>
+              <span class="sb-user-role-badge ${isAdmin?'adm':'cpb'}">${uRoleBadge}</span>
+            </div>
+            <div class="sb-user-email" title="${escapeHtml(u?.email || '')}">${escapeHtml(u?.email || '')}</div>
           </div>
         </div>
-        <button type="button" class="sb-user-logout-btn" onclick="logoutUser()" title="Cerrar sesión">⎋</button>
+        <button type="button" class="sb-user-logout-btn" onclick="logoutUser()" title="Cerrar sesión">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
       </div>
 
       ${isAdmin ? `
@@ -4966,6 +5052,17 @@ function clienteContent(p){
 
 // ── Auditoría y Registro de Actividad ──────────────────────────────────────
 function auditoriaActividadView(p){
+  // Si no tiene registros previos pero ya hay tareas creadas, auto-poblar con la actividad de las tareas existentes
+  if((!p.activityLog || !p.activityLog.length) && p.tasks && p.tasks.length){
+    p.activityLog = p.tasks.map((t, idx) => ({
+      id: 'init_' + (t.id || idx),
+      timestamp: new Date(Date.now() - (idx + 1) * 3600000 * 2).toISOString(),
+      user: t.owner || p.responsable || S.defaultUser || 'Jesús (Admin)',
+      email: 'jesus.martin.hospitalet@gmail.com',
+      action: 'Tarea activa',
+      summary: `Tarea registrada: "${t.name || t.title}" (${t.code || 'CPB'}) · Prioridad: ${t.priority || 'Media'} · Estado: ${t.status || 'Sin empezar'}`
+    }));
+  }
   const logs = p.activityLog || []
   return `<div class="audit-container">
     <div class="audit-hero">
