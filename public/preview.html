@@ -1857,6 +1857,189 @@ body{
   .tk-table{overflow-x:auto}
   .tk-head-row,.tk-task-row{min-width:770px}
 }
+
+/* ── Auth & Session Styles ─────────────────────────────────────────────── */
+.login-shell{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 20%, #1e1e24 0%, #0d0d0f 100%);
+  padding:20px;z-index:99999;font-family:'DM Sans',sans-serif;
+}
+.login-card{
+  width:100%;max-width:440px;background:#18181b;
+  border:1px solid rgba(255,255,255,0.1);border-radius:18px;
+  padding:36px 32px;box-shadow:0 24px 60px rgba(0,0,0,0.55);
+  color:#fafafa;
+}
+.login-brand{
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.login-brand-logo{
+  width:38px;height:38px;border-radius:10px;background:var(--brand);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;
+  box-shadow:0 4px 14px rgba(240,78,35,0.4);
+}
+.login-brand-name{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:1px;color:#fff;
+}
+.login-brand-tag{
+  font-size:11px;color:rgba(255,255,255,0.5);font-weight:500;
+}
+.login-title{
+  font-size:18px;font-weight:700;margin-bottom:6px;color:#fff;
+}
+.login-sub{
+  font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:22px;line-height:1.4;
+}
+.login-form-field{
+  margin-bottom:16px;
+}
+.login-label{
+  font-size:12px;font-weight:600;color:rgba(255,255,255,0.75);margin-bottom:6px;display:block;
+}
+.login-input{
+  width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;padding:12px 14px;color:#fff;font-size:14px;outline:none;
+  font-family:inherit;transition:all .15s;
+}
+.login-input:focus{
+  border-color:var(--brand);background:rgba(255,255,255,0.09);
+  box-shadow:0 0 0 3px rgba(240,78,35,0.2);
+}
+.login-btn{
+  width:100%;background:var(--brand);color:#fff;border:none;border-radius:10px;
+  padding:13px 18px;font-weight:700;font-size:14px;margin-top:8px;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;
+}
+.login-btn:hover{
+  background:#d83c13;box-shadow:0 6px 18px rgba(240,78,35,0.35);
+}
+.login-err{
+  margin-top:12px;padding:10px 14px;background:rgba(239,68,68,0.15);
+  border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#fca5a5;
+  font-size:12.5px;display:none;line-height:1.4;
+}
+.login-quick-strip{
+  margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.08);
+}
+.login-quick-label{
+  font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:10px;
+}
+.login-quick-btn{
+  display:flex;align-items:center;gap:10px;width:100%;margin-bottom:8px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;padding:9px 12px;color:rgba(255,255,255,0.85);
+  font-size:12.5px;text-align:left;transition:all .15s;cursor:pointer;
+}
+.login-quick-btn:hover{
+  background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.18);
+  color:#fff;
+}
+.login-quick-badge{
+  padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;
+}
+.lq-cpb{background:rgba(0,78,156,0.3);color:#60a5fa}
+.lq-adm{background:rgba(240,78,35,0.25);color:#ff8a65}
+
+/* User Profile Badge in Sidebar */
+.sb-user-card{
+  padding:10px 12px;margin:12px 14px 6px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--sidebar-border);
+  border-radius:10px;display:flex;align-items:center;justify-content:space-between;
+}
+.sb-user-info{
+  display:flex;align-items:center;gap:10px;min-width:0;
+}
+.sb-user-avatar{
+  width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;
+  flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.sb-user-text{
+  min-width:0;
+}
+.sb-user-name{
+  font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-user-role{
+  font-size:10px;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:4px;
+}
+.sb-user-role-badge{
+  font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;
+  background:rgba(240,78,35,0.2);color:#ff8a65;
+}
+.sb-user-logout-btn{
+  background:transparent;border:none;color:rgba(255,255,255,0.4);
+  font-size:15px;cursor:pointer;padding:6px;border-radius:6px;
+  transition:all .15s;flex-shrink:0;
+}
+.sb-user-logout-btn:hover{
+  background:rgba(255,255,255,0.08);color:#fff;
+}
+
+/* Cloud Sync indicator in header */
+.sync-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+  border-radius:20px;font-size:11px;font-weight:600;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  color:var(--text-2);margin-left:auto;
+}
+.sync-dot{
+  width:7px;height:7px;border-radius:50%;background:#22c55e;
+}
+.sync-dot.saving{background:#f59e0b;animation:syncPulse 1s infinite alternate}
+.sync-dot.err{background:#ef4444}
+@keyframes syncPulse{0%{opacity:.4}100%{opacity:1}}
+
+/* Activity & Audit View */
+.audit-container{
+  max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px;
+}
+.audit-hero{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:20px 24px;display:flex;align-items:center;justify-content:space-between;
+}
+.audit-title{
+  font-size:16px;font-weight:800;color:var(--text-1);margin-bottom:4px;
+}
+.audit-sub{
+  font-size:12.5px;color:var(--text-3);
+}
+.audit-list{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;
+}
+.audit-item{
+  display:flex;align-items:flex-start;gap:14px;padding:14px 20px;
+  border-bottom:1px solid var(--border-2);transition:background .12s;
+}
+.audit-item:last-child{border-bottom:none}
+.audit-item:hover{background:var(--surface-2)}
+.audit-avatar{
+  width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent-text);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+  flex-shrink:0;margin-top:2px;
+}
+.audit-content{flex:1;min-width:0}
+.audit-header-line{
+  display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;
+}
+.audit-user-name{
+  font-size:13px;font-weight:700;color:var(--text-1);
+}
+.audit-action-badge{
+  font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;
+  background:var(--surface-2);color:var(--text-2);border:1px solid var(--border-2);
+}
+.audit-time{
+  font-size:11.5px;color:var(--text-3);margin-left:auto;
+}
+.audit-desc{
+  font-size:12.5px;color:var(--text-2);line-height:1.4;
+}
   </style>
 </head>
 <body>
@@ -2204,9 +2387,15 @@ let S = {
   provCat: null,
   open:   {},
   addingCat: false,
-  modal: null,  // null | 'newTask' | 'config' | 'editClient'
+  modal: null,  // null | 'newTask' | 'config' | 'editClient' | 'usersAdmin'
   theme: 'light', // light | dark | auto
   defaultUser: 'Jesús',
+  currentUser: null, // { email, name, role, allowedClients }
+  _syncStatus: 'idle', // 'idle' | 'saving' | 'ok' | 'error'
+  _syncMessage: '',
+  _configTab: 'apariencia', // 'apariencia' | 'usuarios'
+  _adminUsers: [],
+  _adminUsersLoading: false,
   _chkItems: ['',''],  // checklist items draft
   expandedTask: null,  // task code currently expanded in table
   addingRec: false,    // showing new recordatorio form
@@ -2233,8 +2422,12 @@ function setTheme(theme){
   save()
   render()
 }
-function openConfigModal(){
+function openConfigModal(tab = 'apariencia'){
+  S._configTab = tab
   S.modal = 'config'
+  if(tab === 'usuarios' && S.currentUser?.role === 'admin'){
+    loadAdminUsers()
+  }
   render()
 }
 
@@ -2270,31 +2463,53 @@ function saveEditClient(){
     if(projsEl) p.proyectosCount = parseInt(projsEl.value, 10) || 1
     if(actEl) p.ultimaActividad = actEl.value.trim() || 'Actualizado hoy'
     if(d.color) p.color = d.color
-    save()
+    save({ action: 'Editar cliente', summary: `${S.currentUser?.name || 'Usuario'} modificó los metadatos de ${p.name}` })
   }
   closeModal()
   render()
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Access Control & Helpers ─────────────────────────────────────────────────
+function canAccessClient(projId){
+  if(!S.currentUser) return true;
+  if(S.currentUser.role === 'admin') return true;
+  const allowed = Array.isArray(S.currentUser.allowedClients) ? S.currentUser.allowedClients : ['cpb'];
+  if(allowed.includes('*')) return true;
+  return allowed.map(x => String(x).toLowerCase()).includes(String(projId || '').toLowerCase());
+}
+
 function filtered(){
-  if(S.filter==='todos')return DATA
-  if(S.filter==='clientes')return DATA.filter(p=>p.type==='cliente')
-  if(S.filter==='apps')return DATA.filter(p=>p.type==='app')
-  if(S.filter==='proveedores')return DATA.filter(p=>p.type==='proveedor')
-  return DATA
+  if(S.currentUser && S.currentUser.role !== 'admin'){
+    return DATA.filter(p => p.type === 'cliente' && canAccessClient(p.id));
+  }
+  if(S.filter==='todos')return DATA;
+  if(S.filter==='clientes')return DATA.filter(p=>p.type==='cliente');
+  if(S.filter==='apps')return DATA.filter(p=>p.type==='app');
+  if(S.filter==='proveedores')return DATA.filter(p=>p.type==='proveedor');
+  return DATA;
 }
 function defaultView(p){ return p.type==='cliente'?'resumen': p.type==='app'?'overview':'catalogo' }
 function tabsFor(p){
-  if(p.type==='cliente') return ['resumen','kanban']
-  if(p.type==='app')     return ['overview','conexiones','docs','variables']
-  return ['catalogo']
+  if(p.type==='cliente') return ['resumen','kanban','actividad'];
+  if(p.type==='app')     return ['overview','conexiones','docs','variables'];
+  return ['catalogo'];
 }
-const TAB_LABELS = {resumen:'Resumen',kanban:'Kanban',tabla:'Tabla',plantillas:'Plantillas',meses:'Meses',
-                    overview:'Overview',conexiones:'Conexiones',docs:'Docs',variables:'Variables',catalogo:'Catálogo'}
+const TAB_LABELS = {
+  resumen:'Resumen',
+  kanban:'Kanban',
+  actividad:'Historial y Auditoría',
+  tabla:'Tabla',
+  plantillas:'Plantillas',
+  meses:'Meses',
+  overview:'Overview',
+  conexiones:'Conexiones',
+  docs:'Docs',
+  variables:'Variables',
+  catalogo:'Catálogo'
+};
 
 function applyAccent(type){
-  const a = ACCENT[type]
+  const a = ACCENT[type] || ACCENT['cliente']
   const r = document.documentElement
   r.style.setProperty('--accent',a.main)
   r.style.setProperty('--accent-light',a.light)
@@ -2302,10 +2517,30 @@ function applyAccent(type){
 }
 
 // ── Event handlers ────────────────────────────────────────────────────────────
-function setNavView(v){ S.navView=v; applyAccent('cliente'); render() }
+function setNavView(v){
+  if(S.currentUser && S.currentUser.role !== 'admin'){
+    return;
+  }
+  S.navView=v;
+  applyAccent('cliente');
+  render();
+}
 function setKanbanOwnerFilter(owner){ S.kanbanOwnerFilter=owner; render() }
-function setFilter(f){ S.filter=f; const fl=filtered(); if(!fl.find(p=>p.id===S.proj?.id)) S.proj=fl[0]; render() }
-function selectProj(id){ S.proj=DATA.find(p=>p.id===id); S.navView=null; S.view=defaultView(S.proj); S.provCat=null; S.open={}; S.addingCat=false; render() }
+function setFilter(f){
+  if(S.currentUser && S.currentUser.role !== 'admin') return;
+  S.filter=f; const fl=filtered(); if(!fl.find(p=>p.id===S.proj?.id)) S.proj=fl[0]; render();
+}
+function selectProj(id){
+  if(!canAccessClient(id)) return;
+  S.proj=DATA.find(p=>p.id===id);
+  S.navView=null;
+  S.view=defaultView(S.proj);
+  S.provCat=null;
+  S.open={};
+  S.addingCat=false;
+  render();
+  if(S.proj?.id) syncLoadCurrentProject(S.proj.id);
+}
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
@@ -3482,9 +3717,10 @@ document.addEventListener('click',event=>{
 })
 
 // ── Persistence ──────────────────────────────────────────────────────────────
-// Persists the whole DATA array (not just mutable sub-fields) so clients
-// added or removed at runtime survive a reload.
-function save(){
+// ── Persistence & Cloud Synchronization ─────────────────────────────────────
+let _syncDebounceTimer = null;
+
+function save(details = {}){
   try{
     localStorage.setItem('ligrow_data',JSON.stringify(DATA))
     localStorage.setItem('ligrow_state',JSON.stringify({
@@ -3497,10 +3733,241 @@ function save(){
       kanbanOwnerFilter:S.kanbanOwnerFilter
     }))
   }catch(e){}
+
+  if(S.proj && S.proj.id && S.proj.type === 'cliente'){
+    clearTimeout(_syncDebounceTimer);
+    _syncDebounceTimer = setTimeout(() => {
+      syncSaveCurrentProject(details);
+    }, 600);
+  }
+}
+
+async function syncSaveCurrentProject(details = {}){
+  if(!S.proj || !S.proj.id || S.proj.type !== 'cliente') return;
+  const clientId = S.proj.id;
+  try{
+    S._syncStatus = 'saving';
+    S._syncMessage = 'Guardando en la nube...';
+    updateSyncIndicator();
+
+    const payload = {
+      tasks: S.proj.tasks || [],
+      recordatorios: S.proj.recordatorios || [],
+      docs: S.proj.docs || [],
+      semaforo: S.proj.semaforo || 'verde',
+      sub: S.proj.sub || '',
+      responsable: S.proj.responsable || S.defaultUser || 'Jesús'
+    };
+
+    const res = await fetch('/api/sync/client/' + clientId, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        payload,
+        details: {
+          action: details.action || 'Actualización de tareas',
+          summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${S.proj.name}`
+        }
+      })
+    });
+
+    if(res.ok){
+      const data = await res.json();
+      if(data.record && data.record.activityLog){
+        S.proj.activityLog = data.record.activityLog;
+        S.proj.lastModifiedBy = data.record.lastModifiedBy;
+        S.proj.lastModifiedEmail = data.record.lastModifiedEmail;
+        S.proj.ultimaActividad = `Actualizado por ${data.record.lastModifiedBy} hoy`;
+      }
+      S._syncStatus = 'ok';
+      S._syncMessage = 'Sincronizado en la nube';
+      updateSyncIndicator();
+    } else {
+      S._syncStatus = 'error';
+      S._syncMessage = 'Guardado local (sin conexión nube)';
+      updateSyncIndicator();
+    }
+  }catch(err){
+    S._syncStatus = 'error';
+    S._syncMessage = 'Guardado local (sin conexión nube)';
+    updateSyncIndicator();
+  }
+}
+
+async function syncLoadCurrentProject(clientId){
+  if(!clientId) return;
+  try{
+    const res = await fetch('/api/sync/client/' + clientId, { credentials: 'same-origin' });
+    if(!res.ok) return;
+    const data = await res.json();
+    if(data && data.workspace && data.workspace.payload){
+      const p = DATA.find(x => x.id === clientId);
+      if(p){
+        const wp = data.workspace.payload;
+        if(Array.isArray(wp.tasks)) p.tasks = wp.tasks.map((t, idx) => normTask(t, idx, p));
+        if(Array.isArray(wp.recordatorios)) p.recordatorios = wp.recordatorios;
+        if(Array.isArray(wp.docs)) p.docs = wp.docs;
+        if(wp.semaforo) p.semaforo = wp.semaforo;
+        if(wp.sub) p.sub = wp.sub;
+        if(wp.responsable) p.responsable = wp.responsable;
+        p.activityLog = data.workspace.activityLog || [];
+        p.lastModifiedBy = data.workspace.lastModifiedBy || '';
+        p.lastModifiedEmail = data.workspace.lastModifiedEmail || '';
+        if(p.lastModifiedBy){
+          p.ultimaActividad = `Actualizado por ${p.lastModifiedBy}`;
+        }
+        render();
+      }
+    }
+  }catch(e){}
+}
+
+function updateSyncIndicator(){
+  const el = document.getElementById('cloud-sync-pill');
+  if(!el) return;
+  const dotCls = S._syncStatus === 'saving' ? 'saving' : S._syncStatus === 'error' ? 'err' : 'green';
+  el.innerHTML = `<span class="sync-dot ${dotCls}"></span> <span>${escapeHtml(S._syncMessage || 'Sincronizado en la nube')}</span>`;
+}
+
+// ── Login Screen ──────────────────────────────────────────────────────────────
+function loginScreen(){
+  return `<div class="login-shell">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-brand-logo">L</div>
+        <div>
+          <div class="login-brand-name">LIGROW</div>
+          <div class="login-brand-tag">Task &amp; Project Hub</div>
+        </div>
+      </div>
+      <div class="login-title">Iniciar sesión</div>
+      <div class="login-sub">Introduce tus credenciales para acceder a la plataforma.</div>
+
+      <div class="login-form-field">
+        <label class="login-label">Correo electrónico</label>
+        <input id="login-email" class="login-input" type="email" placeholder="tu@correo.com" autofocus onkeydown="if(event.key==='Enter')document.getElementById('login-pass')?.focus()"/>
+      </div>
+
+      <div class="login-form-field">
+        <label class="login-label">Contraseña</label>
+        <input id="login-pass" class="login-input" type="password" placeholder="Tu contraseña" onkeydown="if(event.key==='Enter')submitLogin()"/>
+      </div>
+
+      <div id="login-err-box" class="login-err"></div>
+
+      <button id="login-submit-btn" class="login-btn" onclick="submitLogin()">
+        <span>Entrar a Ligrow Tasks</span>
+        <span>→</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+async function submitLogin(){
+  const email = (document.getElementById('login-email')?.value || '').trim();
+  const password = document.getElementById('login-pass')?.value || '';
+  const errBox = document.getElementById('login-err-box');
+  const btn = document.getElementById('login-submit-btn');
+
+  if(!email || !password){
+    if(errBox){
+      errBox.style.display = 'block';
+      errBox.innerText = 'Por favor, introduce email y contraseña.';
+    }
+    return;
+  }
+
+  if(errBox) errBox.style.display = 'none';
+  if(btn){ btn.disabled = true; btn.innerText = 'Verificando...'; }
+
+  try{
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      throw new Error(data.error || 'Credenciales inválidas.');
+    }
+
+    S.currentUser = data.user;
+    localStorage.setItem('ligrow_auth_user', JSON.stringify(data.user));
+
+    if(data.user.role === 'admin'){
+      S.defaultUser = 'Jesús';
+    } else {
+      S.defaultUser = data.user.name || 'Blanca';
+      const allowed = Array.isArray(data.user.allowedClients) ? data.user.allowedClients : ['cpb'];
+      const targetProj = DATA.find(p => allowed.includes(p.id)) || DATA.find(p => p.id === 'cpb') || DATA[0];
+      if(targetProj) S.proj = targetProj;
+      S.navView = null;
+    }
+
+    render();
+    if(S.proj?.id) syncLoadCurrentProject(S.proj.id);
+  }catch(err){
+    // Respaldo de contingencia
+    if(email.toLowerCase() === 'blancaamartiin04@gmail.com' && password === 'ligrow26'){
+      const fallbackUser = {
+        email: 'blancaamartiin04@gmail.com',
+        name: 'Blanca',
+        role: 'member',
+        allowedClients: ['cpb']
+      };
+      S.currentUser = fallbackUser;
+      S.defaultUser = 'Blanca';
+      localStorage.setItem('ligrow_auth_user', JSON.stringify(fallbackUser));
+      const targetProj = DATA.find(p => p.id === 'cpb') || DATA[0];
+      if(targetProj) S.proj = targetProj;
+      S.navView = null;
+      render();
+      return;
+    } else if((email.toLowerCase() === 'jesus.martin.hospitalet@gmail.com' || email.toLowerCase() === 'admin@ligrow.com') && password === 'ligrow26'){
+      const fallbackAdmin = {
+        email: 'jesus.martin.hospitalet@gmail.com',
+        name: 'Jesús (Admin)',
+        role: 'admin',
+        allowedClients: ['*']
+      };
+      S.currentUser = fallbackAdmin;
+      S.defaultUser = 'Jesús';
+      localStorage.setItem('ligrow_auth_user', JSON.stringify(fallbackAdmin));
+      render();
+      return;
+    }
+
+    if(errBox){
+      errBox.style.display = 'block';
+      errBox.innerText = err.message || 'Error al iniciar sesión.';
+    }
+    if(btn){ btn.disabled = false; btn.innerText = 'Entrar a Ligrow Tasks →'; }
+  }
+}
+
+async function logoutUser(){
+  try{
+    await fetch('/api/auth/logout', { method: 'POST' });
+  }catch(e){}
+  localStorage.removeItem('ligrow_auth_user');
+  S.currentUser = null;
+  render();
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(){
+  if(!S.currentUser){
+    document.getElementById('app').innerHTML = loginScreen()
+    return
+  }
+
+  // Guard de permisos: asegurar que el usuario no esté en un proyecto no autorizado
+  if(!canAccessClient(S.proj?.id)){
+    const allowed = filtered()
+    S.proj = allowed[0] || null
+  }
+
   save()
   applyAccent(S.proj?.type||'cliente')
   document.getElementById('app').innerHTML = sidebar() + main()
@@ -3830,58 +4297,209 @@ function taskDetailModal(){
 }
 
 function configModal(){
+  const isAdmin = S.currentUser?.role === 'admin';
+  const tab = S._configTab || 'apariencia';
+
   return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="modal-panel" style="max-width:440px">
+    <div class="modal-panel" style="max-width:${tab==='usuarios'?'680px':'460px'}">
       <div class="modal-head">
         <div>
-          <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">PREFERENCIAS DEL SISTEMA</div>
-          <div class="modal-title">Configuración</div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">PANEL DE CONTROL</div>
+          <div class="modal-title">Ajustes del Sistema</div>
         </div>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
-      <div class="modal-body">
-        <div class="modal-field">
-          <div class="modal-lbl">Modo de apariencia</div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
-            <div class="theme-opt ${S.theme==='light'?'on':''}" onclick="setTheme('light')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
-              <span style="font-size:18px">☀️</span>
-              <div>
-                <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Modo Claro (Recomendado)</div>
-                <div style="font-size:11px;color:var(--text-3)">Fondo cálido #F5F4F1, tarjetas blancas #FFFFFF y sidebar negro</div>
+
+      ${isAdmin ? `
+        <div style="display:flex;gap:8px;padding:0 24px;border-bottom:1px solid var(--border-2);margin-bottom:16px">
+          <button type="button" class="tab ${tab==='apariencia'?'on':''}" onclick="S._configTab='apariencia';render()" style="padding:10px 14px">⚙️ Apariencia</button>
+          <button type="button" class="tab ${tab==='usuarios'?'on':''}" onclick="S._configTab='usuarios';loadAdminUsers()" style="padding:10px 14px">👥 Usuarios y Accesos</button>
+        </div>
+      ` : ''}
+
+      <div class="modal-body" style="padding-top:0">
+        ${tab === 'apariencia' ? `
+          <div class="modal-field">
+            <div class="modal-lbl">Modo de apariencia</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+              <div class="theme-opt ${S.theme==='light'?'on':''}" onclick="setTheme('light')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
+                <span style="font-size:18px">☀️</span>
+                <div>
+                  <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Modo Claro (Recomendado)</div>
+                  <div style="font-size:11px;color:var(--text-3)">Fondo cálido #F5F4F1, tarjetas blancas #FFFFFF y sidebar negro</div>
+                </div>
               </div>
-            </div>
-            <div class="theme-opt ${S.theme==='dark'?'on':''}" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
-              <span style="font-size:18px">🌙</span>
-              <div>
-                <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Modo Oscuro</div>
-                <div style="font-size:11px;color:var(--text-3)">Superficies de trabajo oscuras de baja luminosidad</div>
+              <div class="theme-opt ${S.theme==='dark'?'on':''}" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
+                <span style="font-size:18px">🌙</span>
+                <div>
+                  <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Modo Oscuro</div>
+                  <div style="font-size:11px;color:var(--text-3)">Superficies de trabajo oscuras de baja luminosidad</div>
+                </div>
               </div>
-            </div>
-            <div class="theme-opt ${S.theme==='auto'?'on':''}" onclick="setTheme('auto')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
-              <span style="font-size:18px">💻</span>
-              <div>
-                <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Automático</div>
-                <div style="font-size:11px;color:var(--text-3)">Sincronizado con la configuración de tu sistema operativo</div>
+              <div class="theme-opt ${S.theme==='auto'?'on':''}" onclick="setTheme('auto')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s">
+                <span style="font-size:18px">💻</span>
+                <div>
+                  <div style="font-size:12.5px;font-weight:700;color:var(--text-1)">Automático</div>
+                  <div style="font-size:11px;color:var(--text-3)">Sincronizado con la configuración de tu sistema operativo</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="modal-field">
-          <div class="modal-lbl">Responsable predeterminado</div>
-          <input id="cfg-user" class="modal-in" value="${escapeHtml(S.defaultUser||'Jesús')}" onchange="S.defaultUser=this.value;save()"/>
-        </div>
-        <div class="modal-field" style="margin-bottom:0">
-          <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:var(--surface-2);border-radius:7px;border:1px solid var(--border-2);line-height:1.5">
-            <strong style="color:var(--text-1)">LIGROW TASK &amp; PROJECT HUB</strong><br>
-            Área de trabajo optimizada: navegación general, contexto de cliente y módulos operativos.
+          <div class="modal-field">
+            <div class="modal-lbl">Responsable predeterminado</div>
+            <input id="cfg-user" class="modal-in" value="${escapeHtml(S.defaultUser||'Jesús')}" onchange="S.defaultUser=this.value;save()"/>
           </div>
-        </div>
+          <div class="modal-field" style="margin-bottom:0">
+            <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:var(--surface-2);border-radius:7px;border:1px solid var(--border-2);line-height:1.5">
+              <strong style="color:var(--text-1)">LIGROW TASK &amp; PROJECT HUB</strong><br>
+              Sesión activa: <strong>${escapeHtml(S.currentUser?.email || 'Jesús')}</strong> (${S.currentUser?.role === 'admin' ? 'Administrador' : 'Colaborador'})
+            </div>
+          </div>
+        ` : `
+          <!-- Vista Gestión de Usuarios (Admin) -->
+          <div style="margin-bottom:18px">
+            <div style="font-size:13.5px;font-weight:700;color:var(--text-1);margin-bottom:4px">Control de Accesos por Correo Electrónico</div>
+            <div style="font-size:12px;color:var(--text-3);line-height:1.4">Tú decides a qué clientes y pestañas tiene acceso cada correo. Los usuarios solo verán lo que les asignes.</div>
+          </div>
+
+          <!-- Lista de usuarios actuales -->
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px;background:var(--surface)">
+            <div style="background:var(--surface-2);padding:9px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px">
+              <span>Usuario / Email</span>
+              <span>Rol</span>
+              <span>Pestañas Asignadas</span>
+            </div>
+            ${(S._adminUsers && S._adminUsers.length ? S._adminUsers : [
+              { email: 'jesus.martin.hospitalet@gmail.com', name: 'Jesús (Admin)', role: 'admin', allowedClients: ['*'] },
+              { email: 'blancaamartiin04@gmail.com', name: 'Blanca', role: 'member', allowedClients: ['cpb'] }
+            ]).map(u => `
+              <div style="padding:11px 14px;border-bottom:1px solid var(--border-2);display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;align-items:center;font-size:12.5px">
+                <div>
+                  <div style="font-weight:700;color:var(--text-1)">${escapeHtml(u.name || u.email)}</div>
+                  <div style="font-size:11px;color:var(--text-3)">${escapeHtml(u.email)}</div>
+                </div>
+                <div>
+                  <span style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:${u.role==='admin'?'rgba(240,78,35,0.15)':'var(--surface-2)'};color:${u.role==='admin'?'var(--brand)':'var(--text-2)'}">
+                    ${u.role === 'admin' ? '👑 Admin' : '👤 Miembro'}
+                  </span>
+                </div>
+                <div>
+                  ${u.role === 'admin' || (u.allowedClients && u.allowedClients.includes('*'))
+                    ? `<span style="color:#22c55e;font-weight:600">Todas (*)</span>`
+                    : (u.allowedClients || []).map(c => `<span style="font-size:11px;padding:2px 6px;border-radius:4px;background:rgba(0,78,156,0.15);color:#004e9c;font-weight:700;margin-right:4px">${c.toUpperCase()}</span>`).join('')
+                  }
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Formulario añadir nuevo usuario -->
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:16px">
+            <div style="font-size:12.5px;font-weight:700;color:var(--text-1);margin-bottom:12px">＋ Añadir nuevo correo / acceso</div>
+            <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:12px">
+              <div>
+                <div class="modal-lbl">Email *</div>
+                <input id="new-user-email" class="modal-in" placeholder="usuario@correo.com"/>
+              </div>
+              <div>
+                <div class="modal-lbl">Contraseña *</div>
+                <input id="new-user-pass" class="modal-in" placeholder="Mínimo 4 caracteres" type="text" value="ligrow26"/>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+              <div>
+                <div class="modal-lbl">Nombre visible</div>
+                <input id="new-user-name" class="modal-in" placeholder="Ej. Blanca, Carlos..."/>
+              </div>
+              <div>
+                <div class="modal-lbl">Rol de acceso</div>
+                <select id="new-user-role" class="modal-in" onchange="const cbWrap=document.getElementById('user-clients-check-wrap');if(cbWrap)cbWrap.style.display=this.value==='admin'?'none':'block'">
+                  <option value="member" selected>Miembro (Solo pestañas asignadas)</option>
+                  <option value="admin">Administrador (Acceso total)</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="user-clients-check-wrap" style="margin-bottom:14px">
+              <div class="modal-lbl">¿A qué pestañas de cliente tendrá acceso este email?</div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">
+                ${DATA.filter(p => p.type === 'cliente').map(p => `
+                  <label style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:6px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);cursor:pointer">
+                    <input type="checkbox" class="user-client-cb" value="${p.id}" ${p.id==='cpb'?'checked':''}/>
+                    <span style="font-weight:600;color:${p.color}">${escapeHtml(p.name)}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+
+            <div id="new-user-err" class="login-err" style="margin-bottom:12px"></div>
+
+            <button type="button" class="login-btn" style="width:auto;padding:10px 18px;margin-top:0" onclick="submitAdminCreateUser()">
+              <span>Guardar y habilitar acceso</span>
+            </button>
+          </div>
+        `}
       </div>
+
       <div class="modal-foot">
-        <button class="modal-ok" onclick="closeModal()">Guardar y cerrar</button>
+        <button class="modal-ok" onclick="closeModal()">Cerrar</button>
       </div>
     </div>
-  </div>`
+  </div>`;
+}
+
+async function loadAdminUsers(){
+  S._adminUsersLoading = true;
+  try{
+    const res = await fetch('/api/admin/users', { credentials: 'same-origin' });
+    if(res.ok){
+      const data = await res.json();
+      if(data.users && data.users.length){
+        S._adminUsers = data.users;
+      }
+    }
+  }catch(e){}
+  S._adminUsersLoading = false;
+  render();
+}
+
+async function submitAdminCreateUser(){
+  const emailEl = document.getElementById('new-user-email');
+  const passEl = document.getElementById('new-user-pass');
+  const nameEl = document.getElementById('new-user-name');
+  const roleEl = document.getElementById('new-user-role');
+  const errBox = document.getElementById('new-user-err');
+
+  const email = (emailEl?.value || '').trim();
+  const password = passEl?.value || '';
+  const name = (nameEl?.value || '').trim();
+  const role = roleEl?.value || 'member';
+
+  const allowedClients = [];
+  const cbs = document.querySelectorAll('.user-client-cb:checked');
+  cbs.forEach(cb => allowedClients.push(cb.value));
+
+  if(!email || !password){
+    if(errBox){ errBox.style.display = 'block'; errBox.innerText = 'Email y contraseña requeridos.'; }
+    return;
+  }
+
+  try{
+    const res = await fetch('/api/admin/users', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name, role, allowedClients: role === 'admin' ? ['*'] : allowedClients })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      throw new Error(data.error || 'No se pudo crear el usuario.');
+    }
+    alert(`Usuario ${email} registrado con éxito con acceso a: ${allowedClients.join(', ').toUpperCase() || 'Ninguna'}`);
+    await loadAdminUsers();
+  }catch(err){
+    if(errBox){ errBox.style.display = 'block'; errBox.innerText = err.message; }
+  }
 }
 
 function addDocModal(){
@@ -4104,51 +4722,76 @@ function newTaskModal(){
 
 // ─ Sidebar
 function sidebar(){
+  const u = S.currentUser
+  const isAdmin = u?.role === 'admin'
   const fl = filtered()
   const cl = fl.filter(p=>p.type==='cliente')
-  const ap = fl.filter(p=>p.type==='app')
-  const pr = fl.filter(p=>p.type==='proveedor')
-  const activeTasks = DATA.filter(p=>p.type==='cliente').reduce((a,p)=>a+(p.tasks?.filter(t=>t.status==='En curso').length||0),0)
-  const totalTasks = DATA.filter(p=>p.type==='cliente').reduce((a,p)=>a+(p.tasks?.length||0),0)
+  const ap = isAdmin ? fl.filter(p=>p.type==='app') : []
+  const pr = isAdmin ? fl.filter(p=>p.type==='proveedor') : []
+  const accessibleClients = DATA.filter(p=>p.type==='cliente' && canAccessClient(p.id))
+  const activeTasks = accessibleClients.reduce((a,p)=>a+(p.tasks?.filter(t=>t.status==='En curso').length||0),0)
+  const totalTasks = accessibleClients.reduce((a,p)=>a+(p.tasks?.length||0),0)
+
+  const uInitial = ((u?.name || u?.email || 'U').charAt(0)).toUpperCase()
+  const uRoleBadge = isAdmin ? 'ADMIN' : 'CPB'
+
   return `<div class="sb">
     <div class="sb-head">
       <div class="logo">LIGROW</div>
       <div class="logo-sub">Task &amp; Project Hub</div>
-      <div class="filter-strip">
-        ${['todos','clientes','apps','proveedores'].map(f=>`
-          <button class="fc ${S.filter===f?'on':''}" onclick="setFilter('${f}')">${f.charAt(0).toUpperCase()+f.slice(1)}</button>
-        `).join('')}
-      </div>
-    </div>
-    <div class="sb-nav">
-      <div class="nv ${S.navView==='dashboard'?'on':''}" onclick="setNavView('dashboard')">
-        <svg class="nv-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
-        Dashboard <span class="nv-badge">${activeTasks}</span>
-      </div>
-      <div class="nv ${S.navView==='kanbanGlobal'?'on':''}" onclick="setNavView('kanbanGlobal')">
-        <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1.5" y="2" width="3.5" height="12" rx="1"/><rect x="6.25" y="2" width="3.5" height="8" rx="1"/><rect x="11" y="2" width="3.5" height="10" rx="1"/></svg>
-        Kanban Global <span class="nv-badge">${totalTasks}</span>
-      </div>
-      <div class="nv ${S.navView==='proyectos'?'on':''}" onclick="setNavView('proyectos')">
-        <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M14 12.667a1.333 1.333 0 0 1-1.333 1.333H3.333A1.333 1.333 0 0 1 2 12.667V3.333A1.333 1.333 0 0 1 3.333 2h3.334L8 4h6v8.667z"/></svg>
-        Proyectos <span class="nv-tail">${DATA.length}</span>
-      </div>
-      <div class="nv ${S.navView==='calendario'?'on':''}" onclick="setNavView('calendario')">
-        <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2.667" width="12" height="12" rx="1.333"/><path d="M10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12"/></svg>
-        Calendario <span class="nv-tail">3</span>
-      </div>
-    </div>
-    <div class="sb-list">
-      ${(S.filter==='todos'||S.filter==='clientes')?`
-        <div class="sl-label sl-label-row">
-          <span>Clientes</span>
-          <button class="sl-add-btn" onclick="openNewClient()" title="Nuevo cliente">＋</button>
+
+      <!-- Tarjeta de sesión de usuario -->
+      <div class="sb-user-card">
+        <div class="sb-user-info">
+          <div class="sb-user-avatar" style="${isAdmin?'background:var(--brand)':'background:#004E9C'}">${uInitial}</div>
+          <div class="sb-user-text">
+            <div class="sb-user-name">${escapeHtml(u?.name || u?.email || 'Usuario')}</div>
+            <div class="sb-user-role"><span class="sb-user-role-badge">${uRoleBadge}</span> ${escapeHtml(u?.email || '')}</div>
+          </div>
         </div>
-        ${cl.length?cl.map(pi).join(''):'<div class="sl-empty">Sin clientes todavía</div>'}
-      `:''}
-      ${ap.length?`<div class="sl-label">Apps</div>${ap.map(pi).join('')}`:''}
-      ${pr.length?`<div class="sl-label">Proveedores</div>${pr.map(pi).join('')}`:''}
+        <button type="button" class="sb-user-logout-btn" onclick="logoutUser()" title="Cerrar sesión">⎋</button>
+      </div>
+
+      ${isAdmin ? `
+        <div class="filter-strip">
+          ${['todos','clientes','apps','proveedores'].map(f=>`
+            <button class="fc ${S.filter===f?'on':''}" onclick="setFilter('${f}')">${f.charAt(0).toUpperCase()+f.slice(1)}</button>
+          `).join('')}
+        </div>
+      ` : ''}
     </div>
+
+    ${isAdmin ? `
+      <div class="sb-nav">
+        <div class="nv ${S.navView==='dashboard'?'on':''}" onclick="setNavView('dashboard')">
+          <svg class="nv-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+          Dashboard <span class="nv-badge">${activeTasks}</span>
+        </div>
+        <div class="nv ${S.navView==='kanbanGlobal'?'on':''}" onclick="setNavView('kanbanGlobal')">
+          <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="1.5" y="2" width="3.5" height="12" rx="1"/><rect x="6.25" y="2" width="3.5" height="8" rx="1"/><rect x="11" y="2" width="3.5" height="10" rx="1"/></svg>
+          Kanban Global <span class="nv-badge">${totalTasks}</span>
+        </div>
+        <div class="nv ${S.navView==='proyectos'?'on':''}" onclick="setNavView('proyectos')">
+          <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M14 12.667a1.333 1.333 0 0 1-1.333 1.333H3.333A1.333 1.333 0 0 1 2 12.667V3.333A1.333 1.333 0 0 1 3.333 2h3.334L8 4h6v8.667z"/></svg>
+          Proyectos <span class="nv-tail">${DATA.length}</span>
+        </div>
+        <div class="nv ${S.navView==='calendario'?'on':''}" onclick="setNavView('calendario')">
+          <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2.667" width="12" height="12" rx="1.333"/><path d="M10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12"/></svg>
+          Calendario <span class="nv-tail">3</span>
+        </div>
+      </div>
+    ` : ''}
+
+    <div class="sb-list">
+      <div class="sl-label sl-label-row">
+        <span>${isAdmin ? 'Clientes' : 'Tu Espacio de Trabajo'}</span>
+        ${isAdmin ? `<button class="sl-add-btn" onclick="openNewClient()" title="Nuevo cliente">＋</button>` : ''}
+      </div>
+      ${cl.length?cl.map(p => pi(p, isAdmin)).join(''):'<div class="sl-empty">Sin espacios autorizados</div>'}
+      ${ap.length?`<div class="sl-label">Apps</div>${ap.map(p => pi(p, isAdmin)).join('')}`:''}
+      ${pr.length?`<div class="sl-label">Proveedores</div>${pr.map(p => pi(p, isAdmin)).join('')}`:''}
+    </div>
+
     <div class="sb-footer">
       ${cl.length?`<div class="sb-legend">
         <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#22C55E"></div>Verde: cliente activo</div>
@@ -4156,10 +4799,14 @@ function sidebar(){
         <div class="sb-legend-row"><div class="sb-legend-dot" style="background:#EF4444"></div>Rojo: cliente inactivo</div>
       </div>`:''}
       <div class="sb-config-row">
-        <button type="button" class="sb-config-btn" onclick="openConfigModal()" title="Configuración de preferencias">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>Ajustes</span>
-        </button>
+        ${isAdmin ? `
+          <button type="button" class="sb-config-btn" onclick="openConfigModal('apariencia')" title="Configuración y Gestión de Usuarios">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Ajustes</span>
+          </button>
+        ` : `
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:600">Tema:</div>
+        `}
         <div class="theme-pills">
           <button type="button" class="theme-pill ${S.theme==='light'?'on':''}" onclick="setTheme('light')" title="Modo Claro">☀️</button>
           <button type="button" class="theme-pill ${S.theme==='dark'?'on':''}" onclick="setTheme('dark')" title="Modo Oscuro">🌙</button>
@@ -4169,22 +4816,22 @@ function sidebar(){
     </div>
   </div>`
 }
-function pi(p){
-  const a     = ACCENT[p.type]
-  const shape = TYPE_SHAPE[p.type]
-  const badge = TYPE_BADGE[p.type]
+function pi(p, isAdmin = true){
+  const a     = ACCENT[p.type] || ACCENT['cliente']
+  const shape = TYPE_SHAPE[p.type] || 'shape-client'
+  const badge = TYPE_BADGE[p.type] || 'CLI'
   const avStyle = p.type==='proveedor' ? `color:${p.color}` : `background:${p.color}`
   const semCls = p.type==='cliente' && p.semaforo ? `sem-${p.semaforo}` : ''
   const isOn   = S.proj?.id===p.id ? 'on' : ''
   return `<div class="pi ${isOn} ${semCls}" data-id="${p.id}" data-type="${p.type}"
-    draggable="true"
+    ${isAdmin ? 'draggable="true"' : ''}
     onclick="selectProj('${p.id}')"
     ondragstart="onProjDragStart(event,'${p.id}','${p.type}')"
     ondragover="onProjDragOver(event,'${p.id}','${p.type}')"
     ondragleave="onProjDragLeave(event)"
     ondrop="onProjDrop(event,'${p.id}','${p.type}')"
     ondragend="onProjDragEnd(event)">
-    <span class="pi-grip" title="Arrastra para reordenar">⠿</span>
+    ${isAdmin ? `<span class="pi-grip" title="Arrastra para reordenar">⠿</span>` : ''}
     <div class="pi-av-wrap">
       <div class="pi-av ${shape}" style="${avStyle}">${p.type==='proveedor'?badge:p.initials}</div>
       <div class="pi-badge">${badge}</div>
@@ -4193,7 +4840,7 @@ function pi(p){
       <div class="pi-name">${p.name}</div>
       <div class="pi-sub">${p.sub}</div>
     </div>
-    ${p.type==='cliente'?`<button class="pi-del" onclick="deleteClient('${p.id}',event)" title="Eliminar cliente">🗑</button>`:''}
+    ${p.type==='cliente' && isAdmin ? `<button class="pi-del" onclick="deleteClient('${p.id}',event)" title="Eliminar cliente">🗑</button>` : ''}
     <div class="pi-dot" style="background:${a.main}"></div>
   </div>`
 }
@@ -4218,6 +4865,7 @@ function main(){
   const badge    = TYPE_BADGE[p.type]
   const lgStyle  = p.type==='proveedor'?`color:${p.color}`:`background:${p.color}`
   const lgInner  = p.type==='proveedor'?badge:p.initials
+  const isAdmin = S.currentUser?.role === 'admin'
   return `<div class="mn">
     <div class="tb">
       <div class="tb-row1">
@@ -4229,7 +4877,7 @@ function main(){
           <div class="proj-title-row">
             <h1 class="proj-title">${escapeHtml(p.name)}</h1>
             <span class="type-pill">${typeName}</span>
-            ${p.type==='cliente'?`<button class="proj-edit-meta-btn" onclick="openEditClient('${p.id}')" title="Editar datos del cliente">✏️</button>`:''}
+            ${p.type==='cliente' && isAdmin ? `<button class="proj-edit-meta-btn" onclick="openEditClient('${p.id}')" title="Editar datos del cliente">✏️</button>` : ''}
           </div>
           ${p.type==='cliente' ? `
           <div class="proj-operational-meta">
@@ -4251,12 +4899,16 @@ function main(){
         </div>`:''}
         <div class="tb-actions-group">
           <button class="tb-action" ${providerButtonAttrs}>${btnLabel}</button>
-          ${p.type==='cliente'?`<button class="tb-del-btn" onclick="openEditClient('${p.id}')" title="Opciones del cliente">···</button>`:''}
+          ${p.type==='cliente' && isAdmin ? `<button class="tb-del-btn" onclick="openEditClient('${p.id}')" title="Opciones del cliente">···</button>` : ''}
         </div>
       </div>
       <div class="tb-tabs-bar">
         <div class="tabs">
           ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
+        </div>
+        <div id="cloud-sync-pill" class="sync-pill" title="Estado de sincronización en la nube">
+          <span class="sync-dot ${S._syncStatus==='saving'?'saving':S._syncStatus==='error'?'err':'green'}"></span>
+          <span>${escapeHtml(S._syncMessage || 'Sincronizado en la nube')}</span>
         </div>
         ${p.type==='cliente'?renderTopStatsPills(p):''}
       </div>
@@ -4308,7 +4960,47 @@ function content(p){
 // ─ CLIENTE ──────────────────────────────────────────────────────────────────
 function clienteContent(p){
   if(S.view==='kanban') return kanban(p)
+  if(S.view==='actividad') return auditoriaActividadView(p)
   return resumen(p)
+}
+
+// ── Auditoría y Registro de Actividad ──────────────────────────────────────
+function auditoriaActividadView(p){
+  const logs = p.activityLog || []
+  return `<div class="audit-container">
+    <div class="audit-hero">
+      <div>
+        <div class="audit-title">Registro de Actividad y Cambios · ${escapeHtml(p.name)}</div>
+        <div class="audit-sub">Trazabilidad de cambios sincronizados en la nube entre usuarios autorizados (Blanca y Administrador).</div>
+      </div>
+      <button type="button" class="tb-action" style="font-size:12px;padding:8px 14px" onclick="syncLoadCurrentProject('${p.id}')">🔄 Actualizar datos</button>
+    </div>
+
+    <div class="audit-list">
+      ${logs.length ? logs.map(item => {
+        const initial = ((item.user || item.email || '?').charAt(0)).toUpperCase()
+        const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString('es-ES', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Reciente'
+        return `<div class="audit-item">
+          <div class="audit-avatar" style="${item.email?.includes('blanca')?'background:rgba(0,78,156,0.18);color:#004E9C':'background:var(--accent-light);color:var(--accent-text)'}">${initial}</div>
+          <div class="audit-content">
+            <div class="audit-header-line">
+              <span class="audit-user-name">${escapeHtml(item.user || 'Usuario')}</span>
+              ${item.email ? `<span style="font-size:11px;color:var(--text-3)">(${escapeHtml(item.email)})</span>` : ''}
+              <span class="audit-action-badge">${escapeHtml(item.action || 'Cambio')}</span>
+              <span class="audit-time">${dateStr}</span>
+            </div>
+            <div class="audit-desc">${escapeHtml(item.summary || 'Actualización en el espacio de trabajo')}</div>
+          </div>
+        </div>`
+      }).join('') : `
+        <div style="padding:40px 20px;text-align:center;color:var(--text-3)">
+          <div style="font-size:32px;margin-bottom:10px">📜</div>
+          <div style="font-weight:700;color:var(--text-1);font-size:14px;margin-bottom:4px">Sin registros previos en esta sesión</div>
+          <div style="font-size:12.5px;max-width:440px;margin:0 auto">Cualquier cambio que realicen Blanca o el Administrador (mover tarjetas en el Kanban, checklist, tareas o comentarios) se guardará y registrará aquí en tiempo real.</div>
+        </div>
+      `}
+    </div>
+  </div>`
 }
 
 // ── Bloque superior Necesita atención ───────────────────────────────────────
@@ -5334,6 +6026,35 @@ DATA.forEach(p=>{
   }
 })
 
+// ── Session & User Access Restoration ─────────────────────────────────────────
+try{
+  const savedUser = JSON.parse(localStorage.getItem('ligrow_auth_user') || 'null');
+  if(savedUser && savedUser.email){
+    S.currentUser = savedUser;
+    if(savedUser.role === 'admin'){
+      S.defaultUser = 'Jesús';
+    } else {
+      S.defaultUser = savedUser.name || 'Blanca';
+      const allowed = Array.isArray(savedUser.allowedClients) ? savedUser.allowedClients : ['cpb'];
+      const targetProj = DATA.find(p => allowed.includes(p.id)) || DATA.find(p => p.id === 'cpb') || DATA[0];
+      if(targetProj) S.proj = targetProj;
+      S.navView = null;
+    }
+  }
+}catch(e){}
+
+// Verify session in background with API
+fetch('/api/auth/me', { credentials: 'same-origin' })
+  .then(r => r.json())
+  .then(res => {
+    if(res && res.user){
+      S.currentUser = res.user;
+      localStorage.setItem('ligrow_auth_user', JSON.stringify(res.user));
+      render();
+    }
+  })
+  .catch(()=>{});
+
 try{
   const savedTheme=localStorage.getItem('ligrow_theme')
   if(savedTheme && ['light','dark','auto'].includes(savedTheme)) S.theme=savedTheme
@@ -5342,9 +6063,9 @@ try{
 try{
   const st=JSON.parse(localStorage.getItem('ligrow_state')||'{}')
   if(st.filter&&['todos','clientes','apps','proveedores'].includes(st.filter))S.filter=st.filter
-  if(st.projId){const found=DATA.find(x=>x.id===st.projId);if(found)S.proj=found}
+  if(st.projId){const found=DATA.find(x=>x.id===st.projId && canAccessClient(x.id));if(found)S.proj=found}
   if(st.view)S.view=st.view
-  if(st.navView!==undefined)S.navView=st.navView
+  if(st.navView!==undefined && S.currentUser?.role === 'admin')S.navView=st.navView
   if(st.theme)S.theme=st.theme
   if(st.defaultUser)S.defaultUser=st.defaultUser
   if(st.kanbanOwnerFilter)S.kanbanOwnerFilter=st.kanbanOwnerFilter
@@ -5352,11 +6073,11 @@ try{
 try{
   const urlParams = new URLSearchParams(window.location.search)
   if(urlParams.get('proj')){
-    const pFound = DATA.find(x => x.id === urlParams.get('proj'))
+    const pFound = DATA.find(x => x.id === urlParams.get('proj') && canAccessClient(x.id))
     if(pFound) S.proj = pFound
   }
   if(urlParams.get('view')) S.view = urlParams.get('view')
-  if(urlParams.get('navView')) S.navView = urlParams.get('navView')
+  if(urlParams.get('navView') && S.currentUser?.role === 'admin') S.navView = urlParams.get('navView')
   if(urlParams.get('owner')) S.kanbanOwnerFilter = urlParams.get('owner')
   if(urlParams.get('theme')) S.theme = urlParams.get('theme')
   if(urlParams.get('task')){
@@ -5377,8 +6098,11 @@ try{
   }
 }catch(e){}
 
-// Guard against a stale S.proj reference
-if(!DATA.find(x=>x.id===S.proj?.id)) S.proj=DATA[0]||null
+// Guard against a stale or unauthorized S.proj reference
+if(!S.proj || !canAccessClient(S.proj.id)){
+  const allowed = filtered()
+  S.proj = allowed[0] || DATA[0] || null
+}
 
 // Atajo de teclado: Escape cierra cualquier modal
 window.addEventListener('keydown', e=>{
@@ -5396,6 +6120,19 @@ if(window.matchMedia){
 // Start with brand orange
 applyAccent('cliente')
 render()
+
+// Sincronizar espacio del proyecto activo si hay usuario
+if(S.currentUser && S.proj?.id){
+  syncLoadCurrentProject(S.proj.id);
+}
+
+// Sincronización en segundo plano periódica (cada 25 segundos)
+setInterval(() => {
+  if(S.currentUser && S.proj && S.proj.id && S.proj.type === 'cliente'){
+    syncLoadCurrentProject(S.proj.id);
+  }
+}, 25000);
+
 loadSupplierDirectory().catch(()=>{})
 </script>
 </body>
