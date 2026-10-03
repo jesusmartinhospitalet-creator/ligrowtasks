@@ -2088,7 +2088,9 @@ let DATA = [
     name:'CPB SERVEIS MENTALS', sub:'Rediseño web & salud comunitaria',
     responsable:'Jesús',
     proyectosCount:3,
-    ultimaActividad:'Actualizado hoy, 10:24',
+    ultimaActividad:'Actualizado por Jesús · Hoy, 21:25',
+    lastModifiedBy:'Jesús',
+    lastModifiedAt:'2026-10-03T19:25:00.000Z',
     semaforo:'verde',
     description:'Entidad sin ánimo de lucro proveedora de servicios asistenciales integrales de salud mental en Barcelona.',
     recordatorios:[
@@ -2589,24 +2591,40 @@ function confirmAddRec(pid){
   const detail=(document.getElementById('rec-det-in')?.value||'').trim()
   const due=(document.getElementById('rec-due-in')?.value||'')
   const p=DATA.find(x=>x.id===pid)
-  if(p){if(!p.recordatorios)p.recordatorios=[];p.recordatorios.push({id:'r'+Date.now(),text:txt,detail,due,done:false})}
+  if(p){
+    if(!p.recordatorios)p.recordatorios=[];
+    p.recordatorios.push({id:'r'+Date.now(),text:txt,detail,due,done:false})
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({ action: 'Nuevo recordatorio', summary: `${uName} añadió el recordatorio "${txt}"` })
+  }
   S.addingRec=false;render()
 }
 function toggleRec(pid,idx){
   const p=DATA.find(x=>x.id===pid)
-  if(p?.recordatorios?.[idx])p.recordatorios[idx].done=!p.recordatorios[idx].done
+  if(p?.recordatorios?.[idx]){
+    p.recordatorios[idx].done=!p.recordatorios[idx].done
+    const r = p.recordatorios[idx]
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({ action: 'Recordatorio', summary: `${uName} marcó como ${r.done?'completado':'pendiente'} el recordatorio "${r.text}"` })
+  }
   render()
 }
 function deleteRec(pid,idx){
   const p=DATA.find(x=>x.id===pid)
-  if(p?.recordatorios)p.recordatorios.splice(idx,1)
+  if(p?.recordatorios){
+    const r = p.recordatorios[idx]
+    p.recordatorios.splice(idx,1)
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({ action: 'Eliminar recordatorio', summary: `${uName} eliminó el recordatorio "${r?.text||''}"` })
+  }
   render()
 }
 function setSemaforo(pid,col){
   const p=DATA.find(x=>x.id===pid)
   if(p){
     p.semaforo = (p.semaforo === col) ? null : col
-    save()
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({ action: 'Semáforo de estado', summary: `${uName} cambió el semáforo a ${p.semaforo || 'neutral'}` })
     render()
   }
 }
@@ -2891,10 +2909,23 @@ function updateTaskField(pid,code,field,val){
       else if(val==='Detenido') t.status='Esperando feedback'
     }
     normTask(t, 0, p)
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
     if(field === 'status'){
-      save({ action: 'Cambio de estado', summary: `${S.currentUser?.name || S.defaultUser || 'Administrador'} cambió estado de "${t.name || t.title}" a "${t.status}"` })
+      save({
+        action: 'Cambio de estado',
+        summary: `${uName} ha pasado la tarea a ${t.status}`,
+        taskCode: t.code,
+        taskName: t.name || t.title,
+        status: t.status
+      })
     } else {
-      save({ action: 'Edición de tarea', summary: `${S.currentUser?.name || S.defaultUser || 'Administrador'} modificó ${field} en "${t.name || t.title}"` })
+      save({
+        action: 'Edición de tarea',
+        summary: `${uName} modificó ${field} en "${t.name || t.title}"`,
+        taskCode: t.code,
+        taskName: t.name || t.title,
+        status: t.status
+      })
     }
     render()
   }
@@ -2907,7 +2938,15 @@ function toggleChkItem(pid,code,idx){
     normTask(t, 0, p)
     if(t.checklist?.[idx]){
       t.checklist[idx].done = !t.checklist[idx].done
-      save()
+      const chk = t.checklist[idx]
+      const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+      save({
+        action: 'Checklist',
+        summary: `${uName} marcó como ${chk.done?'completado':'pendiente'} "${chk.text}" en ${t.code}`,
+        taskCode: t.code,
+        taskName: t.name || t.title,
+        status: t.status
+      })
       render()
     }
   }
@@ -2921,8 +2960,16 @@ function addChkItem(pid,code){
   const t=p?.tasks?.find(x=>(x.code===code || x.id===code))
   if(t){
     normTask(t, 0, p)
+    if(!t.checklist) t.checklist=[]
     t.checklist.push({text:txt,done:false})
-    save()
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({
+      action: 'Checklist',
+      summary: `${uName} añadió "${txt}" al checklist de ${t.code}`,
+      taskCode: t.code,
+      taskName: t.name || t.title,
+      status: t.status
+    })
   }
   el.value='';render()
 }
@@ -2983,8 +3030,15 @@ function deleteTask(pid,code,e){
   if(e) e.stopPropagation()
   const p=DATA.find(x=>x.id===pid)
   if(p?.tasks){
+    const t = p.tasks.find(x=>(x.code===code || x.id===code))
     p.tasks=p.tasks.filter(t=>(t.code!==code && t.id!==code))
-    save()
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({
+      action: 'Eliminar tarea',
+      summary: `${uName} eliminó la tarea "${t?.name || t?.title || code}" (${code})`,
+      taskCode: code,
+      taskName: t?.name || t?.title || code
+    })
   }
   if(S.expandedTask===code) S.expandedTask=null
   render()
@@ -3114,7 +3168,14 @@ function submitQuickCard(pid, colId){
     files: []
   }
   p.tasks.push(newTask)
-  save()
+  const uNameQuick = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+  save({
+    action: 'Nueva tarea',
+    summary: `${uNameQuick} añadió la tarea "${val}" (${code})`,
+    taskCode: code,
+    taskName: val,
+    status: colId
+  })
   S._addingCardCol = colId
   render()
   setTimeout(()=>document.getElementById('k-add-input-'+colId)?.focus(), 50)
@@ -3177,7 +3238,14 @@ function handleColDrop(e, targetColId){
 
   if(task.status !== targetColId){
     task.status = targetColId
-    save()
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({
+      action: 'Mover tarjeta',
+      summary: `${uName} ha pasado la tarea a ${targetColId}`,
+      taskCode: task.code,
+      taskName: task.title || task.name,
+      status: targetColId
+    })
     render()
   }
 }
@@ -3207,7 +3275,14 @@ function handleCardDrop(e, targetColId, targetTaskId){
   }else{
     client.tasks.push(movedTask)
   }
-  save()
+  const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+  save({
+    action: 'Mover tarjeta',
+    summary: `${uName} ha pasado la tarea a ${targetColId}`,
+    taskCode: movedTask.code,
+    taskName: movedTask.title || movedTask.name,
+    status: targetColId
+  })
   render()
 }
 
@@ -3379,13 +3454,24 @@ function confirmAddDoc(){
   }
   S._docUploadedDataUrl = null
   S.modal = null
-  save()
+  const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+  save({
+    action: 'Nuevo recurso',
+    summary: `${uName} añadió el recurso "${name}"`
+  })
   render()
 }
 function deleteDoc(pid,idx){
   const p=DATA.find(x=>x.id===pid)
-  if(p?.docs)p.docs.splice(idx,1)
-  save()
+  if(p?.docs){
+    const d = p.docs[idx]
+    p.docs.splice(idx,1)
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
+    save({
+      action: 'Eliminar recurso',
+      summary: `${uName} eliminó el recurso "${d?.name || 'Recurso'}"`
+    })
+  }
   render()
 }
 function addChkItem(){ S._chkItems.push(''); render(); setTimeout(()=>{const inputs=document.querySelectorAll('.modal-chk-in');inputs[inputs.length-1]?.focus()},30) }
@@ -3777,11 +3863,27 @@ document.addEventListener('click',event=>{
 // ── Persistence & Cloud Synchronization ─────────────────────────────────────
 let _syncDebounceTimer = null;
 
+function formatLastActivity(user, isoDateStr){
+  try{
+    const d = isoDateStr ? new Date(isoDateStr) : new Date();
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+    const dayStr = isToday ? 'Hoy' : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    const name = user || S.currentUser?.name?.replace(/\s*\(Admin\)/i, '').trim() || S.defaultUser || 'Jesús';
+    return `Actualizado por ${name} · ${dayStr}, ${timeStr}`;
+  }catch(e){
+    return `Actualizado hoy`;
+  }
+}
+
 function logActivity(p, action, summary, extra = {}){
   if(!p || p.type !== 'cliente') return;
   if(!Array.isArray(p.activityLog)) p.activityLog = [];
   const u = S.currentUser;
-  const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '') : (S.defaultUser || 'Administrador');
+  const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
   const userEmail = u?.email || '';
   const now = new Date().toISOString();
 
@@ -3801,7 +3903,10 @@ function logActivity(p, action, summary, extra = {}){
   if(p.activityLog.length > 50) p.activityLog = p.activityLog.slice(0, 50);
   p.lastModifiedBy = userName;
   p.lastModifiedEmail = userEmail;
-  p.ultimaActividad = `Actualizado por ${userName} hoy`;
+  p.lastModifiedAt = now;
+  p.ultimaActividad = formatLastActivity(userName, now);
+  const liveActEl = document.getElementById('proj-live-activity');
+  if(liveActEl) liveActEl.textContent = p.ultimaActividad;
 }
 
 function formatAuditTime(isoStr){
@@ -3840,8 +3945,23 @@ async function manualRefreshAudit(clientId){
 
 function save(details = {}){
   if(S.proj && S.proj.id && S.proj.type === 'cliente'){
+    const u = S.currentUser;
+    const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
+    const userEmail = u?.email || '';
+    const now = new Date().toISOString();
+
     if(details && details.action){
-      logActivity(S.proj, details.action, details.summary);
+      logActivity(S.proj, details.action, details.summary, {
+        taskCode: details.taskCode,
+        taskName: details.taskName,
+        status: details.status
+      });
+      S.proj.lastModifiedBy = userName;
+      S.proj.lastModifiedEmail = userEmail;
+      S.proj.lastModifiedAt = now;
+      S.proj.ultimaActividad = formatLastActivity(userName, now);
+      const liveActEl = document.getElementById('proj-live-activity');
+      if(liveActEl) liveActEl.textContent = S.proj.ultimaActividad;
     }
   }
 
@@ -3858,7 +3978,7 @@ function save(details = {}){
     }));
   }catch(e){}
 
-  if(S.proj && S.proj.id && S.proj.type === 'cliente'){
+  if(S.proj && S.proj.id && S.proj.type === 'cliente' && details && details.action){
     clearTimeout(_syncDebounceTimer);
     _syncDebounceTimer = setTimeout(() => {
       syncSaveCurrentProject(details);
@@ -3870,19 +3990,9 @@ async function syncSaveCurrentProject(details = {}){
   if(!S.proj || !S.proj.id || S.proj.type !== 'cliente') return;
   const clientId = S.proj.id;
   const isLocalFile = window.location.protocol === 'file:';
-
-  if(isLocalFile){
-    S._syncStatus = 'local';
-    S._syncMessage = 'Guardado localmente (modo archivo)';
-    updateSyncIndicator();
-    return;
-  }
+  if(isLocalFile) return;
 
   try{
-    S._syncStatus = 'saving';
-    S._syncMessage = 'Guardando en la nube...';
-    updateSyncIndicator();
-
     const payload = {
       tasks: S.proj.tasks || [],
       recordatorios: S.proj.recordatorios || [],
@@ -3911,21 +4021,13 @@ async function syncSaveCurrentProject(details = {}){
         S.proj.activityLog = data.record.activityLog;
         S.proj.lastModifiedBy = data.record.lastModifiedBy;
         S.proj.lastModifiedEmail = data.record.lastModifiedEmail;
-        S.proj.ultimaActividad = `Actualizado por ${data.record.lastModifiedBy} hoy`;
+        S.proj.lastModifiedAt = data.record.lastModifiedAt || new Date().toISOString();
+        S.proj.ultimaActividad = formatLastActivity(data.record.lastModifiedBy, S.proj.lastModifiedAt);
+        const liveActEl = document.getElementById('proj-live-activity');
+        if(liveActEl) liveActEl.textContent = S.proj.ultimaActividad;
       }
-      S._syncStatus = 'ok';
-      S._syncMessage = 'Sincronizado en la nube';
-      updateSyncIndicator();
-    } else {
-      S._syncStatus = 'local';
-      S._syncMessage = 'Guardado local (servidor desconectado)';
-      updateSyncIndicator();
     }
-  }catch(err){
-    S._syncStatus = 'local';
-    S._syncMessage = 'Guardado local (servidor desconectado)';
-    updateSyncIndicator();
-  }
+  }catch(err){}
 }
 
 async function syncLoadCurrentProject(clientId){
@@ -3948,8 +4050,9 @@ async function syncLoadCurrentProject(clientId){
         p.activityLog = data.workspace.activityLog || [];
         p.lastModifiedBy = data.workspace.lastModifiedBy || '';
         p.lastModifiedEmail = data.workspace.lastModifiedEmail || '';
+        p.lastModifiedAt = data.workspace.lastModifiedAt || new Date().toISOString();
         if(p.lastModifiedBy){
-          p.ultimaActividad = `Actualizado por ${p.lastModifiedBy}`;
+          p.ultimaActividad = formatLastActivity(p.lastModifiedBy, p.lastModifiedAt);
         }
         render();
       }
@@ -3958,33 +4061,7 @@ async function syncLoadCurrentProject(clientId){
 }
 
 function updateSyncIndicator(){
-  const el = document.getElementById('cloud-sync-pill');
-  if(!el) return;
-  const isLocalFile = window.location.protocol === 'file:';
-  let dotCls = 'green';
-  let msg = S._syncMessage || (isLocalFile ? 'Guardado localmente' : 'Sincronizado en la nube');
-  let title = 'Tus cambios están guardados de forma segura';
-
-  if(S._syncStatus === 'saving'){
-    dotCls = 'saving';
-    msg = 'Guardando en la nube...';
-  } else if(S._syncStatus === 'local' || isLocalFile){
-    dotCls = 'amber';
-    msg = S._syncMessage || 'Guardado local';
-    title = isLocalFile 
-      ? 'Modo archivo local: los cambios se guardan en tu equipo. Para sincronización multi-usuario en la nube con Supabase, abre la app desde su servidor web (Vercel).' 
-      : 'Modo local: no hay conexión al servidor de sincronización en la nube.';
-  } else if(S._syncStatus === 'error'){
-    dotCls = 'err';
-    msg = S._syncMessage || 'Error de sincronización';
-  } else {
-    dotCls = 'green';
-    msg = 'Sincronizado en la nube';
-    title = 'Conectado a la base de datos Supabase. Cambios sincronizados con todos los usuarios.';
-  }
-
-  el.title = title;
-  el.innerHTML = `<span class="sync-dot ${dotCls}"></span> <span>${escapeHtml(msg)}</span>`;
+  // Kept clean; all live updates are reflected in the header live bullet without layout shifts
 }
 
 // ── Login Screen ──────────────────────────────────────────────────────────────
@@ -5059,7 +5136,7 @@ function main(){
             <span class="meta-sep">·</span>
             <span class="meta-item"><strong class="meta-val">${p.proyectosCount ?? (p.tasks?.length ? p.tasks.length : 3)} proyectos activos</strong></span>
             <span class="meta-sep">·</span>
-            <span class="meta-item"><span class="meta-live-dot"></span><span class="meta-val">${escapeHtml(p.ultimaActividad || 'Actualizado hoy')}</span></span>
+            <span class="meta-item"><span class="meta-live-dot"></span><span class="meta-val" id="proj-live-activity">${escapeHtml(p.ultimaActividad || formatLastActivity(p.lastModifiedBy, p.lastModifiedAt))}</span></span>
           </div>` : `
           <div class="proj-sub-text">${p.sub}</div>
           `}
@@ -5079,10 +5156,6 @@ function main(){
       <div class="tb-tabs-bar">
         <div class="tabs">
           ${tabs.map(t=>`<button class="tab ${S.view===t?'on':''}" onclick="setView('${t}')">${TAB_LABELS[t]}</button>`).join('')}
-        </div>
-        <div id="cloud-sync-pill" class="sync-pill" title="Estado de sincronización en la nube">
-          <span class="sync-dot ${S._syncStatus==='saving'?'saving':S._syncStatus==='error'?'err':'green'}"></span>
-          <span>${escapeHtml(S._syncMessage || 'Sincronizado en la nube')}</span>
         </div>
         ${p.type==='cliente'?renderTopStatsPills(p):''}
       </div>
@@ -6265,7 +6338,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v12'
+const STORE_VERSION='v13'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
@@ -6278,9 +6351,14 @@ try{
 
 // Purga de tareas de prueba y normalización de tareas cargadas
 DATA.forEach(p=>{
-  if(p.type==='cliente' && p.tasks){
-    p.tasks = p.tasks.filter(t => t.name?.toLowerCase() !== 'prueba' && t.title?.toLowerCase() !== 'prueba' && t.code !== 'CPB-05')
-    p.tasks = p.tasks.map((t,idx)=>normTask(t, idx, p))
+  if(p.type==='cliente'){
+    if(p.tasks){
+      p.tasks = p.tasks.filter(t => t.name?.toLowerCase() !== 'prueba' && t.title?.toLowerCase() !== 'prueba' && t.code !== 'CPB-05')
+      p.tasks = p.tasks.map((t,idx)=>normTask(t, idx, p))
+    }
+    if(!p.lastModifiedBy) p.lastModifiedBy = 'Jesús';
+    if(!p.lastModifiedAt) p.lastModifiedAt = '2026-10-03T19:25:00.000Z';
+    p.ultimaActividad = formatLastActivity(p.lastModifiedBy, p.lastModifiedAt);
   }
 })
 
