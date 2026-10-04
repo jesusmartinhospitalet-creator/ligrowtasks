@@ -9,6 +9,13 @@ try {
 // Memoria local de sincronización
 const FALLBACK_SYNC = new Map();
 
+function sanitizeUserString(str = '') {
+  return String(str || '')
+    .replace(/Jes\uFFFD+s/gi, 'Jesús')
+    .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
+    .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
+}
+
 async function getClientWorkspace(clientId) {
   const cleanId = String(clientId || '').toLowerCase().trim();
 
@@ -24,7 +31,7 @@ async function getClientWorkspace(clientId) {
         return {
           clientId: data.client_id,
           payload: data.payload,
-          lastModifiedBy: data.last_modified_by,
+          lastModifiedBy: sanitizeUserString(data.last_modified_by),
           lastModifiedEmail: data.last_modified_email,
           activityLog: Array.isArray(data.activity_log) ? data.activity_log : [],
           updatedAt: data.updated_at
@@ -36,7 +43,11 @@ async function getClientWorkspace(clientId) {
   }
 
   if (FALLBACK_SYNC.has(cleanId)) {
-    return FALLBACK_SYNC.get(cleanId);
+    const item = FALLBACK_SYNC.get(cleanId);
+    return {
+      ...item,
+      lastModifiedBy: sanitizeUserString(item.lastModifiedBy)
+    };
   }
 
   return null;
@@ -54,9 +65,9 @@ async function getAllWorkspaces() {
         return data.map((d) => ({
           clientId: d.client_id,
           payload: d.payload,
-          lastModifiedBy: d.last_modified_by,
+          lastModifiedBy: sanitizeUserString(d.last_modified_by),
           lastModifiedEmail: d.last_modified_email,
-          activityLog: Array.isArray(data.activity_log) ? data.activity_log : [],
+          activityLog: Array.isArray(d.activity_log) ? d.activity_log : [],
           updatedAt: d.updated_at
         }));
       }
@@ -71,7 +82,7 @@ async function getAllWorkspaces() {
 async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
   const cleanId = String(clientId || '').toLowerCase().trim();
   const now = new Date().toISOString();
-  const userName = user.name || user.email || 'Usuario';
+  const userName = sanitizeUserString(user.name || user.email || 'Jesús');
   const userEmail = user.email || '';
 
   // Obtener log existente
@@ -84,7 +95,7 @@ async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
     user: userName,
     email: userEmail,
     action: details.action || 'Cambios guardados',
-    summary: details.summary || 'Actualización de tareas y tablero'
+    summary: details.summary ? sanitizeUserString(details.summary) : 'Actualización de tareas y tablero'
   };
 
   // Mantener los últimos 50 eventos de actividad
@@ -111,7 +122,7 @@ async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
         const record = {
           clientId: data.client_id,
           payload: data.payload,
-          lastModifiedBy: data.last_modified_by,
+          lastModifiedBy: sanitizeUserString(data.last_modified_by),
           lastModifiedEmail: data.last_modified_email,
           activityLog: data.activity_log,
           updatedAt: data.updated_at

@@ -3872,8 +3872,12 @@ function formatLastActivity(user, isoDateStr){
     const minutes = String(d.getMinutes()).padStart(2, '0');
     const timeStr = `${hours}:${minutes}`;
     const dayStr = isToday ? 'Hoy' : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-    const name = user || S.currentUser?.name?.replace(/\s*\(Admin\)/i, '').trim() || S.defaultUser || 'Jesús';
-    return `Actualizado por ${name} · ${dayStr}, ${timeStr}`;
+    let rawName = user || S.currentUser?.name?.replace(/\s*\(Admin\)/i, '').trim() || S.defaultUser || 'Jesús';
+    const cleanName = String(rawName || 'Jesús')
+      .replace(/Jes\uFFFD+s/gi, 'Jesús')
+      .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
+      .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
+    return `Actualizado por ${cleanName} · ${dayStr}, ${timeStr}`;
   }catch(e){
     return `Actualizado hoy`;
   }
@@ -3883,7 +3887,11 @@ function logActivity(p, action, summary, extra = {}){
   if(!p || p.type !== 'cliente') return;
   if(!Array.isArray(p.activityLog)) p.activityLog = [];
   const u = S.currentUser;
-  const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
+  const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
+  const userName = String(rawName || 'Jesús')
+    .replace(/Jes\uFFFD+s/gi, 'Jesús')
+    .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
+    .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
   const userEmail = u?.email || '';
   const now = new Date().toISOString();
 
@@ -3895,7 +3903,7 @@ function logActivity(p, action, summary, extra = {}){
     user: userName,
     email: userEmail,
     action: action || 'Actualización',
-    summary: summary || `${userName} modificó la tarea`,
+    summary: summary ? String(summary).replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús') : `${userName} modificó la tarea`,
     status: extra.status || ''
   };
 
@@ -3946,7 +3954,11 @@ async function manualRefreshAudit(clientId){
 function save(details = {}){
   if(S.proj && S.proj.id && S.proj.type === 'cliente'){
     const u = S.currentUser;
-    const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
+    const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
+    const userName = String(rawName || 'Jesús')
+      .replace(/Jes\uFFFD+s/gi, 'Jesús')
+      .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
+      .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
     const userEmail = u?.email || '';
     const now = new Date().toISOString();
 
@@ -4003,22 +4015,25 @@ async function syncSaveCurrentProject(details = {}){
     };
 
     const u = S.currentUser;
-    const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
+    const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
+    const userName = String(rawName || 'Jesús')
+      .replace(/Jes\uFFFD+s/gi, 'Jesús')
+      .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
+      .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
     const userEmail = u?.email || 'jesus.martin.hospitalet@gmail.com';
 
     const res = await fetch('/api/sync/client/' + clientId, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
-        'Content-Type': 'application/json',
-        'x-user-name': userName,
-        'x-user-email': userEmail
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         payload,
+        user: { name: userName, email: userEmail },
         details: {
           action: details.action || 'Actualización de tareas',
-          summary: details.summary || `${userName} actualizó el espacio de ${S.proj.name}`
+          summary: details.summary ? String(details.summary).replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús') : `${userName} actualizó el espacio de ${S.proj.name}`
         }
       })
     });
@@ -4027,10 +4042,10 @@ async function syncSaveCurrentProject(details = {}){
       const data = await res.json();
       if(data.record && data.record.activityLog){
         S.proj.activityLog = data.record.activityLog;
-        S.proj.lastModifiedBy = data.record.lastModifiedBy;
+        S.proj.lastModifiedBy = String(data.record.lastModifiedBy || 'Jesús').replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús');
         S.proj.lastModifiedEmail = data.record.lastModifiedEmail;
         S.proj.lastModifiedAt = data.record.lastModifiedAt || new Date().toISOString();
-        S.proj.ultimaActividad = formatLastActivity(data.record.lastModifiedBy, S.proj.lastModifiedAt);
+        S.proj.ultimaActividad = formatLastActivity(S.proj.lastModifiedBy, S.proj.lastModifiedAt);
         const liveActEl = document.getElementById('proj-live-activity');
         if(liveActEl) liveActEl.textContent = S.proj.ultimaActividad;
       }
@@ -4039,6 +4054,62 @@ async function syncSaveCurrentProject(details = {}){
     console.warn('[syncSaveCurrentProject error]', err);
   }
 }
+
+function flushImmediateSave(){
+  try{
+    localStorage.setItem('ligrow_data', JSON.stringify(DATA));
+    localStorage.setItem('ligrow_state', JSON.stringify({
+      projId: S.proj?.id,
+      view: S.view,
+      filter: S.filter,
+      navView: S.navView,
+      theme: S.theme,
+      defaultUser: S.defaultUser,
+      kanbanOwnerFilter: S.kanbanOwnerFilter
+    }));
+  }catch(e){}
+
+  if(S.proj && S.proj.id && S.proj.type === 'cliente' && window.location.protocol !== 'file:'){
+    const payload = {
+      tasks: S.proj.tasks || [],
+      recordatorios: S.proj.recordatorios || [],
+      docs: S.proj.docs || [],
+      semaforo: S.proj.semaforo || 'verde',
+      sub: S.proj.sub || '',
+      responsable: S.proj.responsable || S.defaultUser || 'Jesús'
+    };
+    const u = S.currentUser;
+    const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
+    const userName = String(rawName || 'Jesús').replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús');
+    const userEmail = u?.email || 'jesus.martin.hospitalet@gmail.com';
+    const bodyStr = JSON.stringify({
+      payload,
+      user: { name: userName, email: userEmail },
+      details: { action: 'Auto-guardado', summary: `${userName} guardó los cambios` }
+    });
+
+    try{
+      if(navigator.sendBeacon){
+        const blob = new Blob([bodyStr], { type: 'application/json' });
+        navigator.sendBeacon('/api/sync/client/' + S.proj.id, blob);
+      } else {
+        fetch('/api/sync/client/' + S.proj.id, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyStr,
+          keepalive: true
+        }).catch(()=>{});
+      }
+    }catch(e){}
+  }
+}
+
+window.addEventListener('beforeunload', flushImmediateSave);
+window.addEventListener('pagehide', flushImmediateSave);
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') flushImmediateSave();
+});
 
 async function syncLoadCurrentProject(clientId){
   if(!clientId) return;
