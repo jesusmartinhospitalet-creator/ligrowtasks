@@ -12,7 +12,7 @@ const FALLBACK_SYNC = new Map();
 async function getClientWorkspace(clientId) {
   const cleanId = String(clientId || '').toLowerCase().trim();
 
-  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+  if (supabase) {
     try {
       const { data, error } = await supabase
         .from('workspace_sync')
@@ -43,7 +43,7 @@ async function getClientWorkspace(clientId) {
 }
 
 async function getAllWorkspaces() {
-  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+  if (supabase) {
     try {
       const { data, error } = await supabase
         .from('workspace_sync')
@@ -56,7 +56,7 @@ async function getAllWorkspaces() {
           payload: d.payload,
           lastModifiedBy: d.last_modified_by,
           lastModifiedEmail: d.last_modified_email,
-          activityLog: Array.isArray(d.activity_log) ? d.activity_log : [],
+          activityLog: Array.isArray(data.activity_log) ? data.activity_log : [],
           updatedAt: d.updated_at
         }));
       }
@@ -99,7 +99,7 @@ async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
     updated_at: now
   };
 
-  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+  if (supabase) {
     try {
       const { data, error } = await supabase
         .from('workspace_sync')
@@ -108,7 +108,7 @@ async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
         .single();
 
       if (!error && data) {
-        return {
+        const record = {
           clientId: data.client_id,
           payload: data.payload,
           lastModifiedBy: data.last_modified_by,
@@ -116,6 +116,10 @@ async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
           activityLog: data.activity_log,
           updatedAt: data.updated_at
         };
+        FALLBACK_SYNC.set(cleanId, record);
+        return record;
+      } else if (error) {
+        console.warn('[sync.service] Supabase upsert notice:', error.message);
       }
     } catch (e) {
       console.warn('[sync.service] Write fallback:', e.message);

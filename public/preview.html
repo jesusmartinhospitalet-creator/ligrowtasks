@@ -3422,7 +3422,7 @@ function handleDocFileUpload(e){
   reader.readAsDataURL(file)
 }
 function confirmAddDoc(){
-  const pid = S._docPid
+  const pid = S._docPid || S.proj?.id || 'cpb'
   const name = (document.getElementById('doc-name-in')?.value||'').trim()
   if(!name) return
   let href = (document.getElementById('doc-href-in')?.value||'').trim()
@@ -3435,22 +3435,28 @@ function confirmAddDoc(){
   const p = DATA.find(x=>x.id===pid)
   if(p){
     if(!p.docs) p.docs = []
-    p.docs.push({
+    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
+    p.docs.unshift({
       id: 'doc_' + Date.now(),
       name,
       href: href || '#',
       desc,
       platform,
-      type: S._docUploadedDataUrl ? 'file' : 'link'
+      type: S._docUploadedDataUrl ? 'file' : 'link',
+      owner: uName,
+      date: 'Hoy',
+      size: '-'
     })
   }
   S._docUploadedDataUrl = null
   S.modal = null
   const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
-  save({
+  const details = {
     action: 'Nuevo recurso',
     summary: `${uName} añadió el recurso "${name}"`
-  })
+  }
+  save(details)
+  if(typeof syncSaveCurrentProject === 'function') syncSaveCurrentProject(details)
   render()
 }
 function deleteDoc(pid,idx){
@@ -3459,10 +3465,12 @@ function deleteDoc(pid,idx){
     const d = p.docs[idx]
     p.docs.splice(idx,1)
     const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
-    save({
+    const details = {
       action: 'Eliminar recurso',
       summary: `${uName} eliminó el recurso "${d?.name || 'Recurso'}"`
-    })
+    }
+    save(details)
+    if(typeof syncSaveCurrentProject === 'function') syncSaveCurrentProject(details)
   }
   render()
 }
@@ -3994,15 +4002,23 @@ async function syncSaveCurrentProject(details = {}){
       responsable: S.proj.responsable || S.defaultUser || 'Jesús'
     };
 
+    const u = S.currentUser;
+    const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
+    const userEmail = u?.email || 'jesus.martin.hospitalet@gmail.com';
+
     const res = await fetch('/api/sync/client/' + clientId, {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-name': userName,
+        'x-user-email': userEmail
+      },
       body: JSON.stringify({
         payload,
         details: {
           action: details.action || 'Actualización de tareas',
-          summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${S.proj.name}`
+          summary: details.summary || `${userName} actualizó el espacio de ${S.proj.name}`
         }
       })
     });
@@ -4019,7 +4035,9 @@ async function syncSaveCurrentProject(details = {}){
         if(liveActEl) liveActEl.textContent = S.proj.ultimaActividad;
       }
     }
-  }catch(err){}
+  }catch(err){
+    console.warn('[syncSaveCurrentProject error]', err);
+  }
 }
 
 async function syncLoadCurrentProject(clientId){
@@ -4046,10 +4064,15 @@ async function syncLoadCurrentProject(clientId){
         if(p.lastModifiedBy){
           p.ultimaActividad = formatLastActivity(p.lastModifiedBy, p.lastModifiedAt);
         }
+        try {
+          localStorage.setItem('ligrow_data', JSON.stringify(DATA));
+        } catch(e){}
         render();
       }
     }
-  }catch(e){}
+  }catch(e){
+    console.warn('[syncLoadCurrentProject error]', e);
+  }
 }
 
 function updateSyncIndicator(){
@@ -6449,17 +6472,17 @@ if(window.matchMedia){
 applyAccent('cliente')
 render()
 
-// Sincronizar espacio del proyecto activo si hay usuario
-if(S.currentUser && S.proj?.id){
+// Sincronizar espacio del proyecto activo
+if(S.proj?.id){
   syncLoadCurrentProject(S.proj.id);
 }
 
-// Sincronización en segundo plano periódica (cada 25 segundos)
+// Sincronización en segundo plano periódica (cada 15 segundos para todos los dispositivos)
 setInterval(() => {
-  if(S.currentUser && S.proj && S.proj.id && S.proj.type === 'cliente'){
+  if(S.proj && S.proj.id && S.proj.type === 'cliente'){
     syncLoadCurrentProject(S.proj.id);
   }
-}, 25000);
+}, 15000);
 
 loadSupplierDirectory().catch(()=>{})
 </script>
