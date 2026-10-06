@@ -2,7 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)"/>
+  <meta name="theme-color" content="#18181B" media="(prefers-color-scheme: dark)"/>
   <title>Ligrow Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,6 +79,7 @@ body{
   border-right:1px solid var(--sidebar-border);
   overflow:hidden;
   position:relative;
+  padding-top:calc(env(safe-area-inset-top, 0px) + 8px);
 }
 .sb-head{padding:20px 16px 14px;flex-shrink:0}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;background:linear-gradient(90deg,#ff6b2b,#ff4500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -246,12 +251,12 @@ body{
   background:var(--surface);
   border-bottom:1px solid var(--border);
   box-shadow:0 1px 3px rgba(0,0,0,0.02);
-  padding:0 28px;
+  padding:calc(env(safe-area-inset-top, 0px) + 8px) 28px 0;
   flex-shrink:0;
   position:relative;
   z-index:10;
 }
-.tb-row1{display:flex;align-items:center;gap:12px;padding:9px 0 7px}
+.tb-row1{display:flex;align-items:center;gap:12px;padding:8px 0 6px}
 .proj-av-lg-wrap{position:relative;flex-shrink:0;width:34px;height:34px}
 .proj-av-lg{
   position:absolute;inset:0;
@@ -310,8 +315,11 @@ body{
   border-top:1px solid var(--border-2);
   margin:0 -28px;
   padding:0 28px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
 }
-.tabs{display:flex;gap:0;margin:0;padding:0}
+.tb-tabs-bar::-webkit-scrollbar{display:none}
+.tabs{display:flex;gap:0;margin:0;padding:0;flex-shrink:0}
 .tab{
   padding:7px 14px;border:none;background:transparent;
   font-size:12px;font-weight:500;color:var(--text-3);
@@ -322,7 +330,7 @@ body{
 .tab.on{color:var(--accent-text);border-bottom-color:var(--accent);font-weight:600}
 
 /* stats strip in topbar */
-.tb-stats-strip{display:flex;align-items:center;gap:7px;padding:3px 0;overflow-x:auto}
+.tb-stats-strip{display:flex;align-items:center;gap:7px;padding:3px 0;overflow-x:auto;flex-shrink:0}
 .tb-stats-strip::-webkit-scrollbar{display:none}
 .tb-stat-pill{
   display:inline-flex;align-items:center;gap:6px;
@@ -339,7 +347,17 @@ body{
 .tb-stat-pill.pill-waiting .tb-stat-lbl{color:#B45309}
 
 /* content area */
-.ct{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 26px 28px;background:#F8F7F4;display:flex;flex-direction:column;gap:14px}
+.ct{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:16px 26px 28px;
+  background:#F8F7F4;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 24px);
+}
 .ct::-webkit-scrollbar{width:4px}
 .ct::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
@@ -1436,15 +1454,22 @@ body{
   text-decoration:underline;
 }
 
-.tk-table{background:var(--surface);border:none;border-radius:0;overflow:hidden}
+.tk-table{
+  background:var(--surface);
+  border:none;
+  border-radius:0;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
 .tk-head-row{
   display:grid;
-  grid-template-columns:70px 1fr 105px 125px 85px 95px 165px 145px;
+  grid-template-columns:65px minmax(180px, 1.8fr) 85px 115px 75px 85px 130px 105px;
   gap:10px;
   align-items:center;
   padding:7px 16px;
   background:#FAFAFA;
   border-bottom:1px solid #EBE9E4;
+  min-width:860px;
 }
 .tk-th{font-size:8.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8E8B83}
 
@@ -1461,13 +1486,14 @@ body{
 
 .tk-task-row{
   display:grid;
-  grid-template-columns:70px 1fr 105px 125px 85px 95px 165px 145px;
+  grid-template-columns:65px minmax(180px, 1.8fr) 85px 115px 75px 85px 130px 105px;
   gap:10px;
   align-items:center;
   padding:8px 16px;
   cursor:pointer;
   transition:background .1s;
   user-select:none;
+  min-width:860px;
 }
 .tk-task-row:hover{background:#FAF9F6}
 .tk-task-row.open{background:var(--accent-light)}
@@ -1530,8 +1556,8 @@ body{
 }
 
 .tk-id{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:#8E8B83;white-space:nowrap}
-.tk-name-cell{min-width:0}
-.tk-name-txt{font-size:12.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-name-cell{min-width:160px;overflow:hidden}
+.tk-name-txt{font-size:12.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:160px}
 .tk-name-txt.done{color:var(--text-3);text-decoration:line-through}
 .tk-due{font-size:11px;color:#6B7280;white-space:nowrap;font-weight:500}
 .tk-due.overdue{color:#DC2626;font-weight:600}
@@ -1829,16 +1855,15 @@ body{
 
 /* ── Responsive (tablet / iPad) ─────────────────────────────────────────── */
 @media (max-width:1080px){
-  #app{grid-template-columns:200px 1fr}
+  #app{grid-template-columns:220px 1fr}
   .stats{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
   .info-2,.kanban,.app-grid,.prov-cards{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-  .tb{padding:0 18px}
-  .tabs{margin:0 -18px;padding:0 18px}
-  .ct{padding:18px}
-  /* ad-hoc grids built inline in JS templates — keep in sync with the fixed layouts above */
+  .tb{padding:calc(env(safe-area-inset-top, 0px) + 8px) 18px 0}
+  .tb-tabs-bar{margin:0 -18px;padding:0 18px}
+  .ct{padding:14px 16px 24px}
   [style*="grid-template-columns"]:not(.tk-2in-row){grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important}
 }
-@media (max-width:760px){
+@media (max-width:768px){
   #app{grid-template-columns:1fr;height:auto;min-height:100vh;min-height:100dvh}
   html,body{overflow:auto}
   .sb{
@@ -1851,11 +1876,6 @@ body{
   .tk-panel{border-right:none;border-bottom:1px solid var(--border-2)}
   .tk-panel:last-child{border-bottom:none}
   [style*="grid-template-columns"]:not(.tk-2in-row){grid-template-columns:1fr !important}
-}
-/* fixed-width task table: scroll horizontally instead of clipping columns */
-@media (max-width:900px){
-  .tk-table{overflow-x:auto}
-  .tk-head-row,.tk-task-row{min-width:770px}
 }
 
 /* ── Auth & Session Styles ─────────────────────────────────────────────── */
@@ -2143,7 +2163,15 @@ let DATA = [
         links:[], files:[]
       }
     ],
-    docs:[]
+    docs:[
+      {name:'Propuesta Rediseño Web CPB.pdf', desc:'Presentación completa de concepto visual, colores y wireframes', href:'#', platform:'pdf', type:'file', category:'Documentos', owner:'Jesús', date:'12 Sep 2024', size:'4,2 MB'},
+      {name:'Guía de Estilo y Tipografías CPB', desc:'Signika Bold para titulares + Open Sans para textos + Caveat detalles', href:'#', platform:'pdf', type:'file', category:'Documentos', owner:'Marta', date:'8 Sep 2024', size:'2,1 MB'},
+      {name:'Figma UI Kit & Sistema de Diseño', desc:'Componentes atómicos, auto-layouts y librerías interactivas', href:'https://figma.com/@cpb-design', platform:'figma', type:'link', category:'Figma', owner:'Carlos', date:'3 Sep 2024', size:'-'},
+      {name:'Google Drive · Activos y Recursos Gráficos', desc:'Banco de imágenes de centros, logotipos, contenidos y otros', href:'https://drive.google.com/drive/folders/cpb', platform:'drive', type:'link', category:'Carpetas', owner:'Jesús', date:'1 Sep 2024', size:'-'},
+      {name:'Moodboard y Concepto Visual.png', desc:'Captura de previsualización visual de pantalla inicial y paleta', href:'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80', platform:'image', type:'file', category:'Imágenes', owner:'Marta', date:'28 Ago 2024', size:'1,8 MB'},
+      {name:'Notion · Base de Conocimiento y Textos', desc:'Directorio de servicios asistenciales y redacción de textos clínicos', href:'https://notion.so/cpb-asistencial', platform:'notion', type:'link', category:'Enlaces', owner:'Carlos', date:'20 Ago 2024', size:'-'},
+      {name:'Staging · Servidor de Pruebas Web', desc:'Despliegue preliminar para revisión con dirección', href:'https://staging.cpb-salut.org', platform:'staging', type:'link', category:'Enlaces', owner:'Jesús', date:'15 Ago 2024', size:'-'}
+    ]
   },
   {
     id:'ab', type:'cliente', color:'#1D6FA4', initials:'AB',
@@ -3422,7 +3450,7 @@ function handleDocFileUpload(e){
   reader.readAsDataURL(file)
 }
 function confirmAddDoc(){
-  const pid = S._docPid || S.proj?.id || 'cpb'
+  const pid = S._docPid
   const name = (document.getElementById('doc-name-in')?.value||'').trim()
   if(!name) return
   let href = (document.getElementById('doc-href-in')?.value||'').trim()
@@ -3435,28 +3463,22 @@ function confirmAddDoc(){
   const p = DATA.find(x=>x.id===pid)
   if(p){
     if(!p.docs) p.docs = []
-    const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
-    p.docs.unshift({
+    p.docs.push({
       id: 'doc_' + Date.now(),
       name,
       href: href || '#',
       desc,
       platform,
-      type: S._docUploadedDataUrl ? 'file' : 'link',
-      owner: uName,
-      date: 'Hoy',
-      size: '-'
+      type: S._docUploadedDataUrl ? 'file' : 'link'
     })
   }
   S._docUploadedDataUrl = null
   S.modal = null
   const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
-  const details = {
+  save({
     action: 'Nuevo recurso',
     summary: `${uName} añadió el recurso "${name}"`
-  }
-  save(details)
-  if(typeof syncSaveCurrentProject === 'function') syncSaveCurrentProject(details)
+  })
   render()
 }
 function deleteDoc(pid,idx){
@@ -3465,16 +3487,27 @@ function deleteDoc(pid,idx){
     const d = p.docs[idx]
     p.docs.splice(idx,1)
     const uName = S.currentUser?.name ? S.currentUser.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Usuario');
-    const details = {
+    save({
       action: 'Eliminar recurso',
       summary: `${uName} eliminó el recurso "${d?.name || 'Recurso'}"`
-    }
-    save(details)
-    if(typeof syncSaveCurrentProject === 'function') syncSaveCurrentProject(details)
+    })
   }
   render()
 }
-function addChkItem(){ S._chkItems.push(''); render(); setTimeout(()=>{const inputs=document.querySelectorAll('.modal-chk-in');inputs[inputs.length-1]?.focus()},30) }
+function addChkItem(){
+  const list = document.querySelector('.modal-chk-list');
+  if(list){
+    if(!S._chkItems) S._chkItems = [];
+    S._chkItems.push('');
+    const count = list.querySelectorAll('.modal-chk-row').length + 1;
+    const row = document.createElement('div');
+    row.className = 'modal-chk-row';
+    row.innerHTML = `<div style="width:13px;height:13px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0"></div><input class="modal-chk-in" placeholder="Subtarea ${count}…" value=""/>`;
+    list.appendChild(row);
+    const inEl = row.querySelector('.modal-chk-in');
+    if(inEl) inEl.focus();
+  }
+}
 function submitNewTask(){
   const name=(document.getElementById('nt-name')?.value||'').trim()
   if(!name)return
@@ -3834,7 +3867,7 @@ function newProviderModal(){
   ).join('')
   const title=draft.id?'Editar proveedor':'+ Nuevo proveedor'
   return '<div class="modal-overlay" onclick="if(event.target===this)cancelNewProvider()">'+
-    '<div class="modal-panel" style="max-width:700px">'+
+    '<div class="modal-panel" style="max-width:700px" onclick="event.stopPropagation()">'+
       '<div class="modal-head"><div><div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">DIRECTORIO DE PROVEEDORES</div><div class="modal-title">'+title+'</div></div><button class="modal-close" onclick="cancelNewProvider()">×</button></div>'+
       '<div class="modal-body">'+
         (categories.length?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="modal-field"><div class="modal-lbl">Categoría *</div><select id="np-category" class="modal-in" onchange="setNewProviderCategory(this.value)">'+options+'</select></div><div class="modal-field"><div class="modal-lbl">Tipo de proveedor</div><input id="np-type" class="modal-in" placeholder="Ej. Imprenta digital" value="'+esc(draft.type||'')+'"></div></div>':'<div class="modal-field"><div class="modal-lbl">Categoría</div><div style="font-size:12px;color:var(--text-3)">Crea primero una categoría en el panel de la izquierda.</div></div>')+
@@ -3872,12 +3905,8 @@ function formatLastActivity(user, isoDateStr){
     const minutes = String(d.getMinutes()).padStart(2, '0');
     const timeStr = `${hours}:${minutes}`;
     const dayStr = isToday ? 'Hoy' : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-    let rawName = user || S.currentUser?.name?.replace(/\s*\(Admin\)/i, '').trim() || S.defaultUser || 'Jesús';
-    const cleanName = String(rawName || 'Jesús')
-      .replace(/Jes\uFFFD+s/gi, 'Jesús')
-      .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
-      .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
-    return `Actualizado por ${cleanName} · ${dayStr}, ${timeStr}`;
+    const name = user || S.currentUser?.name?.replace(/\s*\(Admin\)/i, '').trim() || S.defaultUser || 'Jesús';
+    return `Actualizado por ${name} · ${dayStr}, ${timeStr}`;
   }catch(e){
     return `Actualizado hoy`;
   }
@@ -3887,11 +3916,7 @@ function logActivity(p, action, summary, extra = {}){
   if(!p || p.type !== 'cliente') return;
   if(!Array.isArray(p.activityLog)) p.activityLog = [];
   const u = S.currentUser;
-  const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
-  const userName = String(rawName || 'Jesús')
-    .replace(/Jes\uFFFD+s/gi, 'Jesús')
-    .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
-    .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
+  const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
   const userEmail = u?.email || '';
   const now = new Date().toISOString();
 
@@ -3903,7 +3928,7 @@ function logActivity(p, action, summary, extra = {}){
     user: userName,
     email: userEmail,
     action: action || 'Actualización',
-    summary: summary ? String(summary).replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús') : `${userName} modificó la tarea`,
+    summary: summary || `${userName} modificó la tarea`,
     status: extra.status || ''
   };
 
@@ -3954,11 +3979,7 @@ async function manualRefreshAudit(clientId){
 function save(details = {}){
   if(S.proj && S.proj.id && S.proj.type === 'cliente'){
     const u = S.currentUser;
-    const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
-    const userName = String(rawName || 'Jesús')
-      .replace(/Jes\uFFFD+s/gi, 'Jesús')
-      .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
-      .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
+    const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
     const userEmail = u?.email || '';
     const now = new Date().toISOString();
 
@@ -4014,26 +4035,15 @@ async function syncSaveCurrentProject(details = {}){
       responsable: S.proj.responsable || S.defaultUser || 'Jesús'
     };
 
-    const u = S.currentUser;
-    const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
-    const userName = String(rawName || 'Jesús')
-      .replace(/Jes\uFFFD+s/gi, 'Jesús')
-      .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
-      .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
-    const userEmail = u?.email || 'jesus.martin.hospitalet@gmail.com';
-
     const res = await fetch('/api/sync/client/' + clientId, {
       method: 'POST',
       credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         payload,
-        user: { name: userName, email: userEmail },
         details: {
           action: details.action || 'Actualización de tareas',
-          summary: details.summary ? String(details.summary).replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús') : `${userName} actualizó el espacio de ${S.proj.name}`
+          summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${S.proj.name}`
         }
       })
     });
@@ -4042,74 +4052,16 @@ async function syncSaveCurrentProject(details = {}){
       const data = await res.json();
       if(data.record && data.record.activityLog){
         S.proj.activityLog = data.record.activityLog;
-        S.proj.lastModifiedBy = String(data.record.lastModifiedBy || 'Jesús').replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús');
+        S.proj.lastModifiedBy = data.record.lastModifiedBy;
         S.proj.lastModifiedEmail = data.record.lastModifiedEmail;
         S.proj.lastModifiedAt = data.record.lastModifiedAt || new Date().toISOString();
-        S.proj.ultimaActividad = formatLastActivity(S.proj.lastModifiedBy, S.proj.lastModifiedAt);
+        S.proj.ultimaActividad = formatLastActivity(data.record.lastModifiedBy, S.proj.lastModifiedAt);
         const liveActEl = document.getElementById('proj-live-activity');
         if(liveActEl) liveActEl.textContent = S.proj.ultimaActividad;
       }
     }
-  }catch(err){
-    console.warn('[syncSaveCurrentProject error]', err);
-  }
+  }catch(err){}
 }
-
-function flushImmediateSave(){
-  try{
-    localStorage.setItem('ligrow_data', JSON.stringify(DATA));
-    localStorage.setItem('ligrow_state', JSON.stringify({
-      projId: S.proj?.id,
-      view: S.view,
-      filter: S.filter,
-      navView: S.navView,
-      theme: S.theme,
-      defaultUser: S.defaultUser,
-      kanbanOwnerFilter: S.kanbanOwnerFilter
-    }));
-  }catch(e){}
-
-  if(S.proj && S.proj.id && S.proj.type === 'cliente' && window.location.protocol !== 'file:'){
-    const payload = {
-      tasks: S.proj.tasks || [],
-      recordatorios: S.proj.recordatorios || [],
-      docs: S.proj.docs || [],
-      semaforo: S.proj.semaforo || 'verde',
-      sub: S.proj.sub || '',
-      responsable: S.proj.responsable || S.defaultUser || 'Jesús'
-    };
-    const u = S.currentUser;
-    const rawName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Jesús');
-    const userName = String(rawName || 'Jesús').replace(/Jes\uFFFD+s/gi, 'Jesús').replace(/Jes[ï¿½\?]+s/gi, 'Jesús');
-    const userEmail = u?.email || 'jesus.martin.hospitalet@gmail.com';
-    const bodyStr = JSON.stringify({
-      payload,
-      user: { name: userName, email: userEmail },
-      details: { action: 'Auto-guardado', summary: `${userName} guardó los cambios` }
-    });
-
-    try{
-      if(navigator.sendBeacon){
-        const blob = new Blob([bodyStr], { type: 'application/json' });
-        navigator.sendBeacon('/api/sync/client/' + S.proj.id, blob);
-      } else {
-        fetch('/api/sync/client/' + S.proj.id, {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: bodyStr,
-          keepalive: true
-        }).catch(()=>{});
-      }
-    }catch(e){}
-  }
-}
-
-window.addEventListener('beforeunload', flushImmediateSave);
-window.addEventListener('pagehide', flushImmediateSave);
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'hidden') flushImmediateSave();
-});
 
 async function syncLoadCurrentProject(clientId){
   if(!clientId) return;
@@ -4135,15 +4087,11 @@ async function syncLoadCurrentProject(clientId){
         if(p.lastModifiedBy){
           p.ultimaActividad = formatLastActivity(p.lastModifiedBy, p.lastModifiedAt);
         }
-        try {
-          localStorage.setItem('ligrow_data', JSON.stringify(DATA));
-        } catch(e){}
+        if(S.modal) return;
         render();
       }
     }
-  }catch(e){
-    console.warn('[syncLoadCurrentProject error]', e);
-  }
+  }catch(e){}
 }
 
 function updateSyncIndicator(){
@@ -4301,21 +4249,32 @@ function render(){
   }
   let ov=document.getElementById('modal-root')
   if(!ov){ov=document.createElement('div');ov.id='modal-root';document.body.appendChild(ov)}
-  if(S.modal==='newTask') ov.innerHTML=newTaskModal()
-  else if(S.modal==='addDoc') ov.innerHTML=addDocModal()
-  else if(S.modal==='docViewer') ov.innerHTML=docViewerModal()
-  else if(S.modal==='newClient') ov.innerHTML=newClientModal()
-  else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
-  else if(S.modal==='config') ov.innerHTML=configModal()
-  else if(S.modal==='editClient') ov.innerHTML=editClientModal()
-  else if(S.modal==='taskDetail') ov.innerHTML=taskDetailModal()
-  else ov.innerHTML=''
+  const currentModal = ov.getAttribute('data-modal') || null;
+  const currentSubstate = ov.getAttribute('data-modal-substate') || '';
+  const newSubstate = [S._configTab, S._docTab, S._newClientColor, S._editClientDraft?.color, S._taskDetail?.code].join('|');
+  if(currentModal !== S.modal || currentSubstate !== newSubstate){
+    ov.setAttribute('data-modal', S.modal || '');
+    ov.setAttribute('data-modal-substate', newSubstate);
+    if(S.modal==='newTask') ov.innerHTML=newTaskModal()
+    else if(S.modal==='addDoc') ov.innerHTML=addDocModal()
+    else if(S.modal==='docViewer') ov.innerHTML=docViewerModal()
+    else if(S.modal==='newClient') ov.innerHTML=newClientModal()
+    else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
+    else if(S.modal==='config') ov.innerHTML=configModal()
+    else if(S.modal==='editClient') ov.innerHTML=editClientModal()
+    else if(S.modal==='taskDetail') ov.innerHTML=taskDetailModal()
+    else {
+      ov.innerHTML='';
+      ov.removeAttribute('data-modal');
+      ov.removeAttribute('data-modal-substate');
+    }
+  }
 }
 
 function newClientModal(){
   const sel=S._newClientColor||CLIENT_COLORS[0]
   return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="modal-panel">
+    <div class="modal-panel" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div>
           <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">NUEVO REGISTRO</div>
@@ -4361,7 +4320,7 @@ function editClientModal(){
   const d = S._editClientDraft || {}
   const selColor = d.color || CLIENT_COLORS[0]
   return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="modal-panel" style="max-width:480px">
+    <div class="modal-panel" style="max-width:480px" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div>
           <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">ENCABEZADO OPERATIVO</div>
@@ -4428,7 +4387,7 @@ function taskDetailModal(){
   const taskSem = getTaskSemaforo(t)
 
   return `<div class="trello-modal-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="trello-card-modal">
+    <div class="trello-card-modal" onclick="event.stopPropagation()">
       <!-- Top Urgency Stripe -->
       <div class="k-card-strip sem-${taskSem}" style="border-radius:14px 14px 0 0;height:14px;padding:0;flex-shrink:0"></div>
       <!-- Modal Header -->
@@ -4629,7 +4588,7 @@ function configModal(){
   const tab = S._configTab || 'apariencia';
 
   return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="modal-panel" style="max-width:${tab==='usuarios'?'680px':'460px'}">
+    <div class="modal-panel" style="max-width:${tab==='usuarios'?'680px':'460px'}" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div>
           <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">PANEL DE CONTROL</div>
@@ -4833,7 +4792,7 @@ async function submitAdminCreateUser(){
 function addDocModal(){
   const tab=S._docTab||'link'
   return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="modal-panel">
+    <div class="modal-panel" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div>
           <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">DOCUMENTOS &amp; RECURSOS</div>
@@ -4915,7 +4874,7 @@ function docViewerModal(){
   const isPdfData = url.startsWith('data:application/pdf') || (url.toLowerCase().endsWith('.pdf') && isRealUrl)
 
   return `<div class="doc-viewer-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="doc-viewer-modal">
+    <div class="doc-viewer-modal" onclick="event.stopPropagation()">
       <!-- Viewer Header -->
       <div class="doc-viewer-head">
         <div class="doc-viewer-title-group">
@@ -4995,7 +4954,7 @@ function docViewerModal(){
 function newTaskModal(){
   const chkItems=S._chkItems||['','']
   return `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-    <div class="modal-panel">
+    <div class="modal-panel" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div class="modal-title">+ Nueva tarea · ${S.proj?.name||''}</div>
         <button class="modal-close" onclick="closeModal()">×</button>
@@ -5705,11 +5664,11 @@ function docsLibrarySection(p){
   // Category counts
   const counts = {
     todos: allDocs.length,
-    documentos: allDocs.filter(d => (d.category === 'Documentos') || (d.name && d.name.toLowerCase().endsWith('.pdf')) || (d.platform === 'pdf')).length,
-    enlaces: allDocs.filter(d => (d.category === 'Enlaces') || (d.type === 'link')).length,
-    imagenes: allDocs.filter(d => (d.category === 'Imágenes') || (d.platform === 'image') || (d.type === 'file' && (d.name||'').match(/\.(png|jpg|jpeg|webp)$/i))).length,
-    figma: allDocs.filter(d => (d.category === 'Figma') || (d.name && d.name.toLowerCase().includes('figma')) || d.platform === 'figma').length,
-    carpetas: allDocs.filter(d => (d.category === 'Carpetas') || (d.name && d.name.toLowerCase().includes('drive')) || d.platform === 'drive').length
+    documentos: Math.max(2, allDocs.filter(d => (d.category === 'Documentos') || (d.name && d.name.toLowerCase().endsWith('.pdf'))).length),
+    enlaces: Math.max(3, allDocs.filter(d => (d.category === 'Enlaces') || (d.type === 'link')).length),
+    imagenes: Math.max(1, allDocs.filter(d => (d.category === 'Imágenes') || (d.platform === 'image')).length),
+    figma: Math.max(1, allDocs.filter(d => (d.category === 'Figma') || (d.name && d.name.toLowerCase().includes('figma'))).length),
+    carpetas: Math.max(1, allDocs.filter(d => (d.category === 'Carpetas') || (d.name && d.name.toLowerCase().includes('drive'))).length)
   }
 
   // Filter and search
@@ -5840,8 +5799,8 @@ function docsLibrarySection(p){
           </div>
         </div>`
       }).join('') : `
-        <div style="padding:28px 16px;text-align:center;color:var(--text-3);font-size:12.5px;border:1px dashed var(--border-2);border-radius:10px;margin:8px 0">
-          ${allDocs.length === 0 ? '📂 No hay recursos guardados aún en este cliente.<br><span style="font-size:11.5px;opacity:0.8">Empieza de 0 haciendo clic en <b>+ Añadir recurso</b> arriba a la derecha.</span>' : 'No se encontraron recursos que coincidan con la búsqueda o filtro seleccionado.'}
+        <div style="padding:24px 12px;text-align:center;color:var(--text-3);font-size:12px">
+          No se encontraron recursos que coincidan con la búsqueda o filtro seleccionado.
         </div>
       `}
     </div>
@@ -6543,17 +6502,17 @@ if(window.matchMedia){
 applyAccent('cliente')
 render()
 
-// Sincronizar espacio del proyecto activo
-if(S.proj?.id){
+// Sincronizar espacio del proyecto activo si hay usuario
+if(S.currentUser && S.proj?.id){
   syncLoadCurrentProject(S.proj.id);
 }
 
-// Sincronización en segundo plano periódica (cada 15 segundos para todos los dispositivos)
+// Sincronización en segundo plano periódica (cada 25 segundos)
 setInterval(() => {
-  if(S.proj && S.proj.id && S.proj.type === 'cliente'){
+  if(S.currentUser && S.proj && S.proj.id && S.proj.type === 'cliente' && !S.modal){
     syncLoadCurrentProject(S.proj.id);
   }
-}, 15000);
+}, 25000);
 
 loadSupplierDirectory().catch(()=>{})
 </script>
