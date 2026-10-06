@@ -217,8 +217,37 @@ const FALLBACK_ORDERS = [
   }
 ];
 
+let HAS_MODIFIED_ORDERS = false;
+
+async function syncOrdersToWorkspaceSync(orders) {
+  if (!supabase || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return;
+  try {
+    const { data: existing } = await supabase
+      .from('workspace_sync')
+      .select('payload, activity_log')
+      .eq('client_id', 'pv')
+      .maybeSingle();
+
+    const existingPayload = (existing && existing.payload) || {};
+    const updatedPayload = { ...existingPayload, orders: orders || [] };
+    const now = new Date().toISOString();
+
+    await supabase.from('workspace_sync').upsert({
+      client_id: 'pv',
+      payload: updatedPayload,
+      last_modified_by: 'Jesús',
+      last_modified_email: 'jesus.martin.hospitalet@gmail.com',
+      activity_log: existing?.activity_log || [],
+      updated_at: now
+    });
+  } catch (e) {
+    console.warn('[supplier.service] syncOrdersToWorkspaceSync warning:', e.message);
+  }
+}
+
 async function listOrders() {
   if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    // 1. Intentar leer de la tabla dedicada supplier_orders
     try {
       const { data, error } = await supabase
         .from('supplier_orders')
@@ -226,17 +255,39 @@ async function listOrders() {
         .order('order_date', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && Array.isArray(data) && (data.length > 0 || HAS_MODIFIED_ORDERS)) {
         return data.map(mapOrder);
       }
     } catch (e) {
-      console.warn('[supplier.service] listOrders Supabase query warning, using fallback:', e.message);
+      console.warn('[supplier.service] listOrders Supabase query warning:', e.message);
+    }
+
+    // 2. Si la tabla no existe o no tiene registros aún, consultar workspace_sync para 'pv'
+    try {
+      const { data: syncRow, error: syncError } = await supabase
+        .from('workspace_sync')
+        .select('payload')
+        .eq('client_id', 'pv')
+        .maybeSingle();
+
+      if (!syncError && syncRow?.payload && Array.isArray(syncRow.payload.orders)) {
+        return syncRow.payload.orders.map(mapOrder);
+      }
+    } catch (e) {
+      console.warn('[supplier.service] listOrders workspace_sync query warning:', e.message);
     }
   }
+
+  // 3. Si ya se han modificado órdenes en esta sesión o servidor, respetar el estado actual (incluso si está vacío)
+  if (HAS_MODIFIED_ORDERS) {
+    return FALLBACK_ORDERS.map(mapOrder);
+  }
+
   return FALLBACK_ORDERS.map(mapOrder);
 }
 
 async function createOrder(input) {
+  HAS_MODIFIED_ORDERS = true;
   const supplierName = cleanText(input?.supplierName || input?.supplier_name, 180);
   const concept = cleanText(input?.concept, 300);
   if (!concept) throw new Error('El concepto del pedido es obligatorio.');
@@ -261,17 +312,23 @@ async function createOrder(input) {
   if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
       const { data, error } = await supabase.from('supplier_orders').insert(row).select().single();
-      if (!error && data) return mapOrder(data);
+      if (!error && data) {
+        FALLBACK_ORDERS.unshift(row);
+        await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
+        return mapOrder(data);
+      }
     } catch (e) {
       console.warn('[supplier.service] createOrder Supabase insert warning:', e.message);
     }
   }
 
   FALLBACK_ORDERS.unshift(row);
+  await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
   return mapOrder(row);
 }
 
 async function updateOrder(orderId, input) {
+  HAS_MODIFIED_ORDERS = true;
   const existingIdx = FALLBACK_ORDERS.findIndex(o => o.id === orderId);
   const updateData = {
     supplier_id: input?.supplierId !== undefined ? input.supplierId : input?.supplier_id,
@@ -296,7 +353,11 @@ async function updateOrder(orderId, input) {
         .select()
         .single();
 
-      if (!error && data) return mapOrder(data);
+      if (!error && data) {
+        if (existingIdx !== -1) FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
+        await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
+        return mapOrder(data);
+      }
     } catch (e) {
       console.warn('[supplier.service] updateOrder Supabase update warning:', e.message);
     }
@@ -304,13 +365,18 @@ async function updateOrder(orderId, input) {
 
   if (existingIdx !== -1) {
     FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
+    await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
     return mapOrder(FALLBACK_ORDERS[existingIdx]);
   }
 
-  return mapOrder({ id: orderId, ...updateData });
+  const updatedRecord = { id: orderId, ...updateData };
+  FALLBACK_ORDERS.unshift(updatedRecord);
+  await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
+  return mapOrder(updatedRecord);
 }
 
 async function removeOrder(orderId) {
+  HAS_MODIFIED_ORDERS = true;
   if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
       await supabase.from('supplier_orders').delete().eq('id', orderId);
@@ -323,6 +389,7 @@ async function removeOrder(orderId) {
   if (idx !== -1) {
     FALLBACK_ORDERS.splice(idx, 1);
   }
+  await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
 }
 
 module.exports = {

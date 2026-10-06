@@ -4151,7 +4151,7 @@ async function manualRefreshAudit(clientId){
 }
 
 function save(details = {}){
-  if(S.proj && S.proj.id && S.proj.type === 'cliente'){
+  if(S.proj && S.proj.id && (S.proj.type === 'cliente' || S.proj.id === 'pv')){
     const u = S.currentUser;
     const userName = u?.name ? u.name.replace(/\s*\(Admin\)/i, '').trim() : (S.defaultUser || 'Administrador');
     const userEmail = u?.email || '';
@@ -4172,6 +4172,12 @@ function save(details = {}){
     }
   }
 
+  // Guardar siempre pedidos de proveedores en almacenamiento local aislado y protegido
+  const pvProj = DATA.find(x => x.id === 'pv' || x.type === 'proveedor');
+  if(pvProj && Array.isArray(pvProj.orders) && typeof persistSupplierOrdersLocally === 'function'){
+    persistSupplierOrdersLocally(pvProj.orders);
+  }
+
   try{
     localStorage.setItem('ligrow_data', JSON.stringify(DATA));
     localStorage.setItem('ligrow_state', JSON.stringify({
@@ -4185,7 +4191,7 @@ function save(details = {}){
     }));
   }catch(e){}
 
-  if(S.proj && S.proj.id && S.proj.type === 'cliente' && details && details.action){
+  if(S.proj && S.proj.id && (S.proj.type === 'cliente' || S.proj.id === 'pv') && details && details.action){
     clearTimeout(_syncDebounceTimer);
     _syncDebounceTimer = setTimeout(() => {
       syncSaveCurrentProject(details);
@@ -4194,20 +4200,29 @@ function save(details = {}){
 }
 
 async function syncSaveCurrentProject(details = {}){
-  if(!S.proj || !S.proj.id || S.proj.type !== 'cliente') return;
+  if(!S.proj || !S.proj.id) return;
+  if(S.proj.type !== 'cliente' && S.proj.id !== 'pv') return;
   const clientId = S.proj.id;
   const isLocalFile = window.location.protocol === 'file:';
   if(isLocalFile) return;
 
   try{
-    const payload = {
-      tasks: S.proj.tasks || [],
-      recordatorios: S.proj.recordatorios || [],
-      docs: S.proj.docs || [],
-      semaforo: S.proj.semaforo || 'verde',
-      sub: S.proj.sub || '',
-      responsable: S.proj.responsable || S.defaultUser || 'Jesús'
-    };
+    let payload = {};
+    if(S.proj.type === 'cliente'){
+      payload = {
+        tasks: S.proj.tasks || [],
+        recordatorios: S.proj.recordatorios || [],
+        docs: S.proj.docs || [],
+        semaforo: S.proj.semaforo || 'verde',
+        sub: S.proj.sub || '',
+        responsable: S.proj.responsable || S.defaultUser || 'Jesús'
+      };
+    } else if(S.proj.id === 'pv' || S.proj.type === 'proveedor'){
+      payload = {
+        orders: S.proj.orders || [],
+        cats: S.proj.cats || []
+      };
+    }
 
     const res = await fetch('/api/sync/client/' + clientId, {
       method: 'POST',
@@ -4216,7 +4231,7 @@ async function syncSaveCurrentProject(details = {}){
       body: JSON.stringify({
         payload,
         details: {
-          action: details.action || 'Actualización de tareas',
+          action: details.action || 'Actualización de datos',
           summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${S.proj.name}`
         }
       })
@@ -4248,12 +4263,21 @@ async function syncLoadCurrentProject(clientId){
       const p = DATA.find(x => x.id === clientId);
       if(p){
         const wp = data.workspace.payload;
-        if(Array.isArray(wp.tasks)) p.tasks = wp.tasks.map((t, idx) => normTask(t, idx, p));
-        if(Array.isArray(wp.recordatorios)) p.recordatorios = wp.recordatorios;
-        if(Array.isArray(wp.docs)) p.docs = wp.docs;
-        if(wp.semaforo) p.semaforo = wp.semaforo;
-        if(wp.sub) p.sub = wp.sub;
-        if(wp.responsable) p.responsable = wp.responsable;
+        if(p.type === 'cliente'){
+          if(Array.isArray(wp.tasks)) p.tasks = wp.tasks.map((t, idx) => normTask(t, idx, p));
+          if(Array.isArray(wp.recordatorios)) p.recordatorios = wp.recordatorios;
+          if(Array.isArray(wp.docs)) p.docs = wp.docs;
+          if(wp.semaforo) p.semaforo = wp.semaforo;
+          if(wp.sub) p.sub = wp.sub;
+          if(wp.responsable) p.responsable = wp.responsable;
+        } else if(p.id === 'pv' || p.type === 'proveedor'){
+          if(Array.isArray(wp.orders)){
+            p.orders = wp.orders;
+            if(typeof persistSupplierOrdersLocally === 'function'){
+              persistSupplierOrdersLocally(p.orders);
+            }
+          }
+        }
         p.activityLog = data.workspace.activityLog || [];
         p.lastModifiedBy = data.workspace.lastModifiedBy || '';
         p.lastModifiedEmail = data.workspace.lastModifiedEmail || '';
@@ -6398,6 +6422,46 @@ function provContent(p){
 
 // ─ PROVEEDOR: PEDIDOS & GALERÍA INTEGRADA ───────────────────────────────────
 
+const ORDERS_STORAGE_KEY = 'ligrow_supplier_orders_v1';
+
+function persistSupplierOrdersLocally(orders) {
+  if (!Array.isArray(orders)) return;
+  try {
+    const sanitized = orders.map(o => {
+      const copy = { ...o };
+      if (Array.isArray(copy.files)) {
+        copy.files = copy.files.map(f => {
+          if (f.data && typeof f.data === 'string' && f.data.length > 500000) {
+            return { ...f, data: f.data.slice(0, 100) + '...truncated' };
+          }
+          return f;
+        });
+      }
+      return copy;
+    });
+    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(sanitized));
+  } catch (err) {
+    try {
+      const lean = orders.map(o => ({
+        ...o,
+        files: (o.files || []).map(f => ({ id: f.id, name: f.name, type: f.type, size: f.size }))
+      }));
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(lean));
+    } catch (e2) {}
+  }
+}
+
+function loadSupplierOrdersLocally() {
+  try {
+    const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
 function formatFileSize(bytes) {
   if (!bytes || isNaN(bytes)) return '0 KB';
   const k = 1024;
@@ -6790,6 +6854,7 @@ async function quickAttachFileToOrder(orderId, fileInput) {
     });
   }
 
+  persistSupplierOrdersLocally(p.orders);
   save({ action: 'Archivos adjuntos', summary: `Se añadieron ${filesToAdd.length} archivo(s) al pedido: ${order.concept}` });
   render();
 
@@ -6864,6 +6929,7 @@ async function submitOrderDraft() {
   S.modal = null;
   S._orderDraft = null;
 
+  persistSupplierOrdersLocally(p.orders);
   save({ action: isEdit ? 'Pedido actualizado' : 'Nuevo pedido', summary: `${isEdit ? 'Actualizado' : 'Registrado'} pedido a ${orderRecord.supplierName}: ${orderRecord.concept}` });
   render();
 
@@ -6899,6 +6965,7 @@ async function deleteOrder(orderId, event) {
   }
 
   p.orders = p.orders.filter(o => o.id !== orderId);
+  persistSupplierOrdersLocally(p.orders);
   save({ action: 'Pedido eliminado', summary: `Eliminado pedido de ${order.supplierName}: ${order.concept}` });
   render();
 
@@ -7177,8 +7244,9 @@ async function loadSupplierOrders() {
     const res = await fetch('/api/suppliers/orders', { credentials: 'same-origin' });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data.orders) && data.orders.length > 0) {
+      if (Array.isArray(data.orders)) {
         p.orders = data.orders;
+        persistSupplierOrdersLocally(p.orders);
         save();
         render();
       }
@@ -7382,7 +7450,12 @@ DATA.forEach(p=>{
     p.ultimaActividad = formatLastActivity(p.lastModifiedBy, p.lastModifiedAt);
   }
   if(p.type==='proveedor'){
-    if(!Array.isArray(p.orders)) p.orders = [];
+    const localOrders = typeof loadSupplierOrdersLocally === 'function' ? loadSupplierOrdersLocally() : null;
+    if(localOrders !== null){
+      p.orders = localOrders;
+    } else if(!Array.isArray(p.orders)){
+      p.orders = [];
+    }
   }
 })
 
@@ -7492,7 +7565,7 @@ if(S.currentUser && S.proj?.id){
 
 // Sincronización en segundo plano periódica (cada 25 segundos)
 setInterval(() => {
-  if(S.currentUser && S.proj && S.proj.id && S.proj.type === 'cliente' && !S.modal){
+  if(S.currentUser && S.proj && S.proj.id && (S.proj.type === 'cliente' || S.proj.id === 'pv') && !S.modal){
     syncLoadCurrentProject(S.proj.id);
   }
 }, 25000);
