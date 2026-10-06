@@ -9,17 +9,45 @@ try {
 // Memoria local de sincronización
 const FALLBACK_SYNC = new Map();
 
-function sanitizeUserString(str = '') {
-  return String(str || '')
-    .replace(/Jes\uFFFD+s/gi, 'Jesús')
-    .replace(/Jes[ï¿½\?]+s/gi, 'Jesús')
-    .replace(/Jes\u00EF\u00BF\u00BDs/gi, 'Jesús');
+const CPB_TASK_05 = {
+  id: 't5',
+  code: 'CPB-05',
+  title: 'Ordenacion Menu Superior',
+  name: 'Ordenacion Menu Superior',
+  status: 'Sin empezar',
+  pri: 'Media',
+  priority: 'Media',
+  tag: 'UX/UI',
+  project: 'Web',
+  desc: 'Ordenación y jerarquía del menú superior y accesos directos.',
+  description: 'Ordenación y jerarquía del menú superior y accesos directos.',
+  due: '13 oct',
+  owner: 'Alejandro',
+  comments: [],
+  checklists: [],
+  checklist: [],
+  links: [],
+  files: []
+};
+
+function ensureCpbTask05(payload) {
+  if (!payload || typeof payload !== 'object') return payload;
+  if (!Array.isArray(payload.tasks)) return payload;
+  const has05 = payload.tasks.some(t => t.code === 'CPB-05');
+  if (!has05) {
+    payload.tasks.push({ ...CPB_TASK_05 });
+  }
+  const task04 = payload.tasks.find(t => t.code === 'CPB-04');
+  if (task04 && (!task04.due || task04.due === '9 Oct' || task04.due === '5 Oct')) {
+    task04.due = '11 Oct';
+  }
+  return payload;
 }
 
 async function getClientWorkspace(clientId) {
   const cleanId = String(clientId || '').toLowerCase().trim();
 
-  if (supabase) {
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
       const { data, error } = await supabase
         .from('workspace_sync')
@@ -28,10 +56,14 @@ async function getClientWorkspace(clientId) {
         .maybeSingle();
 
       if (!error && data) {
+        let payload = data.payload;
+        if (cleanId === 'cpb') {
+          payload = ensureCpbTask05(payload);
+        }
         return {
           clientId: data.client_id,
-          payload: data.payload,
-          lastModifiedBy: sanitizeUserString(data.last_modified_by),
+          payload,
+          lastModifiedBy: data.last_modified_by,
           lastModifiedEmail: data.last_modified_email,
           activityLog: Array.isArray(data.activity_log) ? data.activity_log : [],
           updatedAt: data.updated_at
@@ -43,18 +75,18 @@ async function getClientWorkspace(clientId) {
   }
 
   if (FALLBACK_SYNC.has(cleanId)) {
-    const item = FALLBACK_SYNC.get(cleanId);
-    return {
-      ...item,
-      lastModifiedBy: sanitizeUserString(item.lastModifiedBy)
-    };
+    const ws = FALLBACK_SYNC.get(cleanId);
+    if (cleanId === 'cpb' && ws?.payload) {
+      ws.payload = ensureCpbTask05(ws.payload);
+    }
+    return ws;
   }
 
   return null;
 }
 
 async function getAllWorkspaces() {
-  if (supabase) {
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
       const { data, error } = await supabase
         .from('workspace_sync')
@@ -65,7 +97,7 @@ async function getAllWorkspaces() {
         return data.map((d) => ({
           clientId: d.client_id,
           payload: d.payload,
-          lastModifiedBy: sanitizeUserString(d.last_modified_by),
+          lastModifiedBy: d.last_modified_by,
           lastModifiedEmail: d.last_modified_email,
           activityLog: Array.isArray(d.activity_log) ? d.activity_log : [],
           updatedAt: d.updated_at
@@ -82,7 +114,7 @@ async function getAllWorkspaces() {
 async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
   const cleanId = String(clientId || '').toLowerCase().trim();
   const now = new Date().toISOString();
-  const userName = sanitizeUserString(user.name || user.email || 'Jesús');
+  const userName = user.name || user.email || 'Usuario';
   const userEmail = user.email || '';
 
   // Obtener log existente
@@ -95,22 +127,24 @@ async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
     user: userName,
     email: userEmail,
     action: details.action || 'Cambios guardados',
-    summary: details.summary ? sanitizeUserString(details.summary) : 'Actualización de tareas y tablero'
+    summary: details.summary || 'Actualización de tareas y tablero'
   };
 
   // Mantener los últimos 50 eventos de actividad
   const updatedLogs = [newLogEntry, ...currentLogs].slice(0, 50);
 
+  const finalPayload = cleanId === 'cpb' ? ensureCpbTask05(payload || {}) : (payload || {});
+
   const row = {
     client_id: cleanId,
-    payload: payload || {},
+    payload: finalPayload,
     last_modified_by: userName,
     last_modified_email: userEmail,
     activity_log: updatedLogs,
     updated_at: now
   };
 
-  if (supabase) {
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
       const { data, error } = await supabase
         .from('workspace_sync')
@@ -119,18 +153,14 @@ async function saveClientWorkspace(clientId, payload, user = {}, details = {}) {
         .single();
 
       if (!error && data) {
-        const record = {
+        return {
           clientId: data.client_id,
           payload: data.payload,
-          lastModifiedBy: sanitizeUserString(data.last_modified_by),
+          lastModifiedBy: data.last_modified_by,
           lastModifiedEmail: data.last_modified_email,
           activityLog: data.activity_log,
           updatedAt: data.updated_at
         };
-        FALLBACK_SYNC.set(cleanId, record);
-        return record;
-      } else if (error) {
-        console.warn('[sync.service] Supabase upsert notice:', error.message);
       }
     } catch (e) {
       console.warn('[sync.service] Write fallback:', e.message);

@@ -17,6 +17,10 @@ function canAccessClient(sessionUser, clientId) {
 router.get('/client/:clientId', requireAppSession, async (req, res) => {
   const { clientId } = req.params;
 
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   if (!canAccessClient(req.sessionUser, clientId)) {
     return res.status(403).json({ error: 'No tienes permisos para ver este espacio de cliente.' });
   }

@@ -2285,6 +2285,17 @@ let DATA = [
         checklists:[{text:'Rutas del portal',done:false},{text:'Validación de cookies',done:false}],
         checklist:[{text:'Rutas del portal',done:false},{text:'Validación de cookies',done:false}],
         links:[], files:[]
+      },
+      {
+        id:'t5', code:'CPB-05', title:'Ordenacion Menu Superior', name:'Ordenacion Menu Superior',
+        status:'Sin empezar', pri:'Media', priority:'Media', tag:'UX/UI', project:'Web',
+        desc:'Ordenación y jerarquía del menú superior y accesos directos.',
+        description:'Ordenación y jerarquía del menú superior y accesos directos.',
+        due:'13 oct', owner:'Alejandro',
+        comments:[],
+        checklists:[],
+        checklist:[],
+        links:[], files:[]
       }
     ],
     docs:[
@@ -4256,7 +4267,10 @@ async function syncLoadCurrentProject(clientId){
   if(!clientId) return;
   if(window.location.protocol === 'file:') return;
   try{
-    const res = await fetch('/api/sync/client/' + clientId, { credentials: 'same-origin' });
+    const res = await fetch('/api/sync/client/' + clientId + '?_t=' + Date.now(), {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
     if(!res.ok) return;
     const data = await res.json();
     if(data && data.workspace && data.workspace.payload){
@@ -4264,7 +4278,22 @@ async function syncLoadCurrentProject(clientId){
       if(p){
         const wp = data.workspace.payload;
         if(p.type === 'cliente'){
-          if(Array.isArray(wp.tasks)) p.tasks = wp.tasks.map((t, idx) => normTask(t, idx, p));
+          if(Array.isArray(wp.tasks)){
+            p.tasks = wp.tasks.map((t, idx) => normTask(t, idx, p));
+            if(p.id === 'cpb' && !p.tasks.some(t => t.code === 'CPB-05')){
+              p.tasks.push(normTask({
+                id:'t5', code:'CPB-05', title:'Ordenacion Menu Superior', name:'Ordenacion Menu Superior',
+                status:'Sin empezar', pri:'Media', priority:'Media', tag:'UX/UI', project:'Web',
+                desc:'Ordenación y jerarquía del menú superior y accesos directos.',
+                description:'Ordenación y jerarquía del menú superior y accesos directos.',
+                due:'13 oct', owner:'Alejandro',
+                comments:[],
+                checklists:[],
+                checklist:[],
+                links:[], files:[]
+              }, p.tasks.length, p));
+            }
+          }
           if(Array.isArray(wp.recordatorios)) p.recordatorios = wp.recordatorios;
           if(Array.isArray(wp.docs)) p.docs = wp.docs;
           if(wp.semaforo) p.semaforo = wp.semaforo;
@@ -4284,6 +4313,8 @@ async function syncLoadCurrentProject(clientId){
         p.lastModifiedAt = data.workspace.lastModifiedAt || new Date().toISOString();
         if(p.lastModifiedBy){
           p.ultimaActividad = formatLastActivity(p.lastModifiedBy, p.lastModifiedAt);
+          const liveActEl = document.getElementById('proj-live-activity');
+          if(liveActEl) liveActEl.textContent = p.ultimaActividad;
         }
         if(S.modal) return;
         render();
@@ -5466,14 +5497,9 @@ function clienteContent(p){
 
 // ── Auditoría y Registro de Actividad ──────────────────────────────────────
 function auditoriaActividadView(p){
-  // 1. Limpieza de cualquier tarea de prueba si existiese
-  if(p.tasks){
-    p.tasks = p.tasks.filter(t => t.name?.toLowerCase() !== 'prueba' && t.title?.toLowerCase() !== 'prueba' && t.code !== 'CPB-05');
-  }
-
-  // 2. Limpieza de historial si tiene referencias a prueba
+  // 1. Limpieza de historial si tiene referencias a prueba
   if(Array.isArray(p.activityLog)){
-    p.activityLog = p.activityLog.filter(item => !String(item.taskName || item.summary || item.taskCode || '').toLowerCase().includes('prueba') && item.taskCode !== 'CPB-05');
+    p.activityLog = p.activityLog.filter(item => !String(item.taskName || item.summary || item.taskCode || '').toLowerCase().includes('prueba'));
   }
 
   // 3. Si está vacío, poblar con las 4 tareas reales actuales con fecha/hora actual
@@ -7438,12 +7464,24 @@ try{
   if(Array.isArray(savedData) && savedData.length) DATA=savedData
 }catch(e){}
 
-// Purga de tareas de prueba y normalización de tareas cargadas
+// Normalización de tareas cargadas
 DATA.forEach(p=>{
   if(p.type==='cliente'){
     if(p.tasks){
-      p.tasks = p.tasks.filter(t => t.name?.toLowerCase() !== 'prueba' && t.title?.toLowerCase() !== 'prueba' && t.code !== 'CPB-05')
-      p.tasks = p.tasks.map((t,idx)=>normTask(t, idx, p))
+      p.tasks = p.tasks.map((t,idx)=>normTask(t, idx, p));
+      if(p.id === 'cpb' && !p.tasks.some(t => t.code === 'CPB-05')){
+        p.tasks.push(normTask({
+          id:'t5', code:'CPB-05', title:'Ordenacion Menu Superior', name:'Ordenacion Menu Superior',
+          status:'Sin empezar', pri:'Media', priority:'Media', tag:'UX/UI', project:'Web',
+          desc:'Ordenación y jerarquía del menú superior y accesos directos.',
+          description:'Ordenación y jerarquía del menú superior y accesos directos.',
+          due:'13 oct', owner:'Alejandro',
+          comments:[],
+          checklists:[],
+          checklist:[],
+          links:[], files:[]
+        }, p.tasks.length, p));
+      }
     }
     if(!p.lastModifiedBy) p.lastModifiedBy = 'Jesús';
     if(!p.lastModifiedAt) p.lastModifiedAt = '2026-10-03T19:25:00.000Z';
@@ -7483,6 +7521,7 @@ fetch('/api/auth/me', { credentials: 'same-origin' })
     if(res && res.user){
       S.currentUser = res.user;
       localStorage.setItem('ligrow_auth_user', JSON.stringify(res.user));
+      if(S.proj?.id) syncLoadCurrentProject(S.proj.id);
       render();
     }
   })
@@ -7563,12 +7602,24 @@ if(S.currentUser && S.proj?.id){
   syncLoadCurrentProject(S.proj.id);
 }
 
-// Sincronización en segundo plano periódica (cada 25 segundos)
+// Sincronización en segundo plano periódica (cada 12 segundos)
 setInterval(() => {
   if(S.currentUser && S.proj && S.proj.id && (S.proj.type === 'cliente' || S.proj.id === 'pv') && !S.modal){
     syncLoadCurrentProject(S.proj.id);
   }
-}, 25000);
+}, 12000);
+
+// Sincronización instantánea al cambiar o enfocar ventana/pestaña entre PC, iPad y móvil
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && S.currentUser && S.proj?.id && !S.modal) {
+    syncLoadCurrentProject(S.proj.id);
+  }
+});
+window.addEventListener('focus', () => {
+  if (S.currentUser && S.proj?.id && !S.modal) {
+    syncLoadCurrentProject(S.proj.id);
+  }
+});
 
 loadSupplierDirectory().catch(()=>{})
 loadSupplierOrders().catch(()=>{})
