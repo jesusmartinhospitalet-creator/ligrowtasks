@@ -3,7 +3,7 @@
 
 begin;
 
--- Enable UUID extension if not already enabled
+-- Habilitar extensión UUID si no está activa
 create extension if not exists "pgcrypto";
 
 create table if not exists supplier_orders (
@@ -26,13 +26,13 @@ create index if not exists supplier_orders_date_idx on supplier_orders (order_da
 create index if not exists supplier_orders_supplier_idx on supplier_orders (supplier_name);
 create index if not exists supplier_orders_status_idx on supplier_orders (status);
 
--- Seed de pedidos iniciales para demostración y primer uso
+-- Seed de pedidos iniciales para demostración (supplier_id = null para evitar conflictos de claves foráneas)
 insert into supplier_orders (
   id, supplier_id, supplier_name, category_name, concept, order_date, total_amount, status, invoice_number, notes, files
 ) values
   (
     '4a1e9b20-cc8d-4e1a-92de-002000000001',
-    '3d5c8b9e-cc8d-4e1a-92de-001000000101',
+    null,
     'PrintOnDemand BCN',
     'Impresión',
     '500 Flyers A5 doble cara estucado mate 350g',
@@ -45,7 +45,7 @@ insert into supplier_orders (
   ),
   (
     '4a1e9b20-cc8d-4e1a-92de-002000000002',
-    '3d5c8b9e-cc8d-4e1a-92de-001000000102',
+    null,
     'Grafisant',
     'Impresión',
     '2 Roll-ups 85×200 con estructura de aluminio y funda de transporte',
@@ -58,7 +58,7 @@ insert into supplier_orders (
   ),
   (
     '4a1e9b20-cc8d-4e1a-92de-002000000003',
-    '3d5c8b9e-cc8d-4e1a-92de-001000000201',
+    null,
     'Estudi Forma',
     'Diseño',
     'Manual de identidad corporativa y adaptaciones web',
