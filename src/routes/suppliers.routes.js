@@ -57,4 +57,41 @@ router.delete('/:id', async (req, res, next) => {
   }
 });
 
+// ── Pedidos / Órdenes a proveedores ────────────────────────────
+router.get('/orders', async (req, res, next) => {
+  try {
+    const orders = await supplierService.listOrders();
+    res.json({ orders });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/orders', async (req, res, next) => {
+  try {
+    const order = await supplierService.createOrder(req.body);
+    res.status(201).json({ order });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/orders/:id', async (req, res, next) => {
+  try {
+    const order = await supplierService.updateOrder(req.params.id, req.body);
+    res.json({ order });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/orders/:id', async (req, res, next) => {
+  try {
+    await supplierService.removeOrder(req.params.id);
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

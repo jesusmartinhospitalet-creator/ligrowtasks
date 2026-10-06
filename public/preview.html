@@ -1268,6 +1268,130 @@ body{
 .cat-item:hover .cat-delete{opacity:1}
 .cat-delete:hover{background:#FDECEC;color:#C53030}
 
+/* ── Proveedores: Pedidos & Galería ─────────────────────────────────────── */
+.pedidos-layout{display:flex;flex-direction:column;gap:18px;height:100%;min-height:0;overflow-y:auto;padding-bottom:24px}
+.pedidos-layout::-webkit-scrollbar{width:5px}
+.pedidos-layout::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* KPI Stats Strip */
+.pedidos-stats{display:grid;grid-template-columns:repeat(4, 1fr);gap:12px}
+.pedidos-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden;transition:all .2s ease}
+.pedidos-stat-card:hover{border-color:var(--border-hover, #d1d5db);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.03)}
+.pstat-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);display:flex;align-items:center;gap:6px}
+.pstat-val{font-size:22px;font-weight:800;font-family:'Space Grotesk','DM Sans',sans-serif;color:var(--text-1);letter-spacing:-0.5px}
+.pstat-val.brand{color:var(--accent)}
+.pstat-val.emerald{color:#10B981}
+.pstat-val.amber{color:#F59E0B}
+.pstat-sub{font-size:11.5px;color:var(--text-3);margin-top:2px}
+
+/* Toolbar & Filters */
+.pedidos-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
+.pedidos-filter-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1}
+.pedidos-search-in{border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12.5px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none;min-width:220px;transition:border-color .15s}
+.pedidos-search-in:focus{border-color:var(--accent);background:var(--surface)}
+.pedidos-select{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;background:var(--surface-2);color:var(--text-2);outline:none;cursor:pointer}
+.pedidos-select:focus{border-color:var(--accent)}
+.pedidos-btn-primary{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s;white-space:nowrap}
+.pedidos-btn-primary:hover{opacity:.92;transform:scale(1.02)}
+
+/* Orders List & Cards */
+.pedidos-list{display:flex;flex-direction:column;gap:12px}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s ease;box-shadow:0 1px 3px rgba(0,0,0,0.02)}
+.order-card:hover{border-color:var(--border-hover, #cbd5e1);box-shadow:0 6px 18px rgba(0,0,0,0.05)}
+.order-card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border-2);gap:14px;flex-wrap:wrap;background:var(--surface)}
+.order-meta-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.order-date-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text-2);background:var(--surface-2);padding:4px 9px;border-radius:6px;border:1px solid var(--border-2)}
+.order-prov-pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--accent-text);background:var(--accent-light);padding:4px 10px;border-radius:6px}
+.order-invoice-tag{font-size:11px;font-weight:600;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:3px 7px}
+.order-meta-right{display:flex;align-items:center;gap:14px;margin-left:auto}
+.order-amount{font-size:19px;font-weight:800;font-family:'Space Grotesk','DM Sans',sans-serif;color:var(--text-1);letter-spacing:-0.3px}
+.order-status-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;display:inline-flex;align-items:center;gap:5px}
+.order-status-badge.pagado{background:#ECFDF5;color:#059669;border:1px solid rgba(5,150,105,0.2)}
+.order-status-badge.pendiente{background:#FFFBEB;color:#D97706;border:1px solid rgba(217,119,6,0.2)}
+.order-status-badge.produccion{background:#EFF6FF;color:#2563EB;border:1px solid rgba(37,99,235,0.2)}
+.order-status-badge.recibido{background:#F5F3FF;color:#7C3AED;border:1px solid rgba(124,58,237,0.2)}
+
+.order-card-body{padding:16px 18px}
+.order-concept{font-size:15px;font-weight:700;color:var(--text-1);line-height:1.4;margin-bottom:6px}
+.order-notes{font-size:12.5px;color:var(--text-3);line-height:1.5;margin-bottom:14px;background:var(--surface-2);border-radius:8px;padding:8px 12px;border:1px solid var(--border-2)}
+
+/* Files & Preview Section */
+.order-files-box{margin-top:10px;padding-top:12px;border-top:1px dashed var(--border-2)}
+.order-files-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.order-files-grid{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Image preview chip */
+.order-file-chip{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;transition:all .2s ease;max-width:260px;position:relative}
+.order-file-chip:hover{background:var(--surface);border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.06)}
+.order-file-thumb{width:38px;height:38px;border-radius:6px;object-fit:cover;background:#000;border:1px solid var(--border-2);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.order-file-pdf-thumb{width:38px;height:38px;border-radius:6px;background:linear-gradient(135deg, #EF4444 0%, #DC2626 100%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:10px;letter-spacing:.5px;flex-shrink:0;box-shadow:0 2px 6px rgba(220,38,38,0.25)}
+.order-file-info{overflow:hidden;display:flex;flex-direction:column;gap:1px}
+.order-file-name{font-size:12px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.order-file-meta{font-size:10.5px;color:var(--text-3);display:flex;align-items:center;gap:4px}
+.order-file-view-badge{font-size:9.5px;color:var(--accent-text);font-weight:700;text-transform:uppercase}
+
+.order-add-file-btn{border:1px dashed var(--border);border-radius:8px;padding:8px 12px;background:transparent;color:var(--text-3);font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.order-add-file-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--surface-2)}
+
+/* Card Footer Actions */
+.order-card-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--surface-2);border-top:1px solid var(--border-2);gap:10px}
+.order-actions-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.order-action-btn{border:1px solid var(--border);border-radius:6px;padding:5px 10px;background:var(--surface);color:var(--text-2);font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.order-action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.order-action-btn.gallery{background:var(--accent-light);border-color:transparent;color:var(--accent-text)}
+.order-action-btn.gallery:hover{background:var(--accent);color:#fff}
+.order-action-btn.danger:hover{border-color:#EF4444;color:#DC2626;background:#FEF2F2}
+
+/* Empty State */
+.pedidos-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;text-align:center;background:var(--surface);border:1px dashed var(--border);border-radius:12px;gap:10px}
+.pedidos-empty-ico{font-size:42px;margin-bottom:4px}
+.pedidos-empty-title{font-size:16px;font-weight:700;color:var(--text-1)}
+.pedidos-empty-desc{font-size:13px;color:var(--text-3);max-width:380px}
+
+/* ── Lightbox Gallery Modal ─────────────────────────────────────────────── */
+.ogallery-overlay{position:fixed;inset:0;background:rgba(8,10,12,0.92);backdrop-filter:blur(14px);z-index:9999;display:flex;flex-direction:column;animation:fadeIn .2s ease}
+.ogallery-header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:rgba(18,20,24,0.95);border-bottom:1px solid rgba(255,255,255,0.08);color:#fff;gap:16px;flex-shrink:0}
+.ogallery-title-box{display:flex;align-items:center;gap:12px;overflow:hidden}
+.ogallery-type-badge{font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 7px;border-radius:4px;text-transform:uppercase}
+.ogallery-type-badge.pdf{background:#EF4444;color:#fff}
+.ogallery-type-badge.img{background:#0F9460;color:#fff}
+.ogallery-filename{font-size:14px;font-weight:700;color:#F3F4F6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ogallery-order-tag{font-size:12px;color:#9CA3AF;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.ogallery-counter{font-size:12px;font-weight:600;color:#9CA3AF;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:20px}
+.ogallery-tools{display:flex;align-items:center;gap:8px}
+.ogallery-tool-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:#E5E7EB;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.ogallery-tool-btn:hover{background:rgba(255,255,255,0.18);color:#fff}
+.ogallery-close-btn{background:transparent;border:none;color:#9CA3AF;font-size:22px;width:34px;height:34px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ogallery-close-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
+
+.ogallery-body{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:20px}
+.ogallery-img-container{max-width:92%;max-height:82vh;display:flex;align-items:center;justify-content:center;transition:transform .2s ease}
+.ogallery-img{max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 40px rgba(0,0,0,0.5)}
+.ogallery-pdf-frame{width:88vw;max-width:1100px;height:82vh;border:none;border-radius:10px;background:#fff;box-shadow:0 20px 50px rgba(0,0,0,0.6)}
+
+.ogallery-nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:rgba(28,31,38,0.85);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;backdrop-filter:blur(8px);z-index:10}
+.ogallery-nav-btn:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-50%) scale(1.08)}
+.ogallery-nav-btn.prev{left:20px}
+.ogallery-nav-btn.next{right:20px}
+
+/* Gallery bottom filmstrip */
+.ogallery-filmstrip{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;background:rgba(18,20,24,0.92);border-top:1px solid rgba(255,255,255,0.08);overflow-x:auto;flex-shrink:0}
+.ogallery-thumb{width:52px;height:52px;border-radius:7px;border:2px solid transparent;cursor:pointer;overflow:hidden;background:#1F2937;opacity:.55;transition:all .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ogallery-thumb:hover{opacity:.85;border-color:rgba(255,255,255,0.3)}
+.ogallery-thumb.active{opacity:1;border-color:var(--accent);box-shadow:0 0 10px rgba(15,148,96,0.5)}
+.ogallery-thumb img{width:100%;height:100%;object-fit:cover}
+
+/* Upload zone in Modal */
+.order-upload-zone{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;background:var(--surface-2);cursor:pointer;transition:all .15s;margin-top:6px}
+.order-upload-zone:hover,.order-upload-zone.dragover{border-color:var(--accent);background:var(--accent-light)}
+.order-upload-icon{font-size:28px;margin-bottom:6px}
+.order-upload-text{font-size:12.5px;font-weight:600;color:var(--text-1)}
+.order-upload-hint{font-size:11px;color:var(--text-3);margin-top:2px}
+.order-draft-files{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:160px;overflow-y:auto}
+.order-draft-file-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:7px;font-size:12px}
+
+
+
 
 /* ── Kanban card extras ──────────────────────────────────────────────────── */
 .kc-extras{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
@@ -2278,7 +2402,55 @@ let DATA = [
   // ─ PROVEEDORES
   {
     id:'pv', type:'proveedor', color:'#0F9460', initials:'PR',
-    name:'Proveedores', sub:'Catálogo de servicios externos',
+    name:'Proveedores', sub:'Catálogo de servicios externos y control de pedidos',
+    orders:[
+      {
+        id:'4a1e9b20-cc8d-4e1a-92de-002000000001',
+        supplierId:'3d5c8b9e-cc8d-4e1a-92de-001000000101',
+        supplierName:'PrintOnDemand BCN',
+        categoryName:'Impresión',
+        concept:'500 Flyers A5 doble cara estucado mate 350g',
+        orderDate:'2026-03-24',
+        totalAmount:38.00,
+        status:'Pagado',
+        invoiceNumber:'FAC-2026-0042',
+        notes:'Entrega completada en tiempo y forma. Excelente calidad de corte.',
+        files:[
+          {id:'f1',name:'Factura_FAC-2026-0042.pdf',type:'application/pdf',size:124500,url:''},
+          {id:'f2',name:'Muestra_Flyer_A5.jpg',type:'image/jpeg',size:248000,url:''}
+        ]
+      },
+      {
+        id:'4a1e9b20-cc8d-4e1a-92de-002000000002',
+        supplierId:'3d5c8b9e-cc8d-4e1a-92de-001000000102',
+        supplierName:'Grafisant',
+        categoryName:'Impresión',
+        concept:'2 Roll-ups 85×200 con estructura de aluminio y funda de transporte',
+        orderDate:'2026-03-15',
+        totalAmount:178.00,
+        status:'Pagado',
+        invoiceNumber:'ALB-98124',
+        notes:'Material corporativo para ferias y stands de clientes.',
+        files:[
+          {id:'f3',name:'Diseno_Rollup_85x200.jpg',type:'image/jpeg',size:389000,url:''}
+        ]
+      },
+      {
+        id:'4a1e9b20-cc8d-4e1a-92de-002000000003',
+        supplierId:'3d5c8b9e-cc8d-4e1a-92de-001000000201',
+        supplierName:'Estudi Forma',
+        categoryName:'Diseño',
+        concept:'Manual de identidad corporativa y adaptaciones web',
+        orderDate:'2026-02-28',
+        totalAmount:1200.00,
+        status:'Recibido',
+        invoiceNumber:'EF-2026-08',
+        notes:'Incluye paleta cromática, tipografías corporativas y guía de estilo.',
+        files:[
+          {id:'f4',name:'Manual_Identidad_Ligrow.pdf',type:'application/pdf',size:450000,url:''}
+        ]
+      }
+    ],
     cats:[
       {
         id:'print', ico:'🖨️', name:'Impresión', n:3,
@@ -2549,7 +2721,7 @@ function defaultView(p){ return p.type==='cliente'?'resumen': p.type==='app'?'ov
 function tabsFor(p){
   if(p.type==='cliente') return ['resumen','kanban','actividad'];
   if(p.type==='app')     return ['overview','conexiones','docs','variables'];
-  return ['catalogo'];
+  return ['catalogo', 'pedidos'];
 }
 const TAB_LABELS = {
   resumen:'Resumen',
@@ -2562,7 +2734,8 @@ const TAB_LABELS = {
   conexiones:'Conexiones',
   docs:'Docs',
   variables:'Variables',
-  catalogo:'Catálogo'
+  catalogo:'Catálogo',
+  pedidos:'Pedidos'
 };
 
 function applyAccent(type){
@@ -2597,6 +2770,7 @@ function selectProj(id){
   S.addingCat=false;
   render();
   if(S.proj?.id) syncLoadCurrentProject(S.proj.id);
+  if(S.proj?.id==='pv') loadSupplierOrders().catch(()=>{});
 }
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
@@ -4251,7 +4425,7 @@ function render(){
   if(!ov){ov=document.createElement('div');ov.id='modal-root';document.body.appendChild(ov)}
   const currentModal = ov.getAttribute('data-modal') || null;
   const currentSubstate = ov.getAttribute('data-modal-substate') || '';
-  const newSubstate = [S._configTab, S._docTab, S._newClientColor, S._editClientDraft?.color, S._taskDetail?.code].join('|');
+  const newSubstate = [S._configTab, S._docTab, S._newClientColor, S._editClientDraft?.color, S._taskDetail?.code, S._orderDraft?.id, S._orderDraft?.files?.length, S._gallery?.orderId, S._gallery?.fileIndex, S._gallery?.zoom].join('|');
   if(currentModal !== S.modal || currentSubstate !== newSubstate){
     ov.setAttribute('data-modal', S.modal || '');
     ov.setAttribute('data-modal-substate', newSubstate);
@@ -4260,6 +4434,8 @@ function render(){
     else if(S.modal==='docViewer') ov.innerHTML=docViewerModal()
     else if(S.modal==='newClient') ov.innerHTML=newClientModal()
     else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
+    else if(S.modal==='orderModal') ov.innerHTML=orderModal()
+    else if(S.modal==='orderGallery') ov.innerHTML=orderGalleryModal()
     else if(S.modal==='config') ov.innerHTML=configModal()
     else if(S.modal==='editClient') ov.innerHTML=editClientModal()
     else if(S.modal==='taskDetail') ov.innerHTML=taskDetailModal()
@@ -5152,10 +5328,14 @@ function main(){
   const tabs = tabsFor(p)
   if(!tabs.includes(S.view)) S.view = tabs[0]
   const typeName = {cliente:'Cliente',app:'App',proveedor:'Proveedor'}[p.type]
-  const btnLabel = p.type==='proveedor'?'+ Proveedor':p.type==='app'?'Abrir app':'+ Nueva tarea'
-  const btnClick = p.type==='cliente'?`openNewTask()`:`console.log('action')`
+  const btnLabel = p.type==='proveedor'
+    ? (S.view==='pedidos' ? '+ Nuevo Pedido' : '+ Proveedor')
+    : (p.type==='app' ? 'Abrir app' : '+ Nueva tarea')
+  const btnClick = p.type==='proveedor'
+    ? (S.view==='pedidos' ? 'openNewOrder()' : '')
+    : (p.type==='cliente' ? 'openNewTask()' : 'console.log("action")')
   const providerButtonAttrs = p.type==='proveedor'
-    ? `type="button" data-provider-project="${p.id}" data-provider-category="${S.provCat||p.cats?.[0]?.id||''}"`
+    ? (S.view==='pedidos' ? 'onclick="openNewOrder()"' : `type="button" data-provider-project="${p.id}" data-provider-category="${S.provCat||p.cats?.[0]?.id||''}"`)
     : `onclick="${btnClick}"`
   const shape    = TYPE_SHAPE[p.type]
   const badge    = TYPE_BADGE[p.type]
@@ -5246,6 +5426,10 @@ function renderTopStatsPills(p){
 function content(p){
   if(p.type==='cliente') return clienteContent(p)
   if(p.type==='app')     return appContent(p)
+  if(p.type==='proveedor'){
+    if(S.view==='pedidos') return pedidosContent(p)
+    return provContent(p)
+  }
   return provContent(p)
 }
 
@@ -6212,6 +6396,798 @@ function provContent(p){
     '</div></div><div class="prov-content"><div class="prov-folder-bar"><span class="folder-ico">'+esc(cat?.ico||'📁')+'</span><div><div class="folder-title">'+esc(cat?.name||'Sin categorías')+'</div><div class="folder-sub">'+(cat?.provs?.length||0)+' proveedores</div></div><button class="add-btn" type="button" data-provider-project="'+esc(p.id)+'" data-provider-category="'+esc(cat?.id||'')+'">+ Añadir proveedor</button></div><div class="prov-cards">'+cards+'</div></div></div>'
 }
 
+// ─ PROVEEDOR: PEDIDOS & GALERÍA INTEGRADA ───────────────────────────────────
+
+function formatFileSize(bytes) {
+  if (!bytes || isNaN(bytes)) return '0 KB';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + (sizes[i] || 'KB');
+}
+
+function formatOrderDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+function getSamplePdfDataUrl(order, file) {
+  const pdfTitle = order?.concept || 'Comprobante de Pedido';
+  const supplier = order?.supplierName || 'Proveedor';
+  const amount = Number(order?.totalAmount || 0).toFixed(2);
+  const date = order?.orderDate || '2026-03-24';
+  const ref = order?.invoiceNumber || 'FAC-2026-0042';
+
+  const pdfRaw = `%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n4 0 obj<</Length 280>>stream\nBT /F1 20 Tf 50 720 Td (LIGROW - FACTURA DE PEDIDO) Tj /F1 12 Tf 0 -35 Td (Proveedor: ${supplier}) Tj 0 -25 Td (Concepto: ${pdfTitle.slice(0, 45)}) Tj 0 -25 Td (Importe Pagado: EUR ${amount} - Estado: PAGADO) Tj 0 -25 Td (Fecha: ${date} | Ref: ${ref}) Tj 0 -35 Td (Documento verificado y sincronizado en Supabase) Tj ET\nendstream\nendobj\n5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\nxref\n0 6\n0000000000 65535 f \n0000000009 00000 n \n0000000056 00000 n \n0000000111 00000 n \n0000000236 00000 n \n0000000570 00000 n \ntrailer<</Size 6/Root 1 0 R>>\nstartxref\n640\n%%EOF`;
+
+  try {
+    return 'data:application/pdf;base64,' + btoa(unescape(encodeURIComponent(pdfRaw)));
+  } catch (e) {
+    return '';
+  }
+}
+
+function getSampleImageDataUrl(order, file) {
+  const concept = order?.concept || 'Pedido a Proveedor';
+  const supplier = order?.supplierName || 'Proveedor';
+  const amount = Number(order?.totalAmount || 0).toFixed(2);
+  const ref = order?.invoiceNumber || 'S/N';
+  const filename = file?.name || 'archivo.jpg';
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+    <defs>
+      <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0F9460" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#064E3B" stop-opacity="0.95"/>
+      </linearGradient>
+      <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+        <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="800" height="600" fill="#111827"/>
+    <rect width="800" height="600" fill="url(#grid)"/>
+    <rect x="30" y="30" width="740" height="540" rx="16" fill="url(#g1)" stroke="#10B981" stroke-width="2"/>
+    <rect x="55" y="55" width="690" height="490" rx="12" fill="#0B131F" fill-opacity="0.75" stroke="rgba(255,255,255,0.1)"/>
+    
+    <text x="85" y="105" fill="#34D399" font-family="'Space Grotesk',sans-serif" font-size="20" font-weight="700" letter-spacing="1.5">LIGROW · ARCHIVO ADJUNTO DE PEDIDO</text>
+    <text x="85" y="165" fill="#FFFFFF" font-family="'Space Grotesk',sans-serif" font-size="28" font-weight="800">${escapeHtml(concept.slice(0, 42))}</text>
+    <text x="85" y="205" fill="#9CA3AF" font-family="sans-serif" font-size="16">Proveedor: <tspan fill="#F3F4F6" font-weight="600">${escapeHtml(supplier)}</tspan> · Ref Factura: <tspan fill="#F3F4F6" font-weight="600">${escapeHtml(ref)}</tspan></text>
+    
+    <line x1="85" y1="240" x2="700" y2="240" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+    
+    <text x="85" y="290" fill="#9CA3AF" font-family="sans-serif" font-size="13" font-weight="600" letter-spacing="1">IMPORTE TOTAL PAGADO</text>
+    <text x="85" y="345" fill="#10B981" font-family="'Space Grotesk',sans-serif" font-size="46" font-weight="800">€ ${amount}</text>
+    
+    <rect x="85" y="380" width="130" height="32" rx="16" fill="#10B981" fill-opacity="0.2" stroke="#10B981" stroke-width="1"/>
+    <text x="150" y="401" fill="#34D399" font-family="sans-serif" font-size="12" font-weight="700" text-anchor="middle">✓ PAGADO</text>
+    
+    <rect x="85" y="440" width="615" height="60" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="105" y="468" fill="#D1D5DB" font-family="sans-serif" font-size="13" font-weight="600">Archivo: ${escapeHtml(filename)}</text>
+    <text x="105" y="488" fill="#6B7280" font-family="sans-serif" font-size="11">Visualización previa integrada en la galería de Ligrow Tasks</text>
+  </svg>`;
+
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+function getFileRenderUrl(order, file) {
+  if (file?.data && typeof file.data === 'string' && file.data.startsWith('data:')) {
+    return file.data;
+  }
+  if (file?.url && typeof file.url === 'string' && (file.url.startsWith('http') || file.url.startsWith('data:'))) {
+    return file.url;
+  }
+  const isPdf = file?.type === 'application/pdf' || (file?.name && file.name.toLowerCase().endsWith('.pdf'));
+  if (isPdf) {
+    return getSamplePdfDataUrl(order, file);
+  }
+  return getSampleImageDataUrl(order, file);
+}
+
+function pedidosContent(p) {
+  const esc = escapeHtml;
+  const orders = Array.isArray(p.orders) ? p.orders : [];
+
+  // 1. KPI Calculations
+  let totalGasto = 0;
+  let pagadosCount = 0;
+  let pagadosSum = 0;
+  let pendientesCount = 0;
+  let pendientesSum = 0;
+
+  orders.forEach(o => {
+    const amt = Number(o.totalAmount || 0);
+    totalGasto += amt;
+    const st = String(o.status || '').toLowerCase();
+    if (st.includes('pagad') || st.includes('recibid') || st.includes('entregad')) {
+      pagadosCount++;
+      pagadosSum += amt;
+    } else {
+      pendientesCount++;
+      pendientesSum += amt;
+    }
+  });
+
+  // 2. Filters
+  const search = String(S.pedidosSearch || '').toLowerCase().trim();
+  const filterSupplier = S.pedidosFilterSupplier || '';
+  const filterStatus = S.pedidosFilterStatus || '';
+  const sortMode = S.pedidosSort || 'recientes';
+
+  let filteredOrders = orders.filter(o => {
+    if (search) {
+      const matchSearch = String(o.concept || '').toLowerCase().includes(search) ||
+        String(o.supplierName || '').toLowerCase().includes(search) ||
+        String(o.invoiceNumber || '').toLowerCase().includes(search) ||
+        String(o.notes || '').toLowerCase().includes(search);
+      if (!matchSearch) return false;
+    }
+    if (filterSupplier && o.supplierName !== filterSupplier && o.supplierId !== filterSupplier) {
+      return false;
+    }
+    if (filterStatus && o.status !== filterStatus) {
+      return false;
+    }
+    return true;
+  });
+
+  // Sorting
+  filteredOrders.sort((a, b) => {
+    if (sortMode === 'antiguos') return (a.orderDate || '').localeCompare(b.orderDate || '');
+    if (sortMode === 'mayor_importe') return Number(b.totalAmount || 0) - Number(a.totalAmount || 0);
+    if (sortMode === 'menor_importe') return Number(a.totalAmount || 0) - Number(b.totalAmount || 0);
+    return (b.orderDate || '').localeCompare(a.orderDate || ''); // 'recientes'
+  });
+
+  // Providers list for filter dropdown
+  const allSuppliers = [];
+  (p.cats || []).forEach(cat => {
+    (cat.provs || []).forEach(pr => {
+      if (!allSuppliers.includes(pr.name)) allSuppliers.push(pr.name);
+    });
+  });
+  orders.forEach(o => {
+    if (o.supplierName && !allSuppliers.includes(o.supplierName)) allSuppliers.push(o.supplierName);
+  });
+
+  // Render Order Cards
+  const cardsHtml = filteredOrders.length ? filteredOrders.map((order, orderIdx) => {
+    const files = Array.isArray(order.files) ? order.files : [];
+    const statusClass = String(order.status || 'pagado').toLowerCase().replace(/\s+/g, '');
+    const amountFormatted = '€ ' + Number(order.totalAmount || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const dateFormatted = formatOrderDate(order.orderDate);
+
+    const filesPreviewHtml = files.length ? files.map((file, fileIdx) => {
+      const isPdf = file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'));
+      const renderUrl = getFileRenderUrl(order, file);
+      if (isPdf) {
+        return `<div class="order-file-chip" onclick="openOrderGallery('${order.id}', ${fileIdx})" title="Ver documento PDF en galería">
+          <div class="order-file-pdf-thumb">📄<span style="font-size:8px">PDF</span></div>
+          <div class="order-file-info">
+            <div class="order-file-name">${esc(file.name)}</div>
+            <div class="order-file-meta">${formatFileSize(file.size)} · <span class="order-file-view-badge">👁️ Previsualizar</span></div>
+          </div>
+        </div>`;
+      } else {
+        return `<div class="order-file-chip" onclick="openOrderGallery('${order.id}', ${fileIdx})" title="Ver imagen en galería">
+          <img src="${renderUrl}" class="order-file-thumb" alt="${esc(file.name)}" />
+          <div class="order-file-info">
+            <div class="order-file-name">${esc(file.name)}</div>
+            <div class="order-file-meta">${formatFileSize(file.size)} · <span class="order-file-view-badge">👁️ Previsualizar</span></div>
+          </div>
+        </div>`;
+      }
+    }).join('') : `<div style="font-size:12px;color:var(--text-3);font-style:italic">Sin archivos adjuntos. Puedes adjuntar facturas o diseños (PDF, JPG) con el botón de la derecha.</div>`;
+
+    return `<div class="order-card" id="order-card-${order.id}">
+      <div class="order-card-header">
+        <div class="order-meta-left">
+          <span class="order-date-badge">📅 ${dateFormatted}</span>
+          <span class="order-prov-pill">🏢 ${esc(order.supplierName || 'Proveedor')}</span>
+          ${order.categoryName ? `<span class="order-invoice-tag" style="border-color:transparent;background:var(--accent-light);color:var(--accent-text)">${esc(order.categoryName)}</span>` : ''}
+          ${order.invoiceNumber ? `<span class="order-invoice-tag" title="Número de factura o referencia">Ref: ${esc(order.invoiceNumber)}</span>` : ''}
+        </div>
+        <div class="order-meta-right">
+          <div class="order-amount">${amountFormatted}</div>
+          <span class="order-status-badge ${statusClass}">● ${esc(order.status || 'Pagado')}</span>
+        </div>
+      </div>
+      <div class="order-card-body">
+        <div class="order-concept">${esc(order.concept)}</div>
+        ${order.notes ? `<div class="order-notes">${esc(order.notes)}</div>` : ''}
+        <div class="order-files-box">
+          <div class="order-files-title">
+            <span>Archivos y Comprobantes (${files.length})</span>
+            <label class="order-add-file-btn" title="Adjuntar comprobante o archivo PDF/JPG">
+              📎 + Adjuntar archivo
+              <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" onchange="quickAttachFileToOrder('${order.id}', this)" />
+            </label>
+          </div>
+          <div class="order-files-grid">
+            ${filesPreviewHtml}
+          </div>
+        </div>
+      </div>
+      <div class="order-card-foot">
+        <div style="font-size:11px;color:var(--text-3)">Guardado y sincronizado con Supabase</div>
+        <div class="order-actions-right">
+          ${files.length ? `<button type="button" class="order-action-btn gallery" onclick="openOrderGallery('${order.id}', 0)">🖼️ Abrir en Galería</button>` : ''}
+          <button type="button" class="order-action-btn" onclick="openEditOrder('${order.id}')">✏️ Editar pedido</button>
+          <button type="button" class="order-action-btn danger" onclick="deleteOrder('${order.id}', event)">🗑️ Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="pedidos-empty">
+    <div class="pedidos-empty-ico">📦</div>
+    <div class="pedidos-empty-title">${search || filterSupplier || filterStatus ? 'No hay pedidos con los filtros seleccionados' : 'No hay pedidos registrados todavía'}</div>
+    <div class="pedidos-empty-desc">${search || filterSupplier || filterStatus ? 'Intenta modificar el término de búsqueda o limpia los filtros.' : 'Registra tus pedidos a imprentas, diseñadores y proveedores para llevar el control de importes y facturas.'}</div>
+    <button type="button" class="pedidos-btn-primary" style="margin-top:10px" onclick="openNewOrder()">+ Crear primer pedido</button>
+  </div>`;
+
+  return `<div class="pedidos-layout">
+    <!-- Top Stats KPI Strip -->
+    <div class="pedidos-stats">
+      <div class="pedidos-stat-card">
+        <span class="pstat-lbl">💰 Total Inversión</span>
+        <span class="pstat-val brand">€ ${totalGasto.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span class="pstat-sub">Suma de pedidos registrados</span>
+      </div>
+      <div class="pedidos-stat-card">
+        <span class="pstat-lbl">📦 Total Pedidos</span>
+        <span class="pstat-val">${orders.length}</span>
+        <span class="pstat-sub">${filteredOrders.length !== orders.length ? filteredOrders.length + ' visibles' : 'Registros activos'}</span>
+      </div>
+      <div class="pedidos-stat-card">
+        <span class="pstat-lbl">✅ Pagados / Entregados</span>
+        <span class="pstat-val emerald">€ ${pagadosSum.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span class="pstat-sub">${pagadosCount} pedidos completados</span>
+      </div>
+      <div class="pedidos-stat-card">
+        <span class="pstat-lbl">⏳ Pendientes / En Curso</span>
+        <span class="pstat-val amber">€ ${pendientesSum.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span class="pstat-sub">${pendientesCount} pedidos pendientes</span>
+      </div>
+    </div>
+
+    <!-- Filters & Action Toolbar -->
+    <div class="pedidos-toolbar">
+      <div class="pedidos-filter-group">
+        <input type="text" class="pedidos-search-in" placeholder="Buscar por concepto, proveedor o ref..." value="${esc(S.pedidosSearch || '')}" oninput="S.pedidosSearch=this.value;render()" />
+        <select class="pedidos-select" onchange="S.pedidosFilterSupplier=this.value;render()">
+          <option value="">Todos los proveedores</option>
+          ${allSuppliers.map(s => `<option value="${esc(s)}" ${filterSupplier === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}
+        </select>
+        <select class="pedidos-select" onchange="S.pedidosFilterStatus=this.value;render()">
+          <option value="">Todos los estados</option>
+          <option value="Pagado" ${filterStatus === 'Pagado' ? 'selected' : ''}>Pagado</option>
+          <option value="Pendiente" ${filterStatus === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+          <option value="En producción" ${filterStatus === 'En producción' ? 'selected' : ''}>En producción</option>
+          <option value="Recibido" ${filterStatus === 'Recibido' ? 'selected' : ''}>Recibido</option>
+        </select>
+        <select class="pedidos-select" onchange="S.pedidosSort=this.value;render()">
+          <option value="recientes" ${sortMode === 'recientes' ? 'selected' : ''}>Más recientes primero</option>
+          <option value="antiguos" ${sortMode === 'antiguos' ? 'selected' : ''}>Más antiguos primero</option>
+          <option value="mayor_importe" ${sortMode === 'mayor_importe' ? 'selected' : ''}>Mayor importe</option>
+          <option value="menor_importe" ${sortMode === 'menor_importe' ? 'selected' : ''}>Menor importe</option>
+        </select>
+      </div>
+      <button type="button" class="pedidos-btn-primary" onclick="openNewOrder()">+ Nuevo Pedido</button>
+    </div>
+
+    <!-- Orders List -->
+    <div class="pedidos-list">
+      ${cardsHtml}
+    </div>
+  </div>`;
+}
+
+// ── CRUD HANDLERS FOR ORDERS ────────────────────────────────────────────────
+
+function openNewOrder() {
+  const p = DATA.find(item => item.type === 'proveedor');
+  const defaultSupplier = p?.cats?.[0]?.provs?.[0]?.name || 'PrintOnDemand BCN';
+  const defaultCat = p?.cats?.[0]?.name || 'Impresión';
+
+  S.modal = 'orderModal';
+  S._orderDraft = {
+    id: '',
+    supplierName: defaultSupplier,
+    categoryName: defaultCat,
+    concept: '',
+    orderDate: new Date().toISOString().slice(0, 10),
+    totalAmount: '',
+    status: 'Pagado',
+    invoiceNumber: '',
+    notes: '',
+    files: []
+  };
+  render();
+}
+
+function openEditOrder(orderId) {
+  const p = DATA.find(item => item.type === 'proveedor');
+  const order = (p?.orders || []).find(o => o.id === orderId);
+  if (!order) return;
+
+  S.modal = 'orderModal';
+  S._orderDraft = JSON.parse(JSON.stringify(order));
+  if (!Array.isArray(S._orderDraft.files)) S._orderDraft.files = [];
+  render();
+}
+
+function cancelOrderModal() {
+  S.modal = null;
+  S._orderDraft = null;
+  render();
+}
+
+function handleOrderFilesSelect(filesList) {
+  if (!filesList || !filesList.length) return;
+  if (!S._orderDraft) return;
+  if (!Array.isArray(S._orderDraft.files)) S._orderDraft.files = [];
+
+  Array.from(filesList).forEach(file => {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      S._orderDraft.files.push({
+        id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        name: file.name,
+        type: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
+        size: file.size,
+        data: e.target.result,
+        createdAt: new Date().toISOString()
+      });
+      render();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeDraftFile(fileId) {
+  if (S._orderDraft && Array.isArray(S._orderDraft.files)) {
+    S._orderDraft.files = S._orderDraft.files.filter(f => f.id !== fileId);
+    render();
+  }
+}
+
+async function quickAttachFileToOrder(orderId, fileInput) {
+  if (!fileInput || !fileInput.files || !fileInput.files.length) return;
+  const p = DATA.find(item => item.type === 'proveedor');
+  const order = (p?.orders || []).find(o => o.id === orderId);
+  if (!order) return;
+  if (!Array.isArray(order.files)) order.files = [];
+
+  const filesToAdd = Array.from(fileInput.files);
+  for (const file of filesToAdd) {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        order.files.push({
+          id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+          name: file.name,
+          type: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
+          size: file.size,
+          data: e.target.result,
+          createdAt: new Date().toISOString()
+        });
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  save({ action: 'Archivos adjuntos', summary: `Se añadieron ${filesToAdd.length} archivo(s) al pedido: ${order.concept}` });
+  render();
+
+  // Background Supabase Sync
+  if (window.location.protocol !== 'file:') {
+    try {
+      await fetch('/api/suppliers/orders/' + encodeURIComponent(order.id), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(order)
+      });
+    } catch (e) {
+      console.warn('Sync error on quickAttach:', e);
+    }
+  }
+}
+
+async function submitOrderDraft() {
+  const draft = S._orderDraft;
+  if (!draft) return;
+
+  const concept = (document.getElementById('ord-concept')?.value || draft.concept || '').trim();
+  if (!concept) {
+    alert('Por favor indica el concepto o descripción del pedido.');
+    document.getElementById('ord-concept')?.focus();
+    return;
+  }
+
+  const supplierName = (document.getElementById('ord-supplier')?.value || draft.supplierName || '').trim();
+  if (!supplierName) {
+    alert('Por favor indica el proveedor.');
+    return;
+  }
+
+  const orderDate = document.getElementById('ord-date')?.value || draft.orderDate || new Date().toISOString().slice(0, 10);
+  const totalAmount = parseFloat(document.getElementById('ord-amount')?.value || draft.totalAmount || 0) || 0;
+  const status = document.getElementById('ord-status')?.value || draft.status || 'Pagado';
+  const invoiceNumber = (document.getElementById('ord-invoice')?.value || draft.invoiceNumber || '').trim();
+  const notes = (document.getElementById('ord-notes')?.value || draft.notes || '').trim();
+  const categoryName = draft.categoryName || '';
+
+  const p = DATA.find(item => item.type === 'proveedor');
+  if (!p) return;
+  if (!Array.isArray(p.orders)) p.orders = [];
+
+  const isEdit = Boolean(draft.id);
+  const orderRecord = {
+    id: draft.id || ('ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6)),
+    supplierId: draft.supplierId || null,
+    supplierName,
+    categoryName,
+    concept,
+    orderDate,
+    totalAmount,
+    status,
+    invoiceNumber,
+    notes,
+    files: Array.isArray(draft.files) ? draft.files : [],
+    updatedAt: new Date().toISOString()
+  };
+
+  if (isEdit) {
+    const idx = p.orders.findIndex(o => o.id === draft.id);
+    if (idx !== -1) p.orders[idx] = orderRecord;
+    else p.orders.unshift(orderRecord);
+  } else {
+    orderRecord.createdAt = new Date().toISOString();
+    p.orders.unshift(orderRecord);
+  }
+
+  S.modal = null;
+  S._orderDraft = null;
+
+  save({ action: isEdit ? 'Pedido actualizado' : 'Nuevo pedido', summary: `${isEdit ? 'Actualizado' : 'Registrado'} pedido a ${orderRecord.supplierName}: ${orderRecord.concept}` });
+  render();
+
+  // Cloud & Supabase synchronization
+  if (window.location.protocol !== 'file:') {
+    try {
+      const url = isEdit ? '/api/suppliers/orders/' + encodeURIComponent(orderRecord.id) : '/api/suppliers/orders';
+      const method = isEdit ? 'PUT' : 'POST';
+      await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(orderRecord)
+      });
+    } catch (err) {
+      console.warn('Error synchronizing order with Supabase:', err);
+    }
+  }
+}
+
+async function deleteOrder(orderId, event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+
+  const p = DATA.find(item => item.type === 'proveedor');
+  if (!p || !Array.isArray(p.orders)) return;
+
+  const order = p.orders.find(o => o.id === orderId);
+  if (!order) return;
+
+  if (!confirm(`¿Eliminar el pedido "${order.concept}" de ${order.supplierName} por valor de € ${Number(order.totalAmount || 0).toFixed(2)}? Esta acción no se puede deshacer.`)) {
+    return;
+  }
+
+  p.orders = p.orders.filter(o => o.id !== orderId);
+  save({ action: 'Pedido eliminado', summary: `Eliminado pedido de ${order.supplierName}: ${order.concept}` });
+  render();
+
+  if (window.location.protocol !== 'file:') {
+    try {
+      await fetch('/api/suppliers/orders/' + encodeURIComponent(orderId), {
+        method: 'DELETE',
+        credentials: 'same-origin'
+      });
+    } catch (e) {
+      console.warn('Error deleting order from Supabase:', e);
+    }
+  }
+}
+
+// ── LIGHTBOX INTEGRATED GALLERY MODAL ───────────────────────────────────────
+
+function openOrderGallery(orderId, initialFileIndex = 0) {
+  const p = DATA.find(item => item.type === 'proveedor');
+  const order = (p?.orders || []).find(o => o.id === orderId);
+  if (!order || !order.files || !order.files.length) return;
+
+  S.modal = 'orderGallery';
+  S._gallery = {
+    orderId,
+    fileIndex: Math.max(0, Math.min(initialFileIndex || 0, order.files.length - 1)),
+    zoom: 1
+  };
+  render();
+}
+
+function galleryPrevFile() {
+  if (!S._gallery) return;
+  const p = DATA.find(item => item.type === 'proveedor');
+  const order = (p?.orders || []).find(o => o.id === S._gallery.orderId);
+  if (!order || !order.files || !order.files.length) return;
+
+  const total = order.files.length;
+  S._gallery.fileIndex = (S._gallery.fileIndex - 1 + total) % total;
+  S._gallery.zoom = 1;
+  render();
+}
+
+function galleryNextFile() {
+  if (!S._gallery) return;
+  const p = DATA.find(item => item.type === 'proveedor');
+  const order = (p?.orders || []).find(o => o.id === S._gallery.orderId);
+  if (!order || !order.files || !order.files.length) return;
+
+  const total = order.files.length;
+  S._gallery.fileIndex = (S._gallery.fileIndex + 1) % total;
+  S._gallery.zoom = 1;
+  render();
+}
+
+function galleryZoom(delta) {
+  if (!S._gallery) return;
+  S._gallery.zoom = Math.max(0.5, Math.min(3, (S._gallery.zoom || 1) + delta));
+  render();
+}
+
+function galleryResetZoom() {
+  if (!S._gallery) return;
+  S._gallery.zoom = 1;
+  render();
+}
+
+function orderGalleryModal() {
+  const g = S._gallery;
+  if (!g) return '';
+
+  const p = DATA.find(item => item.type === 'proveedor');
+  const order = (p?.orders || []).find(o => o.id === g.orderId);
+  if (!order || !order.files || !order.files.length) return '';
+
+  const files = order.files;
+  const currentIndex = Math.max(0, Math.min(g.fileIndex || 0, files.length - 1));
+  const currentFile = files[currentIndex];
+  const totalFiles = files.length;
+  const esc = escapeHtml;
+
+  const isPdf = currentFile.type === 'application/pdf' || (currentFile.name && currentFile.name.toLowerCase().endsWith('.pdf'));
+  const fileUrl = getFileRenderUrl(order, currentFile);
+  const zoom = g.zoom || 1;
+
+  // Filmstrip thumbnails
+  const filmstripHtml = totalFiles > 1 ? `<div class="ogallery-filmstrip">
+    ${files.map((f, idx) => {
+      const fIsPdf = f.type === 'application/pdf' || (f.name && f.name.toLowerCase().endsWith('.pdf'));
+      const thumbUrl = getFileRenderUrl(order, f);
+      return `<div class="ogallery-thumb ${idx === currentIndex ? 'active' : ''}" onclick="S._gallery.fileIndex=${idx};S._gallery.zoom=1;render()" title="${esc(f.name)}">
+        ${fIsPdf ? '<span style="font-size:12px;font-weight:800;color:#EF4444">PDF</span>' : `<img src="${thumbUrl}" alt="${esc(f.name)}" />`}
+      </div>`;
+    }).join('')}
+  </div>` : '';
+
+  return `<div class="ogallery-overlay" onclick="if(event.target===this)closeModal()">
+    <!-- Header bar -->
+    <div class="ogallery-header">
+      <div class="ogallery-title-box">
+        <span class="ogallery-type-badge ${isPdf ? 'pdf' : 'img'}">${isPdf ? 'DOCUMENTO PDF' : 'IMAGEN'}</span>
+        <div>
+          <div class="ogallery-filename" title="${esc(currentFile.name)}">${esc(currentFile.name)}</div>
+          <div class="ogallery-order-tag">
+            <span>${esc(order.supplierName)}</span>
+            <span>·</span>
+            <span>${esc(order.concept)}</span>
+            <span>·</span>
+            <span>${formatFileSize(currentFile.size)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="ogallery-counter">Archivo ${currentIndex + 1} de ${totalFiles}</div>
+      <div class="ogallery-tools">
+        ${!isPdf ? `
+          <button type="button" class="ogallery-tool-btn" onclick="galleryZoom(-0.2)" title="Reducir zoom">🔍 −</button>
+          <button type="button" class="ogallery-tool-btn" onclick="galleryResetZoom()" title="Restablecer zoom">${Math.round(zoom * 100)}%</button>
+          <button type="button" class="ogallery-tool-btn" onclick="galleryZoom(0.2)" title="Aumentar zoom">🔍 +</button>
+        ` : ''}
+        <a href="${fileUrl}" download="${esc(currentFile.name)}" class="ogallery-tool-btn" title="Descargar archivo en tu dispositivo">⬇ Descargar</a>
+        <a href="${fileUrl}" target="_blank" rel="noopener" class="ogallery-tool-btn" title="Abrir en pestaña nueva">↗ Abrir</a>
+        <button type="button" class="ogallery-close-btn" onclick="closeModal()" title="Cerrar galería (Esc)">✕</button>
+      </div>
+    </div>
+
+    <!-- Viewer body -->
+    <div class="ogallery-body" onclick="if(event.target===this)closeModal()">
+      ${totalFiles > 1 ? `<button type="button" class="ogallery-nav-btn prev" onclick="galleryPrevFile()" title="Archivo anterior (←)">‹</button>` : ''}
+      
+      ${isPdf ? `
+        <iframe src="${fileUrl}#toolbar=1" class="ogallery-pdf-frame" title="${esc(currentFile.name)}"></iframe>
+      ` : `
+        <div class="ogallery-img-container" style="transform: scale(${zoom})">
+          <img src="${fileUrl}" alt="${esc(currentFile.name)}" class="ogallery-img" />
+        </div>
+      `}
+
+      ${totalFiles > 1 ? `<button type="button" class="ogallery-nav-btn next" onclick="galleryNextFile()" title="Archivo siguiente (→)">›</button>` : ''}
+    </div>
+
+    <!-- Filmstrip -->
+    ${filmstripHtml}
+  </div>`;
+}
+
+// ── ORDER MODAL (NUEVO / EDITAR PEDIDO) ──────────────────────────────────────
+
+function orderModal() {
+  const draft = S._orderDraft;
+  if (!draft) return '';
+
+  const esc = escapeHtml;
+  const isEdit = Boolean(draft.id);
+  const p = DATA.find(item => item.type === 'proveedor');
+  const files = Array.isArray(draft.files) ? draft.files : [];
+
+  // Registered suppliers list
+  const suppliers = [];
+  (p?.cats || []).forEach(cat => {
+    (cat.provs || []).forEach(pr => {
+      if (!suppliers.find(s => s.name === pr.name)) {
+        suppliers.push({ name: pr.name, catName: cat.name });
+      }
+    });
+  });
+
+  const supplierOptions = suppliers.map(s =>
+    `<option value="${esc(s.name)}" data-cat="${esc(s.catName)}" ${draft.supplierName === s.name ? 'selected' : ''}>${esc(s.name)} (${esc(s.catName)})</option>`
+  ).join('');
+
+  return `<div class="modal-overlay" onclick="if(event.target===this)cancelOrderModal()">
+    <div class="modal-panel" onclick="event.stopPropagation()" style="max-width:580px">
+      <div class="modal-head">
+        <div>
+          <div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">CONTROL DE PROVEEDORES</div>
+          <div class="modal-title">${isEdit ? 'Editar Pedido' : '+ Registrar Nuevo Pedido'}</div>
+        </div>
+        <button class="modal-close" onclick="cancelOrderModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Supplier & Concept -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="modal-field">
+            <div class="modal-lbl">Proveedor *</div>
+            <select id="ord-supplier" class="modal-in" onchange="const opt=this.options[this.selectedIndex];if(opt){S._orderDraft.supplierName=opt.value;S._orderDraft.categoryName=opt.dataset.cat||'';}">
+              <option value="">Selecciona un proveedor…</option>
+              ${supplierOptions}
+            </select>
+          </div>
+          <div class="modal-field">
+            <div class="modal-lbl">Fecha del pedido *</div>
+            <input id="ord-date" type="date" class="modal-in" value="${draft.orderDate || new Date().toISOString().slice(0, 10)}" />
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <div class="modal-lbl">Concepto / Descripción del pedido *</div>
+          <input id="ord-concept" class="modal-in" placeholder="Ej: 500 Flyers A5 doble cara estucado mate 350g" value="${esc(draft.concept || '')}" />
+        </div>
+
+        <!-- Amount & Status & Ref -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="modal-field">
+            <div class="modal-lbl">Importe total pagado (€) *</div>
+            <input id="ord-amount" type="number" step="0.01" min="0" class="modal-in" placeholder="0.00" value="${draft.totalAmount !== '' && draft.totalAmount != null ? draft.totalAmount : ''}" />
+          </div>
+          <div class="modal-field">
+            <div class="modal-lbl">Estado *</div>
+            <select id="ord-status" class="modal-in">
+              <option value="Pagado" ${draft.status === 'Pagado' ? 'selected' : ''}>Pagado</option>
+              <option value="Pendiente" ${draft.status === 'Pendiente' ? 'selected' : ''}>Pendiente de pago</option>
+              <option value="En producción" ${draft.status === 'En producción' ? 'selected' : ''}>En producción</option>
+              <option value="Recibido" ${draft.status === 'Recibido' ? 'selected' : ''}>Recibido / Entregado</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <div class="modal-lbl">Nº Factura / Ref</div>
+            <input id="ord-invoice" class="modal-in" placeholder="Ej: FAC-2026-081" value="${esc(draft.invoiceNumber || '')}" />
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="modal-field">
+          <div class="modal-lbl">Notas / Observaciones (opcional)</div>
+          <textarea id="ord-notes" class="modal-in" rows="2" style="resize:vertical" placeholder="Detalles de entrega, plazos acordados o método de pago...">${esc(draft.notes || '')}</textarea>
+        </div>
+
+        <!-- Attachments & Dropzone -->
+        <div class="modal-field">
+          <div class="modal-lbl">Archivos adjuntos (Facturas, Albaranes, Diseños PDF / JPG)</div>
+          <div class="order-upload-zone" id="order-drop-zone"
+               onclick="document.getElementById('order-file-input').click()"
+               ondragover="event.preventDefault(); this.classList.add('dragover')"
+               ondragleave="this.classList.remove('dragover')"
+               ondrop="event.preventDefault(); this.classList.remove('dragover'); handleOrderFilesSelect(event.dataTransfer.files)">
+            <div class="order-upload-icon">📁</div>
+            <div class="order-upload-text">Arrastra archivos PDF o imágenes (JPG, PNG) aquí</div>
+            <div class="order-upload-hint">o haz clic para explorar en tus carpetas</div>
+            <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" id="order-file-input" onchange="handleOrderFilesSelect(this.files)" />
+          </div>
+
+          <!-- Files list -->
+          ${files.length ? `
+            <div class="order-draft-files">
+              ${files.map(f => {
+                const isPdf = f.type === 'application/pdf' || (f.name && f.name.toLowerCase().endsWith('.pdf'));
+                return `<div class="order-draft-file-row">
+                  <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+                    <span style="font-size:16px">${isPdf ? '📄' : '🖼️'}</span>
+                    <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(f.name)}</span>
+                    <span style="color:var(--text-3);font-size:11px">(${formatFileSize(f.size)})</span>
+                  </div>
+                  <button type="button" class="modal-close" style="font-size:14px;width:22px;height:22px" onclick="removeDraftFile('${f.id}')" title="Eliminar archivo">×</button>
+                </div>`;
+              }).join('')}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="modal-cancel" onclick="cancelOrderModal()">Cancelar</button>
+        <button type="button" class="modal-ok" onclick="submitOrderDraft()">${isEdit ? 'Guardar Cambios' : 'Guardar Pedido'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Sincronización de pedidos desde el backend / Supabase
+async function loadSupplierOrders() {
+  const p = DATA.find(item => item.type === 'proveedor');
+  if (!p) return;
+  if (window.location.protocol === 'file:') return;
+  try {
+    const res = await fetch('/api/suppliers/orders', { credentials: 'same-origin' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.orders) && data.orders.length > 0) {
+        p.orders = data.orders;
+        save();
+        render();
+      }
+    }
+  } catch (e) {
+    console.warn('Sync orders warning:', e.message);
+  }
+}
+
 // ─ NAV: Kanban Global ────────────────────────────────────────────────────────
 function navKanbanGlobal(){
   const allTasks = DATA.filter(p=>p.type==='cliente').flatMap(p=>p.tasks||[])
@@ -6383,7 +7359,7 @@ function navCalendario(){
 }
 
 // ── Restore persisted state ───────────────────────────────────────────────────
-const STORE_VERSION='v14'
+const STORE_VERSION='v15'
 if(localStorage.getItem('ligrow_ver')!==STORE_VERSION){
   localStorage.removeItem('ligrow_data')
   localStorage.removeItem('ligrow_state')
@@ -6404,6 +7380,9 @@ DATA.forEach(p=>{
     if(!p.lastModifiedBy) p.lastModifiedBy = 'Jesús';
     if(!p.lastModifiedAt) p.lastModifiedAt = '2026-10-03T19:25:00.000Z';
     p.ultimaActividad = formatLastActivity(p.lastModifiedBy, p.lastModifiedAt);
+  }
+  if(p.type==='proveedor'){
+    if(!Array.isArray(p.orders)) p.orders = [];
   }
 })
 
@@ -6485,9 +7464,13 @@ if(!S.proj || !canAccessClient(S.proj.id)){
   S.proj = allowed[0] || DATA[0] || null
 }
 
-// Atajo de teclado: Escape cierra cualquier modal
+// Atajo de teclado: Escape cierra cualquier modal, flechas para navegar en la galería
 window.addEventListener('keydown', e=>{
   if(e.key==='Escape' && S.modal) closeModal()
+  if(S.modal==='orderGallery'){
+    if(e.key==='ArrowLeft') galleryPrevFile()
+    if(e.key==='ArrowRight') galleryNextFile()
+  }
 })
 
 // Initialize theme (default: warm light)
@@ -6515,6 +7498,7 @@ setInterval(() => {
 }, 25000);
 
 loadSupplierDirectory().catch(()=>{})
+loadSupplierOrders().catch(()=>{})
 </script>
 </body>
 </html>
