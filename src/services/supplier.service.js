@@ -392,6 +392,140 @@ async function removeOrder(orderId) {
   await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
 }
 
+// ── Productos / catálogo de proveedores ──────────────────────────────────────
+const PRODUCT_FALLBACK = [];
+let HAS_MODIFIED_PRODUCTS = false;
+
+function mapProduct(row) {
+  return {
+    id: row.id,
+    supplierId: row.supplier_id,
+    name: row.name || '',
+    reference: row.reference || '',
+    costPrice: Number(row.cost_price != null ? row.cost_price : 0),
+    salePrice: Number(row.sale_price != null ? row.sale_price : 0),
+    leadTime: row.lead_time || '',
+    productUrl: row.product_url || '',
+    notes: row.notes || '',
+    variants: Array.isArray(row.variants) ? row.variants : [],
+    priceHistory: Array.isArray(row.price_history) ? row.price_history : [],
+    updatedAt: row.updated_at || new Date().toISOString(),
+    createdAt: row.created_at || new Date().toISOString(),
+    position: Number(row.position || 0)
+  };
+}
+
+function productPayload(input) {
+  return {
+    name: cleanText(input?.name, 300),
+    reference: cleanText(input?.reference, 120),
+    cost_price: Number(input?.costPrice != null ? input.costPrice : 0),
+    sale_price: Number(input?.salePrice != null ? input.salePrice : 0),
+    lead_time: cleanText(input?.leadTime, 180),
+    product_url: cleanText(input?.productUrl, 500),
+    notes: cleanText(input?.notes, 2000),
+    variants: Array.isArray(input?.variants) ? input.variants.map(v => ({
+      qty: cleanText(v?.qty, 120),
+      costPrice: Number(v?.costPrice != null ? v.costPrice : 0),
+      salePrice: Number(v?.salePrice != null ? v.salePrice : 0)
+    })) : [],
+    updated_at: new Date().toISOString()
+  };
+}
+
+async function listProductsBySupplier(supplierId) {
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    try {
+      const { data, error } = await supabase
+        .from('supplier_products')
+        .select('*')
+        .eq('supplier_id', supplierId)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (!error && Array.isArray(data)) {
+        return data.map(mapProduct);
+      }
+    } catch (e) {
+      console.warn('[supplier.service] listProductsBySupplier warning:', e.message);
+    }
+  }
+  return PRODUCT_FALLBACK.filter(p => p.supplier_id === supplierId).map(mapProduct);
+}
+
+async function createProduct(supplierId, input) {
+  HAS_MODIFIED_PRODUCTS = true;
+  if (!cleanText(input?.name, 300)) throw new Error('El nombre del producto es obligatorio.');
+
+  const row = {
+    id: uuidv4(),
+    supplier_id: supplierId,
+    ...productPayload(input),
+    price_history: [],
+    created_at: new Date().toISOString(),
+    position: 0
+  };
+
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    try {
+      const { data, error } = await supabase.from('supplier_products').insert(row).select().single();
+      if (!error && data) {
+        PRODUCT_FALLBACK.push(row);
+        return mapProduct(data);
+      }
+    } catch (e) {
+      console.warn('[supplier.service] createProduct warning:', e.message);
+    }
+  }
+
+  PRODUCT_FALLBACK.push(row);
+  return mapProduct(row);
+}
+
+async function updateProduct(productId, input) {
+  HAS_MODIFIED_PRODUCTS = true;
+  const updateData = productPayload(input);
+
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    try {
+      const { data, error } = await supabase
+        .from('supplier_products')
+        .update(updateData)
+        .eq('id', productId)
+        .select()
+        .single();
+      if (!error && data) {
+        const idx = PRODUCT_FALLBACK.findIndex(p => p.id === productId);
+        if (idx !== -1) PRODUCT_FALLBACK[idx] = { ...PRODUCT_FALLBACK[idx], ...updateData };
+        return mapProduct(data);
+      }
+    } catch (e) {
+      console.warn('[supplier.service] updateProduct warning:', e.message);
+    }
+  }
+
+  const idx = PRODUCT_FALLBACK.findIndex(p => p.id === productId);
+  if (idx !== -1) {
+    PRODUCT_FALLBACK[idx] = { ...PRODUCT_FALLBACK[idx], ...updateData };
+    return mapProduct(PRODUCT_FALLBACK[idx]);
+  }
+  const fallbackRow = { id: productId, supplier_id: input?.supplierId || '', ...updateData, price_history: [] };
+  PRODUCT_FALLBACK.push(fallbackRow);
+  return mapProduct(fallbackRow);
+}
+
+async function removeProduct(productId) {
+  HAS_MODIFIED_PRODUCTS = true;
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    try {
+      await supabase.from('supplier_products').delete().eq('id', productId);
+    } catch (e) {
+      console.warn('[supplier.service] removeProduct warning:', e.message);
+    }
+  }
+  const idx = PRODUCT_FALLBACK.findIndex(p => p.id === productId);
+  if (idx !== -1) PRODUCT_FALLBACK.splice(idx, 1);
+}
+
 module.exports = {
   listSupplierDirectory,
   createCategory,
@@ -402,5 +536,9 @@ module.exports = {
   listOrders,
   createOrder,
   updateOrder,
-  removeOrder
+  removeOrder,
+  listProductsBySupplier,
+  createProduct,
+  updateProduct,
+  removeProduct
 };

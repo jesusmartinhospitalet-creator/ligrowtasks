@@ -94,4 +94,41 @@ router.delete('/orders/:id', async (req, res, next) => {
   }
 });
 
+// ── Productos / catálogo por proveedor ─────────────────────────────────────
+router.get('/:id/products', async (req, res, next) => {
+  try {
+    const products = await supplierService.listProductsBySupplier(req.params.id);
+    res.json({ products });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/:id/products', async (req, res, next) => {
+  try {
+    const product = await supplierService.createProduct(req.params.id, req.body);
+    res.status(201).json({ product });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/products/:id', async (req, res, next) => {
+  try {
+    const product = await supplierService.updateProduct(req.params.id, req.body);
+    res.json({ product });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/products/:id', async (req, res, next) => {
+  try {
+    await supplierService.removeProduct(req.params.id);
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

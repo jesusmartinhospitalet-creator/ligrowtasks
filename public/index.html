@@ -1250,6 +1250,82 @@ body{
 .cat-item:hover .cat-delete{opacity:1}
 .cat-delete:hover{background:#FDECEC;color:#C53030}
 
+/* ── Proveedores v2 ─────────────────────────────────────────────────────────── */
+/* Stats bar */
+.prov-stats{display:flex;gap:10px;margin-bottom:14px}
+.prov-stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;min-width:0}
+.prov-stat-val{font-size:21px;font-weight:800;color:var(--text-1);font-family:'DM Sans',sans-serif;line-height:1}
+.prov-stat-val.accent{color:var(--accent)}
+.prov-stat-val.warn{color:#D97706}
+.prov-stat-lbl{font-size:10px;color:var(--text-3);margin-top:3px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Compact provider cards */
+.prov-cards-v2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcc{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px 16px;transition:border-color .15s;display:flex;flex-direction:column;gap:0}
+.pcc:hover{border-color:var(--accent)}
+.pcc-name{font-size:13px;font-weight:700;color:var(--text-1);letter-spacing:.2px}
+.pcc-meta{font-size:11px;color:var(--text-3);margin-top:2px}
+.pcc-info{display:flex;gap:10px;flex-wrap:wrap;margin:9px 0 11px;font-size:11.5px;color:var(--text-2)}
+.pcc-info-item{display:flex;align-items:center;gap:3px}
+.pcc-actions{display:flex;gap:6px;margin-top:auto}
+.pcc-btn{border:1px solid var(--border);border-radius:6px;padding:5px 10px;background:transparent;color:var(--text-2);font:600 11px inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.pcc-btn:hover{border-color:var(--accent);color:var(--accent-text)}
+.pcc-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pcc-btn.primary:hover{opacity:.9}
+.pcc-btn.del:hover{border-color:#E45C57;color:#C53030}
+
+/* Search bar in supplier list */
+.prov-search-bar{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.prov-search{flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 11px;font-size:12.5px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none}
+.prov-search:focus{border-color:var(--accent)}
+
+/* Catalog view header */
+.prov-catalog-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.prov-catalog-back{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-2);font:600 12px inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.prov-catalog-back:hover{border-color:var(--accent);color:var(--accent-text)}
+.prov-catalog-title-wrap{flex:1;min-width:0}
+.prov-catalog-title{font-size:14px;font-weight:700;color:var(--text-1);font-family:'DM Sans',sans-serif}
+.prov-catalog-sub{font-size:11px;color:var(--text-3)}
+.prov-cat-search{border:1px solid var(--border);border-radius:7px;padding:6px 11px;font-size:12px;font-family:inherit;background:var(--surface-2);color:var(--text-1);outline:none;width:180px}
+.prov-cat-search:focus{border-color:var(--accent)}
+
+/* Catalog table */
+.cat-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.cat-table{width:100%;border-collapse:collapse}
+.cat-table th{text-align:left;padding:8px 14px;font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+.cat-table td{padding:10px 14px;border-bottom:1px solid var(--border-2);font-size:12.5px;color:var(--text-1);vertical-align:middle}
+.cat-table tr:last-child td{border-bottom:none}
+.cat-table tr:hover td{background:var(--surface-2);transition:background .1s}
+.cat-prod-name{font-weight:600;color:var(--text-1)}
+.cat-prod-ref{font-size:10.5px;color:var(--text-3);margin-top:1px}
+.cat-price{font-weight:700;font-variant-numeric:tabular-nums}
+.cat-margin{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.cat-margin-green{background:#DCFCE7;color:#15803D}
+.cat-margin-orange{background:#FEF3C7;color:#B45309}
+.cat-margin-red{background:#FEE2E2;color:#DC2626}
+.cat-margin-grey{background:var(--surface-2);color:var(--text-3)}
+.cat-table-actions{display:flex;gap:5px}
+.cat-table-btn{border:1px solid var(--border);border-radius:5px;padding:3px 8px;background:transparent;color:var(--text-2);font:600 10.5px inherit;cursor:pointer;white-space:nowrap;transition:all .15s}
+.cat-table-btn:hover{border-color:var(--accent);color:var(--accent-text)}
+.cat-table-btn.del:hover{border-color:#E45C57;color:#C53030}
+.cat-updated{font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.cat-empty{padding:40px 20px;text-align:center;color:var(--text-3);font-size:13px}
+.cat-variants-note{font-size:10.5px;color:var(--text-3);font-style:italic}
+
+/* Legacy rates section in catalog */
+.cat-legacy-section{margin-top:14px}
+.cat-legacy-head{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;padding:0 2px}
+
+/* Product modal margin live calc */
+.prod-margin-calc{background:var(--surface-2);border:1px solid var(--border-2);border-radius:8px;padding:10px 14px;display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+.pmc-item{text-align:center}
+.pmc-val{font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;color:var(--text-1);font-variant-numeric:tabular-nums}
+.pmc-lbl{font-size:9.5px;color:var(--text-3);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+
+/* Variant rows in product modal */
+.variant-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,90px) minmax(0,90px) 28px;gap:8px;align-items:center;margin-bottom:6px}
+.variant-grid-head{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-3)}
+
 
 /* ── Kanban card extras ──────────────────────────────────────────────────── */
 .kc-extras{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
@@ -2414,6 +2490,12 @@ let S = {
   proj:   DATA[0],
   view:   'resumen',
   provCat: null,
+  provView: 'suppliers',          // 'suppliers' | 'catalog'
+  provCatalogSupplierId: null,     // id del proveedor cuyo catálogo está abierto
+  provCatalogCatId: null,          // id de la categoría del proveedor en catálogo
+  provProductSearch: '',           // búsqueda dentro del catálogo
+  provGlobalSearch: '',            // búsqueda global en la lista de proveedores
+  provProducts: {},                // { supplierId: [...products] } - caché
   open:   {},
   addingCat: false,
   modal: null,  // null | 'newTask' | 'config' | 'editClient' | 'usersAdmin'
@@ -2565,13 +2647,17 @@ function selectProj(id){
   S.navView=null;
   S.view=defaultView(S.proj);
   S.provCat=null;
+  S.provView='suppliers';
+  S.provCatalogSupplierId=null;
+  S.provGlobalSearch='';
+  S.provProductSearch='';
   S.open={};
   S.addingCat=false;
   render();
   if(S.proj?.id) syncLoadCurrentProject(S.proj.id);
 }
 function setView(v){ S.view=v; render() }
-function setProvCat(id){ S.provCat=id; S.open={}; render() }
+function setProvCat(id){ S.provCat=id; S.open={}; S.provView='suppliers'; S.provCatalogSupplierId=null; S.provGlobalSearch=''; render() }
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
 
 // ── Recordatorios ────────────────────────────────────────────────────────
@@ -3653,6 +3739,8 @@ async function deleteProviderCategory(categoryId,event){
   try{
     await supplierRequest('/categories/'+encodeURIComponent(category.id),{method:'DELETE'})
     S.provCat=null
+    S.provView='suppliers'
+    S.provCatalogSupplierId=null
     await loadSupplierDirectory()
   }catch(error){
     alert('No se ha podido eliminar la categoría. '+error.message)
@@ -3858,6 +3946,256 @@ document.addEventListener('click',event=>{
   event.stopPropagation()
   openNewProvider(button.dataset.providerProject,button.dataset.providerCategory)
 })
+
+// ── Productos / Catálogo de proveedores ─────────────────────────────────────
+function calcMargin(cost,sale){
+  if(!sale||sale<=0)return null
+  return Math.round(((sale-cost)/sale)*1000)/10
+}
+
+function marginBadge(margin){
+  if(margin===null||margin===undefined)return'<span class="cat-margin cat-margin-grey">Sin precio</span>'
+  if(margin>=40)return'<span class="cat-margin cat-margin-green">🟢 '+margin.toFixed(1)+'%</span>'
+  if(margin>=20)return'<span class="cat-margin cat-margin-orange">🟠 '+margin.toFixed(1)+'%</span>'
+  return'<span class="cat-margin cat-margin-red">🔴 '+margin.toFixed(1)+'%</span>'
+}
+
+function fmtPrice(val){
+  if(!val&&val!==0)return'—'
+  return Number(val).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'
+}
+
+function fmtDate(iso){
+  if(!iso)return'—'
+  try{
+    const d=new Date(iso)
+    return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'})
+  }catch(e){return'—'}
+}
+
+async function setProvView(view,supplierId,catId){
+  S.provView=view
+  if(view==='catalog'){
+    S.provCatalogSupplierId=supplierId
+    S.provCatalogCatId=catId||null
+    S.provProductSearch=''
+    if(!S.provProducts[supplierId]){
+      render()
+      await loadProviderCatalog(supplierId)
+    }else{render()}
+  }else{
+    S.provCatalogSupplierId=null
+    S.provCatalogCatId=null
+    render()
+  }
+}
+
+async function loadProviderCatalog(supplierId){
+  try{
+    const result=await supplierRequest('/'+encodeURIComponent(supplierId)+'/products')
+    S.provProducts[supplierId]=result.products||[]
+    render()
+  }catch(error){
+    S.provProducts[supplierId]=[]
+    render()
+  }
+}
+
+function setProvProductSearch(val){
+  S.provProductSearch=val
+  render()
+}
+
+function setProvGlobalSearch(val){
+  S.provGlobalSearch=val
+  render()
+}
+
+function updateProvMarginCalc(){
+  const cost=parseFloat(document.getElementById('pp-cost')?.value||0)||0
+  const sale=parseFloat(document.getElementById('pp-sale')?.value||0)||0
+  const margin=calcMargin(cost,sale)
+  const benefit=sale-cost
+  const el=document.getElementById('pp-margin-calc')
+  if(!el)return
+  el.innerHTML=
+    '<div class="pmc-item"><div class="pmc-val">'+(benefit>=0?'+':'')+fmtPrice(benefit)+'</div><div class="pmc-lbl">Beneficio bruto</div></div>'+
+    '<div class="pmc-item"><div class="pmc-val" style="color:'+(margin===null?'var(--text-3)':margin>=40?'#15803D':margin>=20?'#B45309':'#DC2626')+'">'+(margin!==null?margin.toFixed(1)+'%':'—')+'</div><div class="pmc-lbl">Margen bruto</div></div>'+
+    '<div class="pmc-item"><div class="pmc-val">'+(cost>0&&sale>0?Math.round((benefit/cost)*100)+'%':'—')+'</div><div class="pmc-lbl">Recargo s/coste</div></div>'
+}
+
+function openNewProduct(supplierId){
+  S.modal='newProduct'
+  S._productDraft={supplierId,id:null,name:'',reference:'',costPrice:'',salePrice:'',leadTime:'',productUrl:'',notes:'',variants:[]}
+  render()
+  setTimeout(()=>document.getElementById('pp-name')?.focus(),50)
+}
+
+function openEditProduct(supplierId,productId){
+  const products=S.provProducts[supplierId]||[]
+  const prod=products.find(p=>p.id===productId)
+  if(!prod)return
+  S.modal='newProduct'
+  S._productDraft={
+    supplierId,
+    id:productId,
+    name:prod.name||'',
+    reference:prod.reference||'',
+    costPrice:prod.costPrice||'',
+    salePrice:prod.salePrice||'',
+    leadTime:prod.leadTime||'',
+    productUrl:prod.productUrl||'',
+    notes:prod.notes||'',
+    variants:(prod.variants||[]).map(v=>({qty:v.qty||'',costPrice:v.costPrice||'',salePrice:v.salePrice||''}))
+  }
+  render()
+  setTimeout(()=>document.getElementById('pp-name')?.focus(),50)
+}
+
+function captureProductDraft(){
+  if(S.modal!=='newProduct')return
+  const val=id=>document.getElementById(id)?.value||''
+  const variants=Array.from(document.querySelectorAll('[data-product-variant-row]')).map(row=>({
+    qty:row.querySelector('[data-v="qty"]')?.value||'',
+    costPrice:parseFloat(row.querySelector('[data-v="cost"]')?.value)||0,
+    salePrice:parseFloat(row.querySelector('[data-v="sale"]')?.value)||0
+  }))
+  S._productDraft={
+    ...S._productDraft,
+    name:val('pp-name'),
+    reference:val('pp-ref'),
+    costPrice:parseFloat(val('pp-cost'))||0,
+    salePrice:parseFloat(val('pp-sale'))||0,
+    leadTime:val('pp-lead'),
+    productUrl:val('pp-url'),
+    notes:val('pp-notes'),
+    variants
+  }
+}
+
+function addProductVariant(){
+  captureProductDraft()
+  S._productDraft.variants.push({qty:'',costPrice:'',salePrice:''})
+  render()
+  setTimeout(()=>{
+    const rows=document.querySelectorAll('[data-product-variant-row]')
+    rows[rows.length-1]?.querySelector('[data-v="qty"]')?.focus()
+  },30)
+}
+
+function removeProductVariant(index){
+  captureProductDraft()
+  S._productDraft.variants.splice(index,1)
+  render()
+}
+
+function cancelProduct(){
+  S.modal=null
+  S._productDraft=null
+  render()
+}
+
+async function submitProduct(){
+  captureProductDraft()
+  const draft=S._productDraft||{}
+  if(!(draft.name||'').trim()){
+    alert('Introduce el nombre del producto.')
+    document.getElementById('pp-name')?.focus()
+    return
+  }
+  const payload={
+    name:draft.name.trim(),
+    reference:(draft.reference||'').trim(),
+    costPrice:Number(draft.costPrice)||0,
+    salePrice:Number(draft.salePrice)||0,
+    leadTime:(draft.leadTime||'').trim(),
+    productUrl:(draft.productUrl||'').trim(),
+    notes:(draft.notes||'').trim(),
+    variants:draft.variants||[]
+  }
+  try{
+    let result
+    if(draft.id){
+      result=await supplierRequest('/products/'+encodeURIComponent(draft.id),{method:'PUT',body:JSON.stringify(payload)})
+      const idx=(S.provProducts[draft.supplierId]||[]).findIndex(p=>p.id===draft.id)
+      if(idx!==-1)S.provProducts[draft.supplierId][idx]={...S.provProducts[draft.supplierId][idx],...result.product}
+      else{S.provProducts[draft.supplierId]=S.provProducts[draft.supplierId]||[];S.provProducts[draft.supplierId].push(result.product)}
+    }else{
+      result=await supplierRequest('/'+encodeURIComponent(draft.supplierId)+'/products',{method:'POST',body:JSON.stringify(payload)})
+      S.provProducts[draft.supplierId]=S.provProducts[draft.supplierId]||[]
+      S.provProducts[draft.supplierId].push(result.product)
+    }
+    S.modal=null
+    S._productDraft=null
+    render()
+  }catch(error){
+    alert('No se ha podido guardar el producto. '+error.message)
+  }
+}
+
+async function deleteProduct(supplierId,productId,event){
+  event?.preventDefault()
+  event?.stopPropagation()
+  const products=S.provProducts[supplierId]||[]
+  const prod=products.find(p=>p.id===productId)
+  if(!prod||!confirm('¿Eliminar el producto "'+prod.name+'"?'))return
+  try{
+    await supplierRequest('/products/'+encodeURIComponent(productId),{method:'DELETE'})
+    S.provProducts[supplierId]=(S.provProducts[supplierId]||[]).filter(p=>p.id!==productId)
+    render()
+  }catch(error){
+    alert('No se ha podido eliminar el producto. '+error.message)
+  }
+}
+
+function newProductModal(){
+  const draft=S._productDraft||{}
+  const esc=escapeProviderHtml
+  const cost=parseFloat(draft.costPrice)||0
+  const sale=parseFloat(draft.salePrice)||0
+  const margin=calcMargin(cost,sale)
+  const benefit=sale-cost
+
+  const marginColor=margin===null?'var(--text-3)':margin>=40?'#15803D':margin>=20?'#B45309':'#DC2626'
+  const marginCalcHtml=
+    '<div class="prod-margin-calc" id="pp-margin-calc">'+
+    '<div class="pmc-item"><div class="pmc-val">'+(benefit>=0?'+':'')+fmtPrice(benefit)+'</div><div class="pmc-lbl">Beneficio bruto</div></div>'+
+    '<div class="pmc-item"><div class="pmc-val" style="color:'+marginColor+'">'+(margin!==null?margin.toFixed(1)+'%':'—')+'</div><div class="pmc-lbl">Margen bruto</div></div>'+
+    '<div class="pmc-item"><div class="pmc-val">'+(cost>0&&sale>0?Math.round((benefit/cost)*100)+'%':'—')+'</div><div class="pmc-lbl">Recargo s/coste</div></div>'+
+    '</div>'
+
+  const variants=(draft.variants||[]).map((v,i)=>
+    '<div data-product-variant-row style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,90px) minmax(0,90px) 28px;gap:8px;margin-bottom:6px;align-items:center">'+
+      '<input class="modal-in" data-v="qty" placeholder="Ej. 500 uds." value="'+esc(v.qty||'')+'">'+
+      '<input class="modal-in" data-v="cost" type="number" step="0.01" min="0" placeholder="Coste" value="'+esc(v.costPrice||'')+'">'+
+      '<input class="modal-in" data-v="sale" type="number" step="0.01" min="0" placeholder="PVP" value="'+esc(v.salePrice||'')+'">'+
+      '<button type="button" class="modal-cancel" style="padding:8px 0" onclick="removeProductVariant('+i+')" title="Eliminar variante">×</button>'+
+    '</div>'
+  ).join('')
+
+  return '<div class="modal-overlay" onclick="if(event.target===this)cancelProduct()">'+
+    '<div class="modal-panel" style="max-width:640px">'+
+      '<div class="modal-head"><div><div style="font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-text);margin-bottom:3px">CATÁLOGO DE PRODUCTOS</div><div class="modal-title">'+(draft.id?'Editar producto':'+ Nuevo producto')+'</div></div><button class="modal-close" onclick="cancelProduct()">×</button></div>'+
+      '<div class="modal-body">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
+          '<div class="modal-field" style="grid-column:1/-1"><div class="modal-lbl">Nombre del producto *</div><input id="pp-name" class="modal-in" placeholder="Ej. Roll-up 85×200 cm" value="'+esc(draft.name||'')+'"></div>'+
+          '<div class="modal-field"><div class="modal-lbl">Referencia</div><input id="pp-ref" class="modal-in" placeholder="Ej. RW-85200" value="'+esc(draft.reference||'')+'"></div>'+
+          '<div class="modal-field"><div class="modal-lbl">Plazo habitual</div><input id="pp-lead" class="modal-in" placeholder="Ej. 5 días laborables" value="'+esc(draft.leadTime||'')+'"></div>'+
+          '<div class="modal-field"><div class="modal-lbl">Coste (€ sin IVA)</div><input id="pp-cost" type="number" step="0.01" min="0" class="modal-in" placeholder="0.00" value="'+esc(draft.costPrice||'')+'" oninput="updateProvMarginCalc()"></div>'+
+          '<div class="modal-field"><div class="modal-lbl">PVP cliente (€ sin IVA)</div><input id="pp-sale" type="number" step="0.01" min="0" class="modal-in" placeholder="0.00" value="'+esc(draft.salePrice||'')+'" oninput="updateProvMarginCalc()"></div>'+
+        '</div>'+
+        marginCalcHtml+
+        '<div class="modal-field" style="margin-top:14px"><div class="modal-lbl">URL del producto</div><input id="pp-url" class="modal-in" placeholder="https://..." value="'+esc(draft.productUrl||'')+'"></div>'+
+        '<div class="modal-field"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div class="modal-lbl">Variantes por cantidad (opcional)</div><button type="button" class="modal-cancel" style="padding:5px 9px" onclick="addProductVariant()">+ Añadir variante</button></div>'+
+          (draft.variants?.length?
+            '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,90px) minmax(0,90px) 28px;gap:8px;margin:7px 0 4px;font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-3)"><span>Cantidad</span><span>Coste (€)</span><span>PVP (€)</span><span></span></div>'+variants:
+            '<div style="font-size:11.5px;color:var(--text-3);margin-top:7px">Útil para impresión: define diferentes precios según número de unidades.</div>'
+          )+'</div>'+
+        '<div class="modal-field" style="margin-bottom:0"><div class="modal-lbl">Notas</div><textarea id="pp-notes" class="modal-in" rows="3" placeholder="Observaciones, materiales, acabados…">'+esc(draft.notes||'')+'</textarea></div>'+
+      '</div>'+
+      '<div class="modal-foot"><button class="modal-cancel" onclick="cancelProduct()">Cancelar</button><button class="modal-ok" onclick="submitProduct()">'+(draft.id?'Guardar cambios':'Guardar producto')+'</button></div>'+
+    '</div></div>'
+}
 
 // ── Persistence ──────────────────────────────────────────────────────────────
 // ── Persistence & Cloud Synchronization ─────────────────────────────────────
@@ -4306,6 +4644,7 @@ function render(){
   else if(S.modal==='docViewer') ov.innerHTML=docViewerModal()
   else if(S.modal==='newClient') ov.innerHTML=newClientModal()
   else if(S.modal==='newProvider') ov.innerHTML=newProviderModal()
+  else if(S.modal==='newProduct') ov.innerHTML=newProductModal()
   else if(S.modal==='config') ov.innerHTML=configModal()
   else if(S.modal==='editClient') ov.innerHTML=editClientModal()
   else if(S.modal==='taskDetail') ov.innerHTML=taskDetailModal()
@@ -6230,27 +6569,202 @@ function provContent(p){
   if(!S.provCat)S.provCat=cats[0]?.id||null
   const cat=cats.find(category=>category.id===S.provCat)||cats[0]
   const esc=escapeProviderHtml
-  const categoryList=cats.map(category=>
-    '<div class="cat-item '+(category.id===S.provCat?'on':'')+'" onclick="setProvCat(\''+esc(category.id)+'\')">'+
-      '<span class="cat-ico">'+esc(category.ico||'📁')+'</span><span class="cat-name">'+esc(category.name)+'</span><span class="cat-n">'+(category.provs||[]).length+'</span>'+
+
+  // Stats bar
+  const totalProvs=cats.reduce((acc,c)=>acc+(c.provs||[]).length,0)
+  const totalCachedProds=Object.values(S.provProducts).reduce((acc,arr)=>acc+(arr?.length||0),0)
+  const statsBar=
+    '<div class="prov-stats">'+
+    '<div class="prov-stat"><div class="prov-stat-val">'+totalProvs+'</div><div class="prov-stat-lbl">Proveedores activos</div></div>'+
+    '<div class="prov-stat"><div class="prov-stat-val'+(totalCachedProds>0?' accent':'')+'">'+totalCachedProds+'</div><div class="prov-stat-lbl">Productos en catálogo</div></div>'+
+    '<div class="prov-stat"><div class="prov-stat-val">'+(cat?.provs?.length||0)+'</div><div class="prov-stat-lbl">Proveedores en esta categoría</div></div>'+
+    '<div class="prov-stat"><div class="prov-stat-val">'+cats.length+'</div><div class="prov-stat-lbl">Categorías</div></div>'+
+    '</div>'
+
+  // Sidebar categories
+  const categoryList=cats.map(category=>{
+    const pCount=(category.provs||[]).length
+    const isActive=category.id===S.provCat
+    return '<div class="cat-item '+(isActive?'on':'')+'" onclick="setProvCat(\''+esc(category.id)+'\')">'+
+      '<span class="cat-ico">'+esc(category.ico||'📁')+'</span>'+
+      '<span class="cat-name">'+esc(category.name)+'</span>'+
+      '<span class="cat-n">'+pCount+'</span>'+
       '<button class="cat-delete" type="button" title="Eliminar categoría" onclick="deleteProviderCategory(\''+esc(category.id)+'\',event)">×</button>'+
     '</div>'
-  ).join('')
-  const cards=(cat?.provs||[]).map((provider,index)=>{
-    const key=String(provider.id||cat.id+'_'+index)
-    const open=!!S.open[key]
-    const note=provider.highlightNote?'<div class="prov-card-note">'+esc(provider.highlightNote)+'</div>':''
-    const fields=(provider.fields||[]).map(field=>'<div class="pf-row"><span class="pf-k">'+esc(field.k)+'</span><span class="pf-v">'+field.v+'</span></div>').join('')
-    const rates=provider.prices?.length?'<div class="price-head">Tarifas</div><table class="ptable"><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr></thead><tbody>'+
-      provider.prices.map(rate=>'<tr><td>'+esc(rate.prod||'')+'</td><td style="color:var(--text-3)">'+esc(rate.qty||'')+'</td><td class="price-val">'+esc(rate.price||'')+'</td></tr>').join('')+
-      '</tbody></table>':''
-    const products=provider.productList?'<div class="price-head">Productos / servicios</div><div class="prov-products">'+esc(provider.productList)+'</div>':''
-    const actions=provider.id?'<div class="prov-card-actions"><button class="prov-card-action" type="button" onclick="openEditProvider(\''+esc(p.id)+'\',\''+esc(cat.id)+'\',\''+esc(provider.id)+'\')">Editar</button><button class="prov-card-action delete" type="button" onclick="deleteProvider(\''+esc(p.id)+'\',\''+esc(cat.id)+'\',\''+esc(provider.id)+'\',event)">Eliminar</button></div>':''
-    return '<div class="prov-card"><div class="prov-card-h '+(open?'open':'')+'" onclick="toggleCard(\''+esc(key)+'\')"><div><div class="prov-card-name">'+esc(provider.name)+'</div><div class="prov-card-type">'+esc(provider.type||'Proveedor')+'</div>'+note+'</div><span class="chev '+(open?'open':'')+'">▼</span></div><div class="prov-card-body '+(open?'open':'')+'">'+fields+rates+products+actions+'</div></div>'
   }).join('')
-  return '<div class="prov-layout"><div class="prov-cats"><div class="cat-list-wrap">'+categoryList+
-    (S.addingCat?'<div class="cat-input-row"><input id="cat-input" class="cat-input" placeholder="Nombre categoría…" onkeydown="if(event.key===\'Enter\')confirmAddCat();if(event.key===\'Escape\')cancelAddCat()"/><button class="cat-input-ok" onclick="confirmAddCat()">OK</button></div>':'<button class="cat-add-btn" onclick="startAddCat()"><span style="font-size:15px;line-height:1">+</span> Nueva categoría</button>')+
-    '</div></div><div class="prov-content"><div class="prov-folder-bar"><span class="folder-ico">'+esc(cat?.ico||'📁')+'</span><div><div class="folder-title">'+esc(cat?.name||'Sin categorías')+'</div><div class="folder-sub">'+(cat?.provs?.length||0)+' proveedores</div></div><button class="add-btn" type="button" data-provider-project="'+esc(p.id)+'" data-provider-category="'+esc(cat?.id||'')+'">+ Añadir proveedor</button></div><div class="prov-cards">'+cards+'</div></div></div>'
+
+  const catSidebar=
+    '<div class="prov-cats"><div class="cat-list-wrap">'+categoryList+
+    (S.addingCat?
+      '<div class="cat-input-row"><input id="cat-input" class="cat-input" placeholder="Nombre categoría…" onkeydown="if(event.key===\'Enter\')confirmAddCat();if(event.key===\'Escape\')cancelAddCat()"/><button class="cat-input-ok" onclick="confirmAddCat()">OK</button></div>':
+      '<button class="cat-add-btn" onclick="startAddCat()"><span style="font-size:15px;line-height:1">+</span> Nueva categoría</button>'
+    )+'</div></div>'
+
+  // If in catalog view, show catalog
+  if(S.provView==='catalog'&&S.provCatalogSupplierId){
+    return '<div style="display:flex;flex-direction:column;height:100%">'+
+      statsBar+
+      '<div class="prov-layout" style="flex:1;min-height:0">'+
+        catSidebar+
+        '<div class="prov-content">'+provCatalogView(p,cat)+'</div>'+
+      '</div>'+
+    '</div>'
+  }
+
+  // Supplier cards view
+  const search=(S.provGlobalSearch||'').toLowerCase().trim()
+  const providers=(cat?.provs||[]).filter(prov=>!search||prov.name.toLowerCase().includes(search)||(prov.type||'').toLowerCase().includes(search))
+
+  const cards=providers.map(provider=>{
+    const products=S.provProducts[provider.id]||[]
+    const productCount=products.length
+    const webHtml=provider.website?
+      '<span class="pcc-info-item">🌐 <a href="'+esc(provider.website)+'" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">'+esc(provider.website.replace(/^https?:\/\/(www\.)?/,'').split('/')[0])+'</a></span>':'<span class="pcc-info-item" style="color:var(--text-3)">🌐 Sin web</span>'
+    const noteHtml=provider.highlightNote?'<div style="margin-top:6px"><span class="prov-card-note">'+esc(provider.highlightNote)+'</span></div>':''
+    const cachedProductCount=S.provProducts[provider.id]!=null?productCount:null
+
+    return '<div class="pcc">'+
+      '<div><div class="pcc-name">'+esc(provider.name)+'</div>'+
+      '<div class="pcc-meta">'+esc(cat?.name||'')+(provider.type&&provider.type!=='Proveedor'?' · '+esc(provider.type):'')+' · Proveedor activo</div>'+
+      '</div>'+
+      '<div class="pcc-info">'+
+        webHtml+
+        (provider.payment?'<span class="pcc-info-item">💳 '+esc(provider.payment)+'</span>':'')+
+        (provider.leadTime?'<span class="pcc-info-item">⏱ '+esc(provider.leadTime)+'</span>':'')+
+        '<span class="pcc-info-item">📦 '+(cachedProductCount!==null?cachedProductCount+' productos':'Ver catálogo')+'</span>'+
+      '</div>'+
+      noteHtml+
+      '<div class="pcc-actions" style="margin-top:10px">'+
+        '<button class="pcc-btn primary" onclick="setProvView(\'catalog\',\''+esc(provider.id)+'\',\''+esc(cat?.id||'')+'\')">Ver catálogo →</button>'+
+        (provider.id?'<button class="pcc-btn" onclick="openEditProvider(\''+esc(p.id)+'\',\''+esc(cat?.id||'')+'\',\''+esc(provider.id)+'\')">Editar</button>'+
+        '<button class="pcc-btn del" onclick="deleteProvider(\''+esc(p.id)+'\',\''+esc(cat?.id||'')+'\',\''+esc(provider.id)+'\',event)">Eliminar</button>':'')
+      +'</div>'+
+    '</div>'
+  }).join('')
+
+  const searchBar=
+    '<div class="prov-search-bar">'+
+      '<input class="prov-search" placeholder="🔍 Buscar proveedor en '+esc(cat?.name||'esta categoría')+'…" value="'+esc(S.provGlobalSearch||'')+'" oninput="setProvGlobalSearch(this.value)">'+
+      '<button class="add-btn" type="button" data-provider-project="'+esc(p.id)+'" data-provider-category="'+esc(cat?.id||'')+'">+ Añadir proveedor</button>'+
+    '</div>'
+
+  const emptyState=providers.length===0?
+    '<div style="padding:40px 20px;text-align:center;color:var(--text-3);font-size:13px">'+
+    (search?'No hay proveedores que coincidan con "'+esc(search)+'"':'No hay proveedores en esta categoría. Añade el primero.')+'</div>':''
+
+  return '<div style="display:flex;flex-direction:column;height:100%">'+
+    statsBar+
+    '<div class="prov-layout" style="flex:1;min-height:0">'+
+      catSidebar+
+      '<div class="prov-content">'+
+        searchBar+
+        '<div class="prov-cards-v2">'+cards+'</div>'+
+        emptyState+
+      '</div>'+
+    '</div>'+
+  '</div>'
+}
+
+function provCatalogView(p,currentCat){
+  const esc=escapeProviderHtml
+  const supplierId=S.provCatalogSupplierId
+  const catId=S.provCatalogCatId
+
+  // Find supplier across all categories
+  let supplier=null,cat=currentCat
+  const allCats=p.cats||[]
+  for(const c of allCats){
+    const found=(c.provs||[]).find(pv=>pv.id===supplierId)
+    if(found){supplier=found;cat=c;break}
+  }
+  if(!supplier)return '<div class="cat-empty">Proveedor no encontrado. <button class="pcc-btn" onclick="setProvView(\'suppliers\')">← Volver</button></div>'
+
+  const products=S.provProducts[supplierId]
+  const search=(S.provProductSearch||'').toLowerCase().trim()
+
+  // Header
+  const webHtml=supplier.website?'<a href="'+esc(supplier.website)+'" target="_blank" rel="noopener" style="color:var(--accent);font-size:11px;font-weight:600">'+esc(supplier.website.replace(/^https?:\/\/(www\.)?/,'').split('/')[0])+' ↗</a>':''
+
+  const header=
+    '<div class="prov-catalog-bar">'+
+      '<button class="prov-catalog-back" onclick="setProvView(\'suppliers\')">← Proveedores</button>'+
+      '<div class="prov-catalog-title-wrap">'+
+        '<div class="prov-catalog-title">'+esc(supplier.name)+'</div>'+
+        '<div class="prov-catalog-sub">'+esc(cat?.name||'')+(supplier.highlightNote?' · '+esc(supplier.highlightNote):'')+' '+(webHtml||'')+'</div>'+
+      '</div>'+
+      '<input class="prov-cat-search" placeholder="🔍 Buscar producto…" value="'+esc(S.provProductSearch||'')+'" oninput="setProvProductSearch(this.value)">'+
+      '<button class="add-btn" type="button" onclick="openNewProduct(\''+esc(supplierId)+'\')">+ Añadir producto</button>'+
+    '</div>'
+
+  // Loading state
+  if(products===undefined){
+    return header+'<div class="cat-empty" style="font-size:13px;color:var(--text-3)">Cargando catálogo…</div>'
+  }
+
+  // Filter products
+  const filtered=products.filter(prod=>!search||prod.name.toLowerCase().includes(search)||(prod.reference||'').toLowerCase().includes(search))
+
+  // Products table
+  let tableHtml=''
+  if(filtered.length===0){
+    tableHtml='<div class="cat-empty">'+(search?'No hay productos que coincidan con "'+esc(search)+'".':'Este proveedor no tiene productos registrados.<br><br><button class="pcc-btn primary" onclick="openNewProduct(\''+esc(supplierId)+'\')">+ Añadir primer producto</button>')+'</div>'
+  }else{
+    const rows=filtered.map(prod=>{
+      const hasVariants=prod.variants&&prod.variants.length>0
+      const margin=calcMargin(prod.costPrice,prod.salePrice)
+      const costDisplay=hasVariants?'<span class="cat-variants-note">Desde '+fmtPrice(prod.costPrice||0)+'</span>':fmtPrice(prod.costPrice)
+      const saleDisplay=hasVariants?'<span class="cat-variants-note">Desde '+fmtPrice(prod.salePrice||0)+'</span>':fmtPrice(prod.salePrice)
+      const marginDisplay=hasVariants?'<span class="cat-margin cat-margin-grey">Variable</span>':marginBadge(margin)
+      const urlBtn=prod.productUrl?'<a href="'+esc(prod.productUrl)+'" target="_blank" rel="noopener" class="cat-table-btn" title="Ver en web del proveedor">↗ Web</a>':''
+      return '<tr>'+
+        '<td>'+
+          '<div class="cat-prod-name">'+esc(prod.name)+'</div>'+
+          (prod.reference?'<div class="cat-prod-ref">Ref: '+esc(prod.reference)+'</div>':'')+
+          (prod.leadTime?'<div class="cat-prod-ref">⏱ '+esc(prod.leadTime)+'</div>':'')+
+        '</td>'+
+        '<td class="cat-price">'+costDisplay+'</td>'+
+        '<td class="cat-price">'+saleDisplay+'</td>'+
+        '<td>'+marginDisplay+'</td>'+
+        '<td class="cat-updated">'+fmtDate(prod.updatedAt)+'</td>'+
+        '<td><div class="cat-table-actions">'+
+          urlBtn+
+          '<button class="cat-table-btn" onclick="openEditProduct(\''+esc(supplierId)+'\',\''+esc(prod.id)+'\')">Editar</button>'+
+          '<button class="cat-table-btn del" onclick="deleteProduct(\''+esc(supplierId)+'\',\''+esc(prod.id)+'\',event)">×</button>'+
+        '</div></td>'+
+      '</tr>'
+    }).join('')
+
+    tableHtml=
+      '<div class="cat-table-wrap">'+
+        '<table class="cat-table">'+
+          '<thead><tr><th>Producto</th><th>Coste neto</th><th>PVP cliente</th><th>Margen bruto</th><th>Actualizado</th><th></th></tr></thead>'+
+          '<tbody>'+rows+'</tbody>'+
+        '</table>'+
+      '</div>'
+  }
+
+  // Legacy rates section (old format)
+  const legacyRates=(supplier.prices||[]).filter(r=>r.prod)
+  const legacyHtml=legacyRates.length?
+    '<div class="cat-legacy-section">'+
+      '<div class="cat-legacy-head">Tarifas heredadas (formato anterior · sin desglose de precios)</div>'+
+      '<div class="cat-table-wrap">'+
+        '<table class="cat-table">'+
+          '<thead><tr><th>Servicio</th><th>Cantidad</th><th>Precio</th><th></th></tr></thead>'+
+          '<tbody>'+legacyRates.map(r=>'<tr><td>'+esc(r.prod||'')+'</td><td style="color:var(--text-3)">'+esc(r.qty||'')+'</td><td class="cat-price">'+esc(r.price||'')+'</td><td><span style="font-size:10px;color:var(--text-3)">Migrar →</span></td></tr>').join('')+
+          '</tbody>'+
+        '</table>'+
+      '</div>'+
+    '</div>':'';
+
+  // Product list text (legacy)
+  const prodListHtml=supplier.productList&&!filtered.length?
+    '<div class="cat-legacy-section">'+
+      '<div class="cat-legacy-head">Servicios listados (sin tarifas individuales)</div>'+
+      '<div class="prov-products">'+esc(supplier.productList)+'</div>'+
+    '</div>':'';
+
+  return header+tableHtml+legacyHtml+prodListHtml
 }
 
 // ─ NAV: Kanban Global ────────────────────────────────────────────────────────
