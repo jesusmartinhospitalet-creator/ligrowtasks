@@ -100,7 +100,12 @@ async function authenticate(email, password) {
   }
 
   // 2. Fallback local / en memoria (solo desarrollo o sin base de datos)
-  if (!fallbackAllowed()) throw new Error(dbConfigured() ? 'Usuario no encontrado.' : 'El servidor no tiene Supabase configurado (SUPABASE_URL y SUPABASE_SERVICE_KEY).');
+  if (!fallbackAllowed()) {
+    if (dbConfigured()) throw new Error('Usuario no encontrado.');
+    const faltan = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY'].filter((k) => !process.env[k]);
+    const entorno = process.env.VERCEL_ENV || process.env.NODE_ENV || 'desconocido';
+    throw new Error('Este despliegue (entorno «' + entorno + '») no tiene Supabase configurado: faltan ' + faltan.join(' y ') + ' en sus variables de entorno de Vercel.' + (entorno === 'preview' ? ' Es una vista previa de una rama: usa tu dominio de producción o añade esas variables también a «Preview».' : ''));
+  }
   const fallback = FALLBACK_USERS.find(u => u.email.toLowerCase() === cleanEmail);
   if (!fallback) {
     // Si es un admin intentando entrar con el email general o admin@

@@ -59,6 +59,6 @@ test('desarrollo sin Supabase: los usuarios de respaldo siguen funcionando', asy
 test('producción SIN Supabase configurado: tampoco hay puerta trasera', async () => {
   const { service, restore } = load({ env: { NODE_ENV: 'production' } });
   try {
-    await assert.rejects(service.authenticate(EMAIL, 'ligrow26'), /Supabase configurado/);
+    await assert.rejects(service.authenticate(EMAIL, 'ligrow26'), /no tiene Supabase configurado: faltan SUPABASE_URL y SUPABASE_SERVICE_KEY/);
   } finally { restore(); }
 });
