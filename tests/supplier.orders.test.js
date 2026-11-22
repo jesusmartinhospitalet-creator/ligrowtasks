@@ -51,3 +51,12 @@ test('sin Supabase y sin pedidos, la lista empieza vacía', async () => {
   delete process.env.SUPABASE_SERVICE_KEY;
   assert.deepEqual(await svc.listOrders(), []);
 });
+
+test('la fecha del pedido se lee tanto de order_date como de orderDate (no queda en blanco)', async () => {
+  const svc = loadService({ rows: [
+    { id: 'a', supplier_name: 'Realisaprint', concept: 'A', order_date: '2026-10-21', total_amount: 64, status: 'Pagado', files: [] },
+    { id: 'b', supplierName: 'Realisaprint', concept: 'B', orderDate: '2026-10-23', totalAmount: 10, status: 'Pagado', files: [] }
+  ] });
+  const orders = await svc.listOrders();
+  assert.deepEqual(orders.map((o) => o.orderDate), ['2026-10-21', '2026-10-23']);
+});
