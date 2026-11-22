@@ -160,6 +160,7 @@ function mapOrder(row) {
     orderDate: row.order_date ? (typeof row.order_date === 'string' ? row.order_date.slice(0, 10) : new Date(row.order_date).toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10),
     totalAmount: Number(row.total_amount != null ? row.total_amount : (row.totalAmount || 0)),
     status: row.status || 'Pagado',
+    deliveryStatus: row.delivery_status || row.deliveryStatus || '',
     invoiceNumber: row.invoice_number || row.invoiceNumber || '',
     notes: row.notes || '',
     files: Array.isArray(row.files) ? row.files : [],
@@ -178,6 +179,7 @@ const FALLBACK_ORDERS = [
     order_date: '2026-03-24',
     total_amount: 38.00,
     status: 'Pagado',
+    delivery_status: 'Entregado',
     invoice_number: 'FAC-2026-0042',
     notes: 'Entrega completada en tiempo y forma. Excelente calidad de corte.',
     files: [
@@ -194,6 +196,7 @@ const FALLBACK_ORDERS = [
     order_date: '2026-03-15',
     total_amount: 178.00,
     status: 'Pagado',
+    delivery_status: 'Entregado',
     invoice_number: 'ALB-98124',
     notes: 'Material corporativo para ferias y stands de clientes.',
     files: [
@@ -209,6 +212,7 @@ const FALLBACK_ORDERS = [
     order_date: '2026-02-28',
     total_amount: 1200.00,
     status: 'Recibido',
+    delivery_status: 'En curso',
     invoice_number: 'EF-2026-08',
     notes: 'Incluye paleta cromática, tipografías corporativas y guía de estilo.',
     files: [
@@ -286,6 +290,18 @@ async function listOrders() {
   return FALLBACK_ORDERS.map(mapOrder);
 }
 
+// La columna delivery_status se añade con la migración 20261122_supplier_orders_delivery.sql.
+// Si todavía no existe, se reintenta sin ella para no perder el pedido (el estado de entrega
+// sigue guardándose en el espacio de trabajo sincronizado).
+function isMissingDeliveryColumn(error) {
+  return Boolean(error) && /delivery_status/i.test(String(error.message || error.details || ''));
+}
+
+function withoutDeliveryStatus(row) {
+  const { delivery_status, ...rest } = row;
+  return rest;
+}
+
 async function createOrder(input) {
   HAS_MODIFIED_ORDERS = true;
   const supplierName = cleanText(input?.supplierName || input?.supplier_name, 180);
@@ -302,6 +318,7 @@ async function createOrder(input) {
     order_date: input?.orderDate || input?.order_date || new Date().toISOString().slice(0, 10),
     total_amount: Number(input?.totalAmount != null ? input.totalAmount : (input?.total_amount || 0)),
     status: cleanText(input?.status, 50) || 'Pagado',
+    delivery_status: cleanText(input?.deliveryStatus || input?.delivery_status, 30),
     invoice_number: cleanText(input?.invoiceNumber || input?.invoice_number, 100),
     notes: cleanText(input?.notes, 5000),
     files: Array.isArray(input?.files) ? input.files : [],
@@ -311,11 +328,14 @@ async function createOrder(input) {
 
   if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
-      const { data, error } = await supabase.from('supplier_orders').insert(row).select().single();
+      let { data, error } = await supabase.from('supplier_orders').insert(row).select().single();
+      if (error && isMissingDeliveryColumn(error)) {
+        ({ data, error } = await supabase.from('supplier_orders').insert(withoutDeliveryStatus(row)).select().single());
+      }
       if (!error && data) {
         FALLBACK_ORDERS.unshift(row);
         await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
-        return mapOrder(data);
+        return mapOrder({ delivery_status: row.delivery_status, ...data });
       }
     } catch (e) {
       console.warn('[supplier.service] createOrder Supabase insert warning:', e.message);
@@ -343,20 +363,27 @@ async function updateOrder(orderId, input) {
     files: Array.isArray(input?.files) ? input.files : [],
     updated_at: new Date().toISOString()
   };
+  if (input?.deliveryStatus !== undefined || input?.delivery_status !== undefined) {
+    updateData.delivery_status = cleanText(input.deliveryStatus !== undefined ? input.deliveryStatus : input.delivery_status, 30);
+  }
 
   if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
-      const { data, error } = await supabase
+      const run = (payload) => supabase
         .from('supplier_orders')
-        .update(updateData)
+        .update(payload)
         .eq('id', orderId)
         .select()
         .single();
+      let { data, error } = await run(updateData);
+      if (error && isMissingDeliveryColumn(error)) {
+        ({ data, error } = await run(withoutDeliveryStatus(updateData)));
+      }
 
       if (!error && data) {
         if (existingIdx !== -1) FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
         await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
-        return mapOrder(data);
+        return mapOrder({ delivery_status: updateData.delivery_status, ...data });
       }
     } catch (e) {
       console.warn('[supplier.service] updateOrder Supabase update warning:', e.message);
