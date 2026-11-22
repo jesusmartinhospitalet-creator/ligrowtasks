@@ -150,6 +150,12 @@ async function removeSupplier(supplierId) {
   if (error) throw error;
 }
 
+function orderDateOf(row) {
+  const raw = row.order_date || row.orderDate;
+  if (!raw) return new Date().toISOString().slice(0, 10);
+  return typeof raw === 'string' ? raw.slice(0, 10) : new Date(raw).toISOString().slice(0, 10);
+}
+
 function mapOrder(row) {
   return {
     id: row.id,
@@ -157,7 +163,7 @@ function mapOrder(row) {
     supplierName: row.supplier_name || row.supplierName || 'Proveedor',
     categoryName: row.category_name || row.categoryName || '',
     concept: row.concept || '',
-    orderDate: row.order_date ? (typeof row.order_date === 'string' ? row.order_date.slice(0, 10) : new Date(row.order_date).toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10),
+    orderDate: orderDateOf(row),
     totalAmount: Number(row.total_amount != null ? row.total_amount : (row.totalAmount || 0)),
     status: row.status || 'Pagado',
     deliveryStatus: row.delivery_status || row.deliveryStatus || '',
@@ -180,31 +186,9 @@ const FALLBACK_ORDERS = [];
 
 let HAS_MODIFIED_ORDERS = false;
 
-async function syncOrdersToWorkspaceSync(orders) {
-  if (!supabase || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) return;
-  try {
-    const { data: existing } = await supabase
-      .from('workspace_sync')
-      .select('payload, activity_log')
-      .eq('client_id', 'pv')
-      .maybeSingle();
-
-    const existingPayload = (existing && existing.payload) || {};
-    const updatedPayload = { ...existingPayload, orders: orders || [] };
-    const now = new Date().toISOString();
-
-    await supabase.from('workspace_sync').upsert({
-      client_id: 'pv',
-      payload: updatedPayload,
-      last_modified_by: 'Jesús',
-      last_modified_email: 'jesus.martin.hospitalet@gmail.com',
-      activity_log: existing?.activity_log || [],
-      updated_at: now
-    });
-  } catch (e) {
-    console.warn('[supplier.service] syncOrdersToWorkspaceSync warning:', e.message);
-  }
-}
+// La tabla supplier_orders es la fuente de verdad de los pedidos. Antes se volcaba además una copia en
+// workspace_sync con la memoria temporal de cada instancia (y con nombres de columna de la BD), lo que mostraba
+// pedidos sin fecha ni proveedor y pisaba la lista real: esa copia la mantiene ahora solo el navegador.
 
 async function listOrders() {
   if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
@@ -303,7 +287,6 @@ async function createOrder(input) {
       }
       if (!error && data) {
         FALLBACK_ORDERS.unshift(row);
-        await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
         return mapOrder({ delivery_status: row.delivery_status, product_url: row.product_url, preview_image: row.preview_image, product_title: row.product_title, ...data });
       }
     } catch (e) {
@@ -312,7 +295,6 @@ async function createOrder(input) {
   }
 
   FALLBACK_ORDERS.unshift(row);
-  await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
   return mapOrder(row);
 }
 
@@ -354,7 +336,6 @@ async function updateOrder(orderId, input) {
 
       if (!error && data) {
         if (existingIdx !== -1) FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
-        await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
         return mapOrder({ delivery_status: updateData.delivery_status, product_url: updateData.product_url, preview_image: updateData.preview_image, product_title: updateData.product_title, ...data });
       }
     } catch (e) {
@@ -364,13 +345,11 @@ async function updateOrder(orderId, input) {
 
   if (existingIdx !== -1) {
     FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
-    await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
     return mapOrder(FALLBACK_ORDERS[existingIdx]);
   }
 
   const updatedRecord = { id: orderId, ...updateData };
   FALLBACK_ORDERS.unshift(updatedRecord);
-  await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
   return mapOrder(updatedRecord);
 }
 
@@ -388,7 +367,6 @@ async function removeOrder(orderId) {
   if (idx !== -1) {
     FALLBACK_ORDERS.splice(idx, 1);
   }
-  await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
 }
 
 module.exports = {

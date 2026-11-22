@@ -98,8 +98,10 @@ const defs = [
   {
     name: 'list_orders',
     risk: 'read',
-    description: 'Pedidos a proveedores con importe, estado de pago y de entrega y documentos adjuntos.',
+    description: 'Pedidos a proveedores con importe, estado de pago y de entrega y documentos adjuntos. Se pueden filtrar por año y trimestre natural (1.º = ene–mar, 2.º = abr–jun, 3.º = jul–sep, 4.º = oct–dic) según la fecha del pedido/factura; el resultado incluye un resumen por periodo.',
     properties: {
+      year: num('Año (p. ej. 2026)'),
+      quarter: num('Trimestre 1-4 (junto con year para un trimestre concreto)'),
       query: text('Texto a buscar en concepto, proveedor o referencia'),
       supplier: text('Proveedor'),
       payment_status: PAY,

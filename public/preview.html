@@ -1372,6 +1372,14 @@ body{
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* Documents strip */
+.ped-sel.disabled{opacity:.55;cursor:not-allowed}
+.ped-sel.disabled select{cursor:not-allowed}
+.ord-group{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 6px 2px;margin-top:6px}
+.ord-group:first-child{margin-top:0;padding-top:2px}
+.og-t{display:flex;align-items:baseline;gap:10px}
+.og-t b{font-size:14px;font-weight:800;letter-spacing:-.2px;color:var(--text-1)}
+.og-t span{font-size:11.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)}
+.og-s{font-size:12.5px;font-weight:600;color:var(--text-2);font-variant-numeric:tabular-nums}
 .ord-docs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 12px 12px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:12px}
 .ord-docs-count{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2);font-weight:500;padding:0 6px 0 4px;white-space:nowrap}
 .ord-doc{display:flex;align-items:center;gap:10px;padding:6px 16px 6px 6px;background:var(--surface);border:1px solid var(--border-2);border-radius:10px;cursor:pointer;transition:all .18s ease;min-width:0;max-width:290px}
@@ -4627,12 +4635,8 @@ async function syncLoadCurrentProject(clientId){
           if(wp.sub) p.sub = wp.sub;
           if(wp.responsable) p.responsable = wp.responsable;
         } else if(p.id === 'pv' || p.type === 'proveedor'){
-          if(Array.isArray(wp.orders)){
-            p.orders = stripDemoOrders(wp.orders);
-            if(typeof persistSupplierOrdersLocally === 'function'){
-              persistSupplierOrdersLocally(p.orders);
-            }
-          }
+          // Los pedidos NO se leen del espacio sincronizado: la fuente de verdad es /api/suppliers/orders
+          // (loadSupplierOrders). Esa copia puede estar desfasada y pisaba la lista real.
         }
         p.activityLog = data.workspace.activityLog || [];
         p.lastModifiedBy = data.workspace.lastModifiedBy || '';
@@ -6766,6 +6770,31 @@ function stripDemoOrders(list) {
   return Array.isArray(list) ? list.filter(o => !DEMO_ORDER_IDS.includes(o && o.id)) : list;
 }
 
+// Pedidos con nombres de columna de la base de datos (supplier_name, order_date…) → nombres que usa la app.
+// Protege ante copias antiguas (espacio sincronizado o navegador) guardadas en ese formato.
+function normalizeOrder(o) {
+  if (!o || typeof o !== 'object') return o;
+  const pick = (camel, snake, def) => (o[camel] !== undefined && o[camel] !== null && o[camel] !== '') ? o[camel] : (o[snake] !== undefined && o[snake] !== null ? o[snake] : def);
+  return {
+    ...o,
+    supplierId: pick('supplierId', 'supplier_id', null),
+    supplierName: pick('supplierName', 'supplier_name', ''),
+    categoryName: pick('categoryName', 'category_name', ''),
+    orderDate: String(pick('orderDate', 'order_date', '')).slice(0, 10),
+    totalAmount: Number(pick('totalAmount', 'total_amount', 0)) || 0,
+    invoiceNumber: pick('invoiceNumber', 'invoice_number', ''),
+    deliveryStatus: pick('deliveryStatus', 'delivery_status', ''),
+    productUrl: pick('productUrl', 'product_url', ''),
+    previewImage: pick('previewImage', 'preview_image', ''),
+    productTitle: pick('productTitle', 'product_title', ''),
+    createdAt: pick('createdAt', 'created_at', undefined),
+    updatedAt: pick('updatedAt', 'updated_at', undefined)
+  };
+}
+function cleanOrders(list) {
+  return Array.isArray(list) ? stripDemoOrders(list).map(normalizeOrder) : list;
+}
+
 function persistSupplierOrdersLocally(orders) {
   if (!Array.isArray(orders)) return;
   try {
@@ -6798,7 +6827,7 @@ function loadSupplierOrdersLocally() {
     const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return stripDemoOrders(parsed);
+      if (Array.isArray(parsed)) return cleanOrders(parsed);
     }
   } catch (e) {}
   return null;
@@ -7009,6 +7038,51 @@ function pedidosRing(pct, color, track) {
   </svg><div class="pk-ring-txt">${v}%</div></div>`;
 }
 
+// ── Periodos (año / trimestre) ────────────────────────────────────────────────────────────────────────
+const QUARTER_NAME = { 1: '1.er trimestre', 2: '2.º trimestre', 3: '3.er trimestre', 4: '4.º trimestre' };
+const QUARTER_MONTHS = { 1: 'ene–mar', 2: 'abr–jun', 3: 'jul–sep', 4: 'oct–dic' };
+
+/** {year, quarter} de un pedido según su fecha (AAAA-MM-DD), o null si no tiene una fecha válida. */
+function orderPeriod(o) {
+  const m = /^(\d{4})-(\d{2})-\d{2}/.exec(String(o && o.orderDate || ''));
+  if (!m) return null;
+  const month = Number(m[2]);
+  if (month < 1 || month > 12) return null;
+  return { year: Number(m[1]), quarter: Math.ceil(month / 3) };
+}
+
+/** Años y trimestres que existen realmente (se crean solos según las fechas de los pedidos). */
+function pedidosPeriods(orders) {
+  const years = new Map();
+  let undated = 0;
+  orders.forEach(o => {
+    const per = orderPeriod(o);
+    if (!per) { undated++; return; }
+    const y = years.get(per.year) || { year: per.year, count: 0, quarters: new Map() };
+    y.count++;
+    y.quarters.set(per.quarter, (y.quarters.get(per.quarter) || 0) + 1);
+    years.set(per.year, y);
+  });
+  return { years: [...years.values()].sort((a, b) => b.year - a.year), undated };
+}
+
+function orderInPeriod(o, year, quarter) {
+  if (!year) return true;
+  const per = orderPeriod(o);
+  if (year === 'none') return !per;
+  if (!per || per.year !== Number(year)) return false;
+  return !quarter || per.quarter === Number(quarter);
+}
+
+function pedidosPeriodLabel(year, quarter) {
+  if (!year) return '';
+  if (year === 'none') return 'Sin fecha';
+  return quarter ? QUARTER_NAME[quarter] + ' ' + year : 'Año ' + year;
+}
+
+function setPedidosYear(value) { S.pedidosYear = value; S.pedidosQuarter = ''; render(); }
+function setPedidosQuarter(value) { S.pedidosQuarter = value; render(); }
+
 function setPedidosSearch(inputEl) {
   S.pedidosSearch = inputEl.value;
   const pos = inputEl.selectionStart;
@@ -7021,7 +7095,7 @@ function togglePedidosSort() {
   render();
 }
 function clearPedidosFilters() {
-  S.pedidosSearch = ''; S.pedidosFilterSupplier = ''; S.pedidosFilterStatus = '';
+  S.pedidosSearch = ''; S.pedidosFilterSupplier = ''; S.pedidosFilterStatus = ''; S.pedidosYear = ''; S.pedidosQuarter = '';
   render();
 }
 function toggleOrderMenu(orderId, event) {
@@ -7034,9 +7108,20 @@ function toggleOrderMenu(orderId, event) {
 
 function pedidosContent(p) {
   const esc = escapeHtml;
-  const orders = Array.isArray(p.orders) ? p.orders : [];
+  const allOrders = Array.isArray(p.orders) ? p.orders : [];
 
-  // 1. KPIs
+  // 0. Periodo (año / trimestre): los filtros se crean solos con los años y trimestres que tienen pedidos
+  const periods = pedidosPeriods(allOrders);
+  let selYear = S.pedidosYear || '';
+  let selQuarter = S.pedidosQuarter || '';
+  const yearInfo = periods.years.find(y => String(y.year) === selYear);
+  if (selYear === 'none' ? periods.undated === 0 : !yearInfo) selYear = '';
+  if (selYear === '' || selYear === 'none' || !yearInfo || !yearInfo.quarters.has(Number(selQuarter))) selQuarter = '';
+  S.pedidosYear = selYear; S.pedidosQuarter = selQuarter;
+  const orders = allOrders.filter(o => orderInPeriod(o, selYear, selQuarter));
+  const periodLabel = pedidosPeriodLabel(selYear, selQuarter);
+
+  // 1. KPIs (del periodo seleccionado)
   let totalGasto = 0, pagadoSum = 0, pendienteSum = 0, enCurso = 0, entregados = 0;
   orders.forEach(o => {
     const amt = Number(o.totalAmount || 0);
@@ -7077,10 +7162,25 @@ function pedidosContent(p) {
 
   const allSuppliers = [];
   (p.cats || []).forEach(cat => (cat.provs || []).forEach(pr => { if (!allSuppliers.includes(pr.name)) allSuppliers.push(pr.name); }));
-  orders.forEach(o => { if (o.supplierName && !allSuppliers.includes(o.supplierName)) allSuppliers.push(o.supplierName); });
+  allOrders.forEach(o => { if (o.supplierName && !allSuppliers.includes(o.supplierName)) allSuppliers.push(o.supplierName); });
 
-  // 3. Filas
+  // 3. Filas (con una cabecera por trimestre cuando se ordena por fecha)
+  const groupByDate = (sortMode === 'recientes' || sortMode === 'antiguos') && !selQuarter;
+  const groupKey = (o) => { const per = orderPeriod(o); return per ? per.year + '-' + per.quarter : 'none'; };
+  const groupTotals = {};
+  filteredOrders.forEach(o => { const k = groupKey(o); const g = groupTotals[k] || (groupTotals[k] = { n: 0, sum: 0 }); g.n++; g.sum += Number(o.totalAmount || 0); });
+  let lastGroup = null;
   const rowsHtml = filteredOrders.map(order => {
+    let groupHtml = '';
+    if (groupByDate) {
+      const k = groupKey(order);
+      if (k !== lastGroup) {
+        lastGroup = k;
+        const per = orderPeriod(order);
+        const g = groupTotals[k];
+        groupHtml = `<div class="ord-group"><div class="og-t">${per ? `<b>${QUARTER_NAME[per.quarter]} ${per.year}</b><span>${QUARTER_MONTHS[per.quarter]}</span>` : '<b>Sin fecha</b>'}</div><div class="og-s">${g.n} ${g.n === 1 ? 'pedido' : 'pedidos'} · ${fmtEUR(g.sum)}</div></div>`;
+      }
+    }
     const files = Array.isArray(order.files) ? order.files : [];
     const pay = orderPayStatus(order);
     const del = orderDeliveryStatus(order);
@@ -7115,7 +7215,7 @@ function pedidosContent(p) {
         <button type="button" class="danger" onclick="S._orderMenu=null;deleteOrder('${order.id}', event)">${oi('trash', 16)}Eliminar</button>
       </div>` : '';
 
-    return `<article class="ord ${menuOpen ? 'menu-open' : ''}" id="order-card-${order.id}">
+    return groupHtml + `<article class="ord ${menuOpen ? 'menu-open' : ''}" id="order-card-${order.id}">
       <div class="ord-main">
         <div class="ord-c ord-date">
           <span class="ord-date-chip">${oi('calendar', 14)}${formatOrderDate(order.orderDate)}</span>
@@ -7158,7 +7258,7 @@ function pedidosContent(p) {
     </article>`;
   }).join('');
 
-  const filtersActive = !!(search || filterSupplier || filterStatus);
+  const filtersActive = !!(search || filterSupplier || filterStatus || selYear);
   const emptyHtml = `<div class="pedidos-empty">
     <div class="pedidos-empty-ico">${oi(filtersActive ? 'search' : 'box', 30)}</div>
     <div class="pedidos-empty-title">${filtersActive ? 'No hay pedidos con los filtros seleccionados' : 'No hay pedidos registrados todavía'}</div>
@@ -7168,7 +7268,7 @@ function pedidosContent(p) {
       : `<button type="button" class="pedidos-btn-primary" onclick="openNewOrder()">${oi('plus', 16)}Crear primer pedido</button>`}
   </div>`;
 
-  const sel = (label, icon, onchange, optionsHtml) => `<label class="ped-sel">${icon ? oi(icon, 16, 'pre') : ''}<b>${label}</b><select onchange="${onchange}">${optionsHtml}</select>${oi('chev', 16, 'chev')}</label>`;
+  const sel = (label, icon, onchange, optionsHtml, disabled, title) => `<label class="ped-sel${disabled ? ' disabled' : ''}"${title ? ` title="${esc(title)}"` : ''}>${icon ? oi(icon, 16, 'pre') : ''}<b>${label}</b><select onchange="${onchange}"${disabled ? ' disabled' : ''}>${optionsHtml}</select>${oi('chev', 16, 'chev')}</label>`;
   const opt = (v, t, cur) => `<option value="${esc(v)}" ${cur === v ? 'selected' : ''}>${esc(t)}</option>`;
 
   return `<div class="pedidos-layout">
@@ -7177,7 +7277,7 @@ function pedidosContent(p) {
         <div class="pk-body">
           <div class="pk-lbl">${oi('coins', 18)}Inversión total</div>
           <div class="pk-val">${fmtEUR(totalGasto)}</div>
-          <div class="pk-sub">${orders.length} ${orders.length === 1 ? 'pedido registrado' : 'pedidos registrados'}</div>
+          <div class="pk-sub">${orders.length} ${orders.length === 1 ? 'pedido' : 'pedidos'}${periodLabel ? ' · ' + esc(periodLabel) : ' registrados'}</div>
         </div>
         ${pedidosSparkline(orders)}
       </div>
@@ -7211,6 +7311,15 @@ function pedidosContent(p) {
         ${oi('search', 16)}
         <input id="ped-search-in" type="text" placeholder="Buscar por concepto, referencia o proveedor…" value="${esc(S.pedidosSearch || '')}" oninput="setPedidosSearch(this)" autocomplete="off" />
       </div>
+      ${sel('Año:', 'calendar', 'setPedidosYear(this.value)',
+        opt('', 'Todos', selYear) +
+        periods.years.map(y => opt(String(y.year), y.year + ' (' + y.count + ')', selYear)).join('') +
+        (periods.undated ? opt('none', 'Sin fecha (' + periods.undated + ')', selYear) : ''))}
+      ${sel('Trimestre:', '', 'setPedidosQuarter(this.value)',
+        yearInfo
+          ? opt('', 'Todo el año', selQuarter) + [1, 2, 3, 4].filter(q => yearInfo.quarters.has(q)).map(q => opt(String(q), QUARTER_NAME[q] + ' · ' + QUARTER_MONTHS[q] + ' (' + yearInfo.quarters.get(q) + ')', selQuarter)).join('')
+          : opt('', 'Elige un año', ''),
+        !yearInfo, 'Elige primero un año')}
       ${sel('Proveedor:', '', 'S.pedidosFilterSupplier=this.value;render()',
         opt('', 'Todos', filterSupplier) + allSuppliers.map(s => opt(s, s, filterSupplier)).join(''))}
       ${sel('Estado:', '', 'S.pedidosFilterStatus=this.value;render()',
@@ -7807,7 +7916,7 @@ async function loadSupplierOrders() {
       if (Array.isArray(data.orders)) {
         const localById = new Map((p.orders || []).map(o => [o.id, o]));
         // Si el servidor aún no guarda algún campo (migración pendiente), se conserva el que hay en local.
-        p.orders = stripDemoOrders(data.orders).map(o => {
+        p.orders = cleanOrders(data.orders).map(o => {
           const local = localById.get(o.id) || {};
           const out = { ...o };
           ['deliveryStatus', 'productUrl', 'previewImage', 'productTitle'].forEach(k => { if (!out[k] && local[k]) out[k] = local[k]; });

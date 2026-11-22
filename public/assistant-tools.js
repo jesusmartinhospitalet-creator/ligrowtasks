@@ -304,7 +304,7 @@
       } else if (S.proj.type === 'proveedor') {
         view.tab = S.view;
         if (S.view === 'pedidos') {
-          view.orders_filters = { search: S.pedidosSearch || '', supplier: S.pedidosFilterSupplier || '', status: S.pedidosFilterStatus || '', sort: S.pedidosSort || 'recientes' };
+          view.orders_filters = { year: S.pedidosYear || '', quarter: S.pedidosQuarter || '', search: S.pedidosSearch || '', supplier: S.pedidosFilterSupplier || '', status: S.pedidosFilterStatus || '', sort: S.pedidosSort || 'recientes' };
         }
       } else {
         view.app = S.proj.name;
@@ -405,7 +405,15 @@
     if (!orders) return fail('No tienes acceso al espacio de proveedores.');
     const q = norm(input.query);
     const sup = norm(input.supplier);
+    const year = int(input.year);
+    const quarter = int(input.quarter);
+    if (quarter !== undefined && (quarter < 1 || quarter > 4)) return fail('El trimestre debe ser 1, 2, 3 o 4.');
+    const periodOf = (o) => { const m = /^(\d{4})-(\d{2})/.exec(String(o.orderDate || '')); return m ? { year: +m[1], quarter: Math.ceil(+m[2] / 3) } : null; };
     const rows = orders.filter((o) => {
+      if (year !== undefined || quarter !== undefined) {
+        const per = periodOf(o);
+        if (!per || (year !== undefined && per.year !== year) || (quarter !== undefined && per.quarter !== quarter)) return false;
+      }
       if (q && !norm([o.concept, o.supplierName, o.invoiceNumber].join(' ')).includes(q)) return false;
       if (sup && !norm(o.supplierName).includes(sup)) return false;
       if (input.payment_status && orderPay(o) !== input.payment_status) return false;
@@ -413,7 +421,16 @@
       return true;
     });
     rows.sort((a, b) => String(b.orderDate).localeCompare(String(a.orderDate)));
-    return ok({ total: rows.length, total_amount_eur: rows.reduce((n, o) => n + Number(o.totalAmount || 0), 0), orders: rows.slice(0, 40).map(orderView) });
+    // Resumen por año y trimestre (según la fecha del pedido/factura) de lo que se ha filtrado
+    const byPeriod = {};
+    rows.forEach((o) => {
+      const per = periodOf(o);
+      const key = per ? per.year + ' T' + per.quarter : 'sin fecha';
+      const g = byPeriod[key] || (byPeriod[key] = { period: key, orders: 0, total_eur: 0 });
+      g.orders += 1;
+      g.total_eur = Math.round((g.total_eur + Number(o.totalAmount || 0)) * 100) / 100;
+    });
+    return ok({ total: rows.length, total_amount_eur: Math.round(rows.reduce((n, o) => n + Number(o.totalAmount || 0), 0) * 100) / 100, by_period: Object.values(byPeriod).sort((a, b) => b.period.localeCompare(a.period)), orders: rows.slice(0, 40).map(orderView) });
   }
 
   // ── Tareas ────────────────────────────────────────────────────────────────────────────────────────
