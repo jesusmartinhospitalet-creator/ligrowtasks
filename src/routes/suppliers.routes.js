@@ -72,6 +72,7 @@ router.post('/orders', async (req, res, next) => {
     const order = await supplierService.createOrder(req.body);
     res.status(201).json({ order });
   } catch (error) {
+    if (error && error.name === 'OrderStorageError') return res.status(502).json({ error: 'storage', message: error.message });
     next(error);
   }
 });
@@ -81,6 +82,7 @@ router.put('/orders/:id', async (req, res, next) => {
     const order = await supplierService.updateOrder(req.params.id, req.body);
     res.json({ order });
   } catch (error) {
+    if (error && error.name === 'OrderStorageError') return res.status(502).json({ error: 'storage', message: error.message });
     next(error);
   }
 });

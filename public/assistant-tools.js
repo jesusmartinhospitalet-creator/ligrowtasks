@@ -780,12 +780,14 @@
   }
 
   // ── Pedidos y proveedores ─────────────────────────────────────────────────────────────────────────────
+  // Se guarda en Supabase con la misma función que el resto de la app (adopta el id real y avisa si falla).
   const syncOrder = async (method, order) => {
-    if (window.location.protocol === 'file:') return;
+    if (typeof syncOrderRemote === 'function' && method !== 'DELETE') return syncOrderRemote(method, order);
+    if (window.location.protocol === 'file:') return true;
     try {
-      const url = method === 'POST' ? '/api/suppliers/orders' : '/api/suppliers/orders/' + encodeURIComponent(order.id);
-      await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: method === 'DELETE' ? undefined : JSON.stringify(order) });
-    } catch (e) { console.warn('[assistant] sync pedido', e); }
+      const res = await fetch('/api/suppliers/orders/' + encodeURIComponent(order.id), { method, credentials: 'same-origin' });
+      return res.ok;
+    } catch (e) { console.warn('[assistant] sync pedido', e); return false; }
   };
 
   const findOrder = (ref) => {
@@ -806,7 +808,7 @@
     render();
   }
 
-  function createOrder(input) {
+  async function createOrder(input) {
     const pv = supplierProject();
     if (!pv) return fail('No tienes acceso al espacio de proveedores.');
     const concept = txt(input.concept);
@@ -839,8 +841,10 @@
     pv.orders = pv.orders || [];
     pv.orders.unshift(order);
     commitOrders(pv, { action: 'Nuevo pedido', summary: say('registró el pedido a ' + order.supplierName + ': ' + concept) });
-    syncOrder('POST', order);
-    return ok(orderView(order), {
+    const saved = await syncOrder('POST', order);
+    const view = orderView(order);
+    if (!saved) view.warning = 'NO se ha guardado en Supabase (se ve en este navegador, pero se perdería en otro). Díselo al usuario.';
+    return ok(view, {
       mutated: true,
       summary: 'Pedido creado: ' + order.supplierName + ' · ' + concept + ' (' + (typeof fmtEUR === 'function' ? fmtEUR(amount, true) : amount + ' €') + ')',
       undo: {

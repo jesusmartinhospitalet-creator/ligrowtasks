@@ -1,4 +1,5 @@
 const { assistantTools, toolRisk } = require('./assistant.tools');
+const { sniffImageType } = require('./link-preview.service');
 
 /**
  * Instrucciones del modelo. Texto fijo (sin fechas ni datos del usuario) para que se pueda cachear;
@@ -179,6 +180,23 @@ const WEB_SEARCH_TOOL = { type: 'web_search_20250305', name: 'web_search', max_u
  * con las mismas funciones que los botones de la app); aquí solo se autentica, se limita y se llama a la API.
  * `client` permite sustituir el SDK en los tests.
  */
+/**
+ * El modelo rechaza una imagen si el tipo declarado no coincide con su contenido real (una foto WebP servida como
+ * JPG, por ejemplo). Se corrige aquí el tipo de cada imagen según sus primeros bytes antes de validar y enviar.
+ */
+function fixImageTypes(blocks) {
+  if (!Array.isArray(blocks)) return;
+  for (const block of blocks) {
+    if (!isObject(block)) continue;
+    if (block.type === 'image' && isObject(block.source) && block.source.type === 'base64' && typeof block.source.data === 'string') {
+      const real = sniffImageType(Buffer.from(block.source.data.slice(0, 32), 'base64'));
+      if (real) block.source.media_type = real;
+    } else if (block.type === 'tool_result' && Array.isArray(block.content)) {
+      fixImageTypes(block.content);
+    }
+  }
+}
+
 async function handleAssistantRequest(req, res, { client, now } = {}) {
   const apiKey = readApiKey();
   if (!apiKey && !client) {
@@ -200,6 +218,7 @@ async function handleAssistantRequest(req, res, { client, now } = {}) {
   }
   if (size > MAX_BODY_CHARS) return send(res, 413, 'too_large', 'La conversación es demasiado grande. Empieza una conversación nueva.');
 
+  if (Array.isArray(body.messages)) body.messages.forEach((m) => fixImageTypes(m && m.content));
   const problem = validateMessages(body.messages);
   if (problem === 'too_many_images') return send(res, 413, 'too_many_images', 'Demasiadas imágenes en la conversación. Empieza una conversación nueva.');
   if (problem) return send(res, 400, 'invalid_request', 'Petición no válida.');

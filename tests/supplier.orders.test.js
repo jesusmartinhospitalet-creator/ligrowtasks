@@ -60,3 +60,54 @@ test('la fecha del pedido se lee tanto de order_date como de orderDate (no queda
   const orders = await svc.listOrders();
   assert.deepEqual(orders.map((o) => o.orderDate), ['2026-10-21', '2026-10-23']);
 });
+
+/** Supabase falso que registra lo que se escribe en supplier_orders. */
+function loadWritable({ failWith } = {}) {
+  process.env.SUPABASE_URL = 'http://fake';
+  process.env.SUPABASE_SERVICE_KEY = 'k';
+  const written = [];
+  const from = () => {
+    let payload;
+    const q = {
+      upsert(row) { payload = row; return q; },
+      update(row) { payload = row; return q; },
+      eq() { return q; },
+      select() { return q; },
+      single() { return q.run(); },
+      maybeSingle() { return q.run(); },
+      run() {
+        if (failWith) return Promise.resolve({ data: null, error: { message: failWith } });
+        written.push(payload);
+        return Promise.resolve({ data: payload, error: null });
+      }
+    };
+    return q;
+  };
+  const dbPath = require.resolve('../src/config/database');
+  require.cache[dbPath] = { id: dbPath, filename: dbPath, loaded: true, exports: { from } };
+  delete require.cache[require.resolve('../src/services/supplier.service')];
+  return { svc: require('../src/services/supplier.service'), written };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+test('un pedido con id «ord_…» se guarda con un uuid real y el servidor lo devuelve', async () => {
+  const { svc, written } = loadWritable();
+  const order = await svc.createOrder({ id: 'ord_123_abc', supplierId: 'p7', supplierName: 'Realisaprint', concept: 'Tarjetas', orderDate: '2026-10-21', totalAmount: 64 });
+  assert.match(order.id, UUID_RE);
+  assert.equal(order.replacesId, 'ord_123_abc');
+  assert.match(written[0].id, UUID_RE);
+  assert.equal(written[0].supplier_id, null, 'un supplier_id que no es uuid no debe romper la clave foránea');
+});
+
+test('si Supabase rechaza el pedido se avisa en lugar de darlo por guardado', async () => {
+  const { svc } = loadWritable({ failWith: 'invalid input syntax for type uuid' });
+  await assert.rejects(() => svc.createOrder({ supplierName: 'X', concept: 'Y' }), (e) => e.name === 'OrderStorageError' && /Supabase/.test(e.message));
+});
+
+test('actualizar un pedido con id antiguo lo crea y devuelve el id real', async () => {
+  const { svc } = loadWritable();
+  const order = await svc.updateOrder('ord_old_1', { supplierName: 'X', concept: 'Y', orderDate: '2026-01-02', totalAmount: 5 });
+  assert.match(order.id, UUID_RE);
+  assert.equal(order.replacesId, 'ord_old_1');
+});
