@@ -2221,8 +2221,10 @@ body{
 @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
   </style>
 </head>
+<link rel="stylesheet" href="/invoices.css">
 <body>
 <div id="app"></div>
+<script src="/invoices.js"></script>
 <script>
 // ── Data ────────────────────────────────────────────────────────────────────
 let DATA = [
@@ -5317,6 +5319,7 @@ function sidebar(){
       ${cl.length?cl.map(p => pi(p, isAdmin)).join(''):'<div class="sl-empty">Sin espacios autorizados</div>'}
       ${ap.length?`<div class="sl-label">Apps</div>${ap.map(p => pi(p, isAdmin)).join('')}`:''}
       ${pr.length?`<div class="sl-label">Proveedores</div>${pr.map(p => pi(p, isAdmin)).join('')}`:''}
+      ${u?.id === '00000000-0000-0000-0000-000000000001' ? `<div class="sl-label">Facturación privada</div><div class="nv ${S.navView==='facturas'?'on':''}" onclick="openInvoices()">🧾 Facturas</div>` : ''}
     </div>
 
     <div class="sb-footer">
@@ -5374,6 +5377,7 @@ function pi(p, isAdmin = true){
 
 // ─ Main
 function main(){
+  if(S.navView==='facturas') return navInvoices()
   if(S.navView==='dashboard')     return navDashboard()
   if(S.navView==='kanbanGlobal')  return navKanbanGlobal()
   if(S.navView==='proyectos')     return navProyectos()
