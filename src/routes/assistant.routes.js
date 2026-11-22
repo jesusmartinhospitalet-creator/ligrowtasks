@@ -22,7 +22,9 @@ router.get('/link-preview', async (req, res) => {
   if (recent.length >= 30) return res.status(429).json({ error: 'Demasiadas peticiones. Espera un momento.' });
   previewHits.set(key, [...recent, now]);
   try {
-    res.json({ preview: await getLinkPreview(req.query.url) });
+    const hint = String(req.query.hint || '').slice(0, 400);
+    const imageUrl = String(req.query.image || '').slice(0, 1500);
+    res.json({ preview: await getLinkPreview(req.query.url, { hint, imageUrl }) });
   } catch (error) {
     res.status(422).json({ error: error.message || 'No se ha podido leer la página.' });
   }

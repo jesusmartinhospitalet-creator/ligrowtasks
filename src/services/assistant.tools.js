@@ -237,11 +237,11 @@ const defs = [
   {
     name: 'set_order_product',
     risk: 'write',
-    description: 'Guarda en un pedido el enlace a la página del producto en la web del proveedor y descarga su vista previa (imagen y título) para mostrarla en la fila del pedido. Usa solo URLs reales que hayas encontrado.',
+    description: 'Guarda en un pedido el enlace a la página del producto en la web del proveedor y su vista previa (imagen y título), que se muestra en la fila del pedido. La herramienta puntúa las imágenes de la página (descarta logos y menús) y te devuelve la imagen elegida PARA QUE LA MIRES. Si no es una foto del producto (logo, icono, otro producto), elige otra de `candidates` y repite la llamada con image_url. Usa solo URLs reales que hayas encontrado.',
     properties: {
       order: text('Referencia, id o parte del concepto'),
       url: text('URL exacta de la página del producto (https://…)'),
-      image_url: text('URL de una imagen del producto, solo si ya la conoces con seguridad (opcional: normalmente se obtiene de la propia página)')
+      image_url: text('URL de la imagen a usar, normalmente una de las `candidates` de una llamada anterior (opcional: por defecto se elige la mejor)')
     },
     required: ['order', 'url']
   },
