@@ -4711,9 +4711,9 @@ async function submitLogin(){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
+    const data = await res.json().catch(()=>({}));
     if(!res.ok){
-      throw new Error(data.error || 'Credenciales inválidas.');
+      throw new Error(data.error || ('El servidor respondió con el error ' + res.status + '.'));
     }
 
     S.currentUser = data.user;
@@ -4732,39 +4732,10 @@ async function submitLogin(){
     render();
     if(S.proj?.id) syncLoadCurrentProject(S.proj.id);
   }catch(err){
-    // Respaldo de contingencia
-    if(email.toLowerCase() === 'blancaamartiin04@gmail.com' && password === 'ligrow26'){
-      const fallbackUser = {
-        email: 'blancaamartiin04@gmail.com',
-        name: 'Blanca',
-        role: 'member',
-        allowedClients: ['cpb']
-      };
-      S.currentUser = fallbackUser;
-      S.defaultUser = 'Blanca';
-      localStorage.setItem('ligrow_auth_user', JSON.stringify(fallbackUser));
-      const targetProj = DATA.find(p => p.id === 'cpb') || DATA[0];
-      if(targetProj) S.proj = targetProj;
-      S.navView = null;
-      render();
-      return;
-    } else if((email.toLowerCase() === 'jesus.martin.hospitalet@gmail.com' || email.toLowerCase() === 'admin@ligrow.com') && password === 'ligrow26'){
-      const fallbackAdmin = {
-        email: 'jesus.martin.hospitalet@gmail.com',
-        name: 'Jesús (Admin)',
-        role: 'admin',
-        allowedClients: ['*']
-      };
-      S.currentUser = fallbackAdmin;
-      S.defaultUser = 'Jesús';
-      localStorage.setItem('ligrow_auth_user', JSON.stringify(fallbackAdmin));
-      render();
-      return;
-    }
-
+    // Sin sesión en el servidor no hay datos ni asistente: nunca se crea una sesión «solo local».
     if(errBox){
       errBox.style.display = 'block';
-      errBox.innerText = err.message || 'Error al iniciar sesión.';
+      errBox.innerText = err instanceof TypeError ? 'No se ha podido conectar con el servidor. Comprueba tu conexión.' : (err.message || 'Error al iniciar sesión.');
     }
     if(btn){ btn.disabled = false; btn.innerText = 'Entrar a Ligrow Tasks →'; }
   }
@@ -5248,7 +5219,7 @@ function configModal(){
               </div>
               <div>
                 <div class="modal-lbl">Contraseña *</div>
-                <input id="new-user-pass" class="modal-in" placeholder="Mínimo 4 caracteres" type="text" value="ligrow26"/>
+                <input id="new-user-pass" class="modal-in" placeholder="Contraseña (mín. 8 caracteres recomendado)" type="text" value=""/>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
@@ -8114,6 +8085,11 @@ fetch('/api/auth/me', { credentials: 'same-origin' })
       S.currentUser = res.user;
       localStorage.setItem('ligrow_auth_user', JSON.stringify(res.user));
       if(S.proj?.id) syncLoadCurrentProject(S.proj.id);
+      render();
+    } else if(res && res.user === null && S.currentUser){
+      // La sesión guardada en el navegador ya no es válida en el servidor (caducada o inexistente): volver a entrar.
+      S.currentUser = null;
+      try{ localStorage.removeItem('ligrow_auth_user') }catch(e){}
       render();
     }
   })

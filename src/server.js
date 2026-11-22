@@ -61,7 +61,13 @@ app.get('/api/health', (req, res) => {
   res.json({
     ok: true,
     commit: (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || null,
+    environment: process.env.VERCEL_ENV || process.env.NODE_ENV || null, // production | preview | development
     modules,
+    env: {
+      SUPABASE_URL: Boolean(process.env.SUPABASE_URL),
+      SUPABASE_SERVICE_KEY: Boolean(process.env.SUPABASE_SERVICE_KEY),
+      ANTHROPIC_API_KEY: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY)
+    },
     assistantConfigured: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY),
     supabaseConfigured
   });
