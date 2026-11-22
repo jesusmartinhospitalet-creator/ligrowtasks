@@ -7423,16 +7423,7 @@ async function setOrderField(orderId, field, value) {
   persistSupplierOrdersLocally(p.orders);
   save({ action: 'Pedido actualizado', summary: `${field === 'status' ? 'Pago' : 'Entrega'} de "${order.concept}" → ${value}` });
   render();
-  if (window.location.protocol !== 'file:') {
-    try {
-      await fetch('/api/suppliers/orders/' + encodeURIComponent(order.id), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify(order)
-      });
-    } catch (e) { console.warn('Sync error on setOrderField:', e); }
-  }
+  await syncOrderRemote('PUT', order);
 }
 
 function openEditOrder(orderId) {
@@ -7514,18 +7505,7 @@ async function quickAttachFileToOrder(orderId, fileInput) {
   render();
 
   // Background Supabase Sync
-  if (window.location.protocol !== 'file:') {
-    try {
-      await fetch('/api/suppliers/orders/' + encodeURIComponent(order.id), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify(order)
-      });
-    } catch (e) {
-      console.warn('Sync error on quickAttach:', e);
-    }
-  }
+  await syncOrderRemote('PUT', order);
 }
 
 async function submitOrderDraft() {
@@ -7590,21 +7570,8 @@ async function submitOrderDraft() {
   save({ action: isEdit ? 'Pedido actualizado' : 'Nuevo pedido', summary: `${isEdit ? 'Actualizado' : 'Registrado'} pedido a ${orderRecord.supplierName}: ${orderRecord.concept}` });
   render();
 
-  // Cloud & Supabase synchronization
-  if (window.location.protocol !== 'file:') {
-    try {
-      const url = isEdit ? '/api/suppliers/orders/' + encodeURIComponent(orderRecord.id) : '/api/suppliers/orders';
-      const method = isEdit ? 'PUT' : 'POST';
-      await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify(orderRecord)
-      });
-    } catch (err) {
-      console.warn('Error synchronizing order with Supabase:', err);
-    }
-  }
+  // Cloud & Supabase synchronization (avisa si no se guarda)
+  await syncOrderRemote(isEdit ? 'PUT' : 'POST', orderRecord);
 }
 
 async function deleteOrder(orderId, event) {
@@ -7905,6 +7872,69 @@ function orderModal() {
 }
 
 // Sincronización de pedidos desde el backend / Supabase
+const ORDER_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isServerOrderId = id => ORDER_UUID_RE.test(String(id || ''));
+const _orderSyncChain = new WeakMap();
+const _ordersPushed = new WeakSet();
+let _ordersMigrating = false;
+
+function orderSyncNotice(message) {
+  try {
+    let el = document.getElementById('order-sync-notice');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'order-sync-notice';
+      el.setAttribute('role', 'alert');
+      el.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;max-width:min(560px,92vw);background:#7f1d1d;color:#fff;padding:12px 16px;border-radius:12px;font:600 13px/1.4 "DM Sans",sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35);cursor:pointer';
+      el.onclick = () => el.remove();
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.remove(), 12000);
+  } catch (e) {}
+}
+
+// Envía un pedido a Supabase y comprueba que de verdad se ha guardado. Si el servidor le asigna otro id (uuid),
+// se adopta aquí. Las llamadas sobre un mismo pedido van en cola para no duplicarlo. Devuelve true si quedó guardado.
+function syncOrderRemote(method, order) {
+  if (window.location.protocol === 'file:') return Promise.resolve(true);
+  const prev = _orderSyncChain.get(order) || Promise.resolve();
+  const run = prev.catch(() => {}).then(async () => {
+    if (method === 'POST' && _ordersPushed.has(order) && isServerOrderId(order.id)) return true;
+    try {
+      const url = method === 'POST' ? '/api/suppliers/orders' : '/api/suppliers/orders/' + encodeURIComponent(order.id);
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: method === 'DELETE' ? undefined : JSON.stringify(order)
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error((body && body.message) || ('el servidor respondió ' + res.status));
+      }
+      if (method !== 'DELETE') {
+        _ordersPushed.add(order);
+        const body = await res.json().catch(() => null);
+        const saved = body && body.order;
+        if (saved && saved.id && saved.id !== order.id) {
+          order.id = saved.id;
+          const pv = DATA.find(item => item.type === 'proveedor');
+          if (pv) { persistSupplierOrdersLocally(pv.orders); save(); render(); }
+        }
+      }
+      return true;
+    } catch (e) {
+      console.warn('Error sincronizando pedido con Supabase:', e);
+      orderSyncNotice('El pedido «' + (order.concept || '') + '» NO se ha guardado en el servidor (' + e.message + '). Sigue en este navegador y se reintentará al recargar.');
+      return false;
+    }
+  });
+  _orderSyncChain.set(order, run);
+  return run;
+}
+
 async function loadSupplierOrders() {
   const p = DATA.find(item => item.type === 'proveedor');
   if (!p) return;
@@ -7916,15 +7946,23 @@ async function loadSupplierOrders() {
       if (Array.isArray(data.orders)) {
         const localById = new Map((p.orders || []).map(o => [o.id, o]));
         // Si el servidor aún no guarda algún campo (migración pendiente), se conserva el que hay en local.
-        p.orders = cleanOrders(data.orders).map(o => {
+        const fromServer = cleanOrders(data.orders).map(o => {
           const local = localById.get(o.id) || {};
           const out = { ...o };
           ['deliveryStatus', 'productUrl', 'previewImage', 'productTitle'].forEach(k => { if (!out[k] && local[k]) out[k] = local[k]; });
           return out;
         });
+        // Pedidos con id antiguo («ord_…») que nunca llegaron a Supabase: no se descartan, se conservan y se suben.
+        const serverIds = new Set(fromServer.map(o => o.id));
+        const pending = (p.orders || []).filter(o => o && !isServerOrderId(o.id) && !serverIds.has(o.id));
+        p.orders = [...pending, ...fromServer];
         persistSupplierOrdersLocally(p.orders);
         save();
         render();
+        if (pending.length && !_ordersMigrating) {
+          _ordersMigrating = true;
+          try { for (const o of pending) await syncOrderRemote('POST', o); } finally { _ordersMigrating = false; }
+        }
       }
     }
   } catch (e) {

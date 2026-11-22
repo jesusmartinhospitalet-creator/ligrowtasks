@@ -117,7 +117,7 @@ test('getLinkPreview descarga la imagen elegida y la devuelve para que el asiste
   const requester = fakeTransport({ [SHOP_URL]: { body: SHOP }, [best]: { type: 'image/webp', body: PNG } });
   const p = await getLinkPreview(SHOP_URL, { hint: 'tarjetas de visita', requester });
   assert.equal(p.image, best);
-  assert.equal(p.imageData.mediaType, 'image/webp');
+  assert.equal(p.imageData.mediaType, 'image/png');
   assert.equal(Buffer.from(p.imageData.base64, 'base64').length, PNG.length);
 });
 
@@ -139,8 +139,16 @@ test('con image_url usa esa imagen y avisa si no sirve', async () => {
 
 test('fetchImage rechaza lo que no es una imagen compatible o es demasiado grande', async () => {
   const url = 'https://media.tienda.es/x.png';
-  await assert.rejects(fetchImage(url, { requester: fakeTransport({ [url]: { type: 'text/html', body: '<html>' } }) }), /no es una imagen/);
-  await assert.rejects(fetchImage(url, { requester: fakeTransport({ [url]: { type: 'image/svg+xml', body: '<svg/>' } }) }), /no es una imagen/);
+  await assert.rejects(fetchImage(url, { requester: fakeTransport({ [url]: { type: 'text/html', body: '<html>' } }) }), /no puede ver|no es una imagen/);
+  await assert.rejects(fetchImage(url, { requester: fakeTransport({ [url]: { type: 'image/svg+xml', body: '<svg/>' } }) }), /no puede ver|no es una imagen/);
   await assert.rejects(fetchImage(url, { requester: fakeTransport({ [url]: { type: 'image/png', body: Buffer.alloc(800_000) } }) }), /demasiado grande/);
   await assert.rejects(fetchImage('http://127.0.0.1/x.png'), /no permitida/i);
+});
+
+test('sniffImageType reconoce el formato real por los primeros bytes', () => {
+  const { sniffImageType } = require('../src/services/link-preview.service');
+  assert.equal(sniffImageType(Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0])), 'image/jpeg');
+  assert.equal(sniffImageType(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0])), 'image/png');
+  assert.equal(sniffImageType(Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('WEBP')])), 'image/webp');
+  assert.equal(sniffImageType(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>')), '');
 });

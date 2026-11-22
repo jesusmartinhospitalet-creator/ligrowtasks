@@ -184,6 +184,18 @@ const isDemoOrder = (o) => DEMO_ORDER_IDS.has(o && o.id);
 
 const FALLBACK_ORDERS = [];
 
+// La tabla usa ids uuid. El navegador y el asistente generaban ids tipo «ord_…», que la base de datos rechazaba:
+// el pedido «se guardaba» solo en la memoria temporal del servidor y desaparecía al recargar. Ahora el servidor
+// asigna un uuid cuando el id recibido no lo es, y el cliente adopta el id devuelto.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isUuid = (v) => typeof v === 'string' && UUID_RE.test(v);
+const dbReady = () => Boolean(supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+
+class OrderStorageError extends Error {
+  constructor(message) { super(message); this.name = 'OrderStorageError'; this.status = 502; }
+}
+const storageMessage = (error) => 'No se ha podido guardar el pedido en Supabase: ' + String((error && error.message) || 'error desconocido') + '. Revisa que las migraciones de supplier_orders estén ejecutadas.';
+
 let HAS_MODIFIED_ORDERS = false;
 
 // La tabla supplier_orders es la fuente de verdad de los pedidos. Antes se volcaba además una copia en
@@ -261,9 +273,11 @@ async function createOrder(input) {
   if (!concept) throw new Error('El concepto del pedido es obligatorio.');
   if (!supplierName) throw new Error('El proveedor es obligatorio.');
 
+  const requestedId = input?.id;
+  const supplierRef = input?.supplierId || input?.supplier_id || null;
   const row = {
-    id: input?.id || uuidv4(),
-    supplier_id: input?.supplierId || input?.supplier_id || null,
+    id: isUuid(requestedId) ? requestedId : uuidv4(),
+    supplier_id: isUuid(supplierRef) ? supplierRef : null,
     supplier_name: supplierName,
     category_name: cleanText(input?.categoryName || input?.category_name, 100),
     concept,
@@ -279,27 +293,36 @@ async function createOrder(input) {
     updated_at: new Date().toISOString()
   };
 
-  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+  if (dbReady()) {
+    let data;
+    let error;
     try {
-      let { data, error } = await supabase.from('supplier_orders').insert(row).select().single();
+      ({ data, error } = await supabase.from('supplier_orders').upsert(row, { onConflict: 'id' }).select().single());
       if (error && isMissingDeliveryColumn(error)) {
-        ({ data, error } = await supabase.from('supplier_orders').insert(withoutDeliveryStatus(row)).select().single());
-      }
-      if (!error && data) {
-        FALLBACK_ORDERS.unshift(row);
-        return mapOrder({ delivery_status: row.delivery_status, product_url: row.product_url, preview_image: row.preview_image, product_title: row.product_title, ...data });
+        ({ data, error } = await supabase.from('supplier_orders').upsert(withoutDeliveryStatus(row), { onConflict: 'id' }).select().single());
       }
     } catch (e) {
-      console.warn('[supplier.service] createOrder Supabase insert warning:', e.message);
+      error = e;
     }
+    // Si hay Supabase y falla, se avisa: antes se daba por bueno y el pedido se perdía al recargar.
+    if (error || !data) {
+      console.error('[supplier.service] createOrder: no se pudo guardar en Supabase:', error && error.message);
+      throw new OrderStorageError(storageMessage(error));
+    }
+    FALLBACK_ORDERS.unshift(row);
+    return { ...mapOrder({ delivery_status: row.delivery_status, product_url: row.product_url, preview_image: row.preview_image, product_title: row.product_title, ...data }), replacesId: requestedId && requestedId !== row.id ? requestedId : undefined };
   }
 
   FALLBACK_ORDERS.unshift(row);
-  return mapOrder(row);
+  return { ...mapOrder(row), replacesId: requestedId && requestedId !== row.id ? requestedId : undefined };
 }
 
 async function updateOrder(orderId, input) {
   HAS_MODIFIED_ORDERS = true;
+  // Pedido con id antiguo (no uuid): nunca llegó a la base de datos. Se crea ahora y se devuelve su id real.
+  if (dbReady() && !isUuid(orderId)) {
+    return createOrder({ ...input, id: orderId });
+  }
   const existingIdx = FALLBACK_ORDERS.findIndex(o => o.id === orderId);
   const updateData = {
     supplier_id: input?.supplierId !== undefined ? input.supplierId : input?.supplier_id,
@@ -321,26 +344,31 @@ async function updateOrder(orderId, input) {
     Object.assign(updateData, productFields(input));
   }
 
-  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+  if (dbReady()) {
+    let data;
+    let error;
     try {
       const run = (payload) => supabase
         .from('supplier_orders')
         .update(payload)
         .eq('id', orderId)
         .select()
-        .single();
-      let { data, error } = await run(updateData);
+        .maybeSingle();
+      ({ data, error } = await run(updateData));
       if (error && isMissingDeliveryColumn(error)) {
         ({ data, error } = await run(withoutDeliveryStatus(updateData)));
       }
-
-      if (!error && data) {
-        if (existingIdx !== -1) FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
-        return mapOrder({ delivery_status: updateData.delivery_status, product_url: updateData.product_url, preview_image: updateData.preview_image, product_title: updateData.product_title, ...data });
-      }
     } catch (e) {
-      console.warn('[supplier.service] updateOrder Supabase update warning:', e.message);
+      error = e;
     }
+    if (error) {
+      console.error('[supplier.service] updateOrder: no se pudo guardar en Supabase:', error.message);
+      throw new OrderStorageError(storageMessage(error));
+    }
+    // El pedido no existía en la tabla (id uuid desconocido): se crea con los datos recibidos.
+    if (!data) return createOrder({ ...input, id: orderId });
+    if (existingIdx !== -1) FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
+    return mapOrder({ delivery_status: updateData.delivery_status, product_url: updateData.product_url, preview_image: updateData.preview_image, product_title: updateData.product_title, ...data });
   }
 
   if (existingIdx !== -1) {

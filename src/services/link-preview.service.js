@@ -101,9 +101,11 @@ function requestOnce(url, { requester, kind = 'html' } = {}) {
           return reject(new Error('La página respondió con el error ' + status + '.'));
         }
         const type = String(res.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
-        if (isImage ? !/^image\/(jpeg|jpg|png|webp|gif)$/.test(type) : type && !/html|xml/.test(type)) {
+        // Muchas tiendas sirven las fotos como application/octet-stream o con un tipo equivocado: se acepta y el
+        // formato real se comprueba después con los primeros bytes del archivo.
+        if (isImage ? !/^(image\/|application\/(octet-stream|binary)$|binary\/octet-stream$|$)/.test(type) : type && !/html|xml/.test(type)) {
           res.resume();
-          return reject(new Error(isImage ? 'El enlace no es una imagen compatible (JPG, PNG, WebP o GIF).' : 'El enlace no es una página web.'));
+          return reject(new Error(isImage ? 'El enlace no es una imagen (la web devolvió «' + type + '»).' : 'El enlace no es una página web.'));
         }
         const encoding = String(res.headers['content-encoding'] || '').toLowerCase();
         let stream = res;
@@ -124,7 +126,10 @@ function requestOnce(url, { requester, kind = 'html' } = {}) {
         });
         stream.on('end', () => {
           const body = Buffer.concat(chunks);
-          resolve(isImage ? { image: body, mediaType: type === 'image/jpg' ? 'image/jpeg' : type, url: url.toString() } : { html: body.toString('utf8'), url: url.toString() });
+          if (!isImage) return resolve({ html: body.toString('utf8'), url: url.toString() });
+          const real = sniffImageType(body);
+          if (!real) return reject(new Error('La imagen está en un formato que el asistente no puede ver (' + (type || 'desconocido') + '). Hacen falta JPG, PNG, WebP o GIF.'));
+          resolve({ image: body, mediaType: real, url: url.toString() });
         });
         stream.on('error', reject);
       }
@@ -351,6 +356,16 @@ function extractPreview(html, pageUrl, { hint = '' } = {}) {
   };
 }
 
+/** Formato real de una imagen según sus primeros bytes ('' si no es JPG, PNG, GIF o WebP). */
+function sniffImageType(buf) {
+  if (!buf || buf.length < 12) return '';
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
+  if (buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+  if (buf.subarray(0, 4).toString('latin1') === 'GIF8') return 'image/gif';
+  if (buf.subarray(0, 4).toString('latin1') === 'RIFF' && buf.subarray(8, 12).toString('latin1') === 'WEBP') return 'image/webp';
+  return '';
+}
+
 /** Descarga una imagen (con las mismas protecciones) para poder mostrársela al asistente. */
 async function fetchImage(rawUrl, options = {}) {
   const out = await fetchResource(rawUrl, { ...options, kind: 'image' });
@@ -381,4 +396,4 @@ async function getLinkPreview(rawUrl, { hint = '', imageUrl = '', withImageData 
   return preview;
 }
 
-module.exports = { getLinkPreview, extractPreview, rankImages, fetchImage, isPrivateIp, parseUrl, metaContent, safeLookup, tokensOf };
+module.exports = { sniffImageType, getLinkPreview, extractPreview, rankImages, fetchImage, isPrivateIp, parseUrl, metaContent, safeLookup, tokensOf };
