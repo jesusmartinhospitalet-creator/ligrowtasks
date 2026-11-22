@@ -33,10 +33,12 @@ app.use('/api/suppliers', supplierRoutes);
 
 // Módulos nuevos: si alguno no se pudiera cargar (p. ej. un archivo que falta en el despliegue), el resto de la
 // API (login, tareas, pedidos…) sigue funcionando y ese módulo responde 503 con el motivo.
+// IMPORTANTE: cada require lleva la ruta escrita literalmente. Vercel empaqueta solo los archivos que ve en un
+// require('...') con texto fijo; con la ruta en una variable el archivo no entra en el despliegue.
 const modules = {};
-function mountOptional(name, mountPath, file) {
+function mountOptional(name, mountPath, load) {
   try {
-    app.use(mountPath, require(file));
+    app.use(mountPath, load());
     modules[name] = 'ok';
   } catch (error) {
     console.error('[server] no se pudo cargar el módulo ' + name + ':', error);
@@ -44,8 +46,8 @@ function mountOptional(name, mountPath, file) {
     app.use(mountPath, (req, res) => res.status(503).json({ error: 'module_unavailable', message: 'El módulo «' + name + '» no se ha podido cargar en el servidor: ' + error.message }));
   }
 }
-mountOptional('assistant', '/api/assistant', './routes/assistant.routes');
-mountOptional('invoicing', '/api/invoicing', './routes/invoicing.routes');
+mountOptional('assistant', '/api/assistant', () => require('./routes/assistant.routes'));
+mountOptional('invoicing', '/api/invoicing', () => require('./routes/invoicing.routes'));
 
 app.get('/api', (req, res) => {
   res.json({ app: 'Ligrow Tasks API', status: 'running' });

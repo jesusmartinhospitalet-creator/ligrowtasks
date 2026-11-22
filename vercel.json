@@ -4,7 +4,7 @@
     {
       "src": "src/server.js",
       "use": "@vercel/node",
-      "config": { "maxDuration": 60, "includeFiles": "public/invoice-calc.js" }
+      "config": { "maxDuration": 60, "includeFiles": ["src/**", "public/invoice-calc.js"] }
     },
     {
       "src": "public/**",
