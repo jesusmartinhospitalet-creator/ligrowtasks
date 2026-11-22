@@ -172,57 +172,11 @@ function mapOrder(row) {
   };
 }
 
-const FALLBACK_ORDERS = [
-  {
-    id: '4a1e9b20-cc8d-4e1a-92de-002000000001',
-    supplier_id: '3d5c8b9e-cc8d-4e1a-92de-001000000101',
-    supplier_name: 'PrintOnDemand BCN',
-    category_name: 'Impresión',
-    concept: '500 Flyers A5 doble cara estucado mate 350g',
-    order_date: '2026-03-24',
-    total_amount: 38.00,
-    status: 'Pagado',
-    delivery_status: 'Entregado',
-    invoice_number: 'FAC-2026-0042',
-    notes: 'Entrega completada en tiempo y forma. Excelente calidad de corte.',
-    files: [
-      { id: 'f1', name: 'Factura_FAC-2026-0042.pdf', type: 'application/pdf', size: 124500, url: '' },
-      { id: 'f2', name: 'Muestra_Flyer_A5.jpg', type: 'image/jpeg', size: 248000, url: '' }
-    ]
-  },
-  {
-    id: '4a1e9b20-cc8d-4e1a-92de-002000000002',
-    supplier_id: '3d5c8b9e-cc8d-4e1a-92de-001000000102',
-    supplier_name: 'Grafisant',
-    category_name: 'Impresión',
-    concept: '2 Roll-ups 85×200 con estructura de aluminio y funda de transporte',
-    order_date: '2026-03-15',
-    total_amount: 178.00,
-    status: 'Pagado',
-    delivery_status: 'Entregado',
-    invoice_number: 'ALB-98124',
-    notes: 'Material corporativo para ferias y stands de clientes.',
-    files: [
-      { id: 'f3', name: 'Diseno_Rollup_85x200.jpg', type: 'image/jpeg', size: 389000, url: '' }
-    ]
-  },
-  {
-    id: '4a1e9b20-cc8d-4e1a-92de-002000000003',
-    supplier_id: '3d5c8b9e-cc8d-4e1a-92de-001000000201',
-    supplier_name: 'Estudi Forma',
-    category_name: 'Diseño',
-    concept: 'Manual de identidad corporativa y adaptaciones web',
-    order_date: '2026-02-28',
-    total_amount: 1200.00,
-    status: 'Recibido',
-    delivery_status: 'En curso',
-    invoice_number: 'EF-2026-08',
-    notes: 'Incluye paleta cromática, tipografías corporativas y guía de estilo.',
-    files: [
-      { id: 'f4', name: 'Manual_Identidad_Ligrow.pdf', type: 'application/pdf', size: 450000, url: '' }
-    ]
-  }
-];
+// Pedidos de demostración que traía la app (datos inventados): ya no se siembran y se ocultan si quedan en la base de datos.
+const DEMO_ORDER_IDS = new Set(['4a1e9b20-cc8d-4e1a-92de-002000000001', '4a1e9b20-cc8d-4e1a-92de-002000000002', '4a1e9b20-cc8d-4e1a-92de-002000000003']);
+const isDemoOrder = (o) => DEMO_ORDER_IDS.has(o && o.id);
+
+const FALLBACK_ORDERS = [];
 
 let HAS_MODIFIED_ORDERS = false;
 
@@ -262,8 +216,9 @@ async function listOrders() {
         .order('order_date', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (!error && Array.isArray(data) && (data.length > 0 || HAS_MODIFIED_ORDERS)) {
-        return data.map(mapOrder);
+      // Si la tabla existe, es la fuente de verdad (aunque esté vacía).
+      if (!error && Array.isArray(data)) {
+        return data.filter((row) => !isDemoOrder(row)).map(mapOrder);
       }
     } catch (e) {
       console.warn('[supplier.service] listOrders Supabase query warning:', e.message);
@@ -278,7 +233,7 @@ async function listOrders() {
         .maybeSingle();
 
       if (!syncError && syncRow?.payload && Array.isArray(syncRow.payload.orders)) {
-        return syncRow.payload.orders.map(mapOrder);
+        return syncRow.payload.orders.filter((row) => !isDemoOrder(row)).map(mapOrder);
       }
     } catch (e) {
       console.warn('[supplier.service] listOrders workspace_sync query warning:', e.message);
