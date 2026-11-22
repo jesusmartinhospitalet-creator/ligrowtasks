@@ -1001,27 +1001,46 @@
     const pv = supplierProject();
     const url = txt(input.url);
     if (!url || !safeUrl(url)) return fail('La URL debe empezar por http:// o https://.');
+    const given = txt(input.image_url);
+    if (given && !safeUrl(given)) return fail('La URL de la imagen debe empezar por http:// o https://.');
     let preview = null;
     let previewError = '';
     try {
-      const res = await fetch('/api/assistant/link-preview?url=' + encodeURIComponent(url), { credentials: 'same-origin' });
+      // La pista (concepto del pedido) ayuda a distinguir la foto del producto de logos, menús y banners.
+      const q = '/api/assistant/link-preview?url=' + encodeURIComponent(url) + '&hint=' + encodeURIComponent(order.concept || '') + (given ? '&image=' + encodeURIComponent(given) : '');
+      const res = await fetch(q, { credentials: 'same-origin' });
       const body = await res.json().catch(() => null);
       if (res.ok && body && body.preview) preview = body.preview;
       else previewError = (body && body.error) || 'No se pudo leer la página.';
     } catch (e) { previewError = 'No se pudo conectar para leer la página.'; }
-    const given = txt(input.image_url);
-    const image = (given && safeUrl(given) ? given : '') || (preview && preview.image) || '';
-    if (!preview && !image) return fail('No he podido leer la página del producto (' + previewError + '). Comprueba que la URL es correcta y pública, o prueba con otra.');
+    if (!preview) return fail('No he podido leer la página del producto (' + previewError + '). Comprueba que la URL es correcta y pública, o prueba con otra.');
+    const image = preview.image || '';
+    if (!image) return fail('No he encontrado ninguna imagen utilizable en esa página' + (preview.imageError ? ' (' + preview.imageError + ')' : '') + '. Prueba con otra URL del producto o con image_url.', (preview.candidates || []).map((c) => c.url));
     const before = clone(order);
-    order.productUrl = (preview && preview.url) || url;
-    order.productTitle = (preview && preview.title) || '';
+    order.productUrl = preview.url || url;
+    order.productTitle = preview.title || '';
     order.previewImage = image;
     order.updatedAt = new Date().toISOString();
     commitOrders(pv, { action: 'Pedido actualizado', summary: say('añadió el enlace del producto al pedido "' + order.concept + '"') });
     syncOrder('PUT', order);
-    return ok({ order: order.concept, product_url: order.productUrl, title: order.productTitle || null, image_found: !!image, price: preview && preview.price ? preview.price + ' ' + (preview.currency || '') : null, description: preview ? preview.description : null }, {
+    const d = preview.imageData;
+    const content = d && d.base64 ? [{ type: 'image', source: { type: 'base64', media_type: d.mediaType, data: d.base64 } }] : undefined;
+    return {
+      result: {
+        order: order.concept,
+        product_url: order.productUrl,
+        title: order.productTitle || null,
+        image_used: image,
+        image_shown_below: !!content,
+        price: preview.price ? preview.price + ' ' + (preview.currency || '') : null,
+        candidates: (preview.candidates || []).filter((c) => c.url !== image).slice(0, 6).map((c) => ({ image_url: c.url, alt: c.alt })),
+        note: content
+          ? 'La imagen guardada se muestra a continuación. Compruébala: si es una foto del producto, termina; si es un logo u otra cosa, repite con image_url de otra candidata.'
+          : 'No se pudo descargar la imagen para mostrártela, pero se ha guardado su dirección.'
+      },
+      content,
       mutated: true,
-      summary: image ? 'Vista previa del producto añadida a «' + trunc(order.concept, 44) + '»' : 'Enlace del producto guardado en «' + trunc(order.concept, 44) + '» (sin imagen)',
+      summary: 'Vista previa del producto añadida a «' + trunc(order.concept, 44) + '»',
       undo: {
         label: 'añadir el producto a «' + trunc(order.concept, 40) + '»',
         run: async () => {
@@ -1032,7 +1051,7 @@
           return { ok: true };
         }
       }
-    });
+    };
   }
 
   // ── Facturación emitida ─────────────────────────────────────────────────────────────────────────────────
