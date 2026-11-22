@@ -1235,6 +1235,11 @@ body{
 .pf-v{color:var(--text-1);text-align:right;word-break:break-word}
 .pf-v a{color:var(--accent);font-weight:600}
 .price-head{font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);margin:12px 0 6px}
+.fact-status{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+.fact-status.pagado{background:rgba(34,197,94,.12);color:#15803d}
+.fact-status.pendiente{background:rgba(245,158,11,.12);color:#b45309}
+.fact-status.recibido{background:rgba(59,130,246,.12);color:#1d4ed8}
+.fact-status.prod{background:rgba(139,92,246,.12);color:#6d28d9}
 .ptable{width:100%;border-collapse:collapse;font-size:12px}
 .ptable th{text-align:left;padding:4px 6px;color:var(--text-3);font-weight:600;border-bottom:1px solid var(--border-2)}
 .ptable td{padding:6px 6px;border-bottom:1px solid var(--border-2);color:var(--text-1)}
@@ -2432,6 +2437,11 @@ let S = {
   docFilter: 'Todos',
   docSearch: '',
   docViewMode: 'list',
+  provFacturasTab: 'recibidas', // 'recibidas' | 'emitidas'
+  _orders: null,
+  _ordersLoading: false,
+  _invoicesEmitidas: null,
+  _invoicesEmitidasLoading: false,
 }
 
 // ── Theme management ─────────────────────────────────────────────────────────
@@ -2521,7 +2531,7 @@ function defaultView(p){ return p.type==='cliente'?'resumen': p.type==='app'?'ov
 function tabsFor(p){
   if(p.type==='cliente') return ['resumen','kanban','actividad'];
   if(p.type==='app')     return ['overview','conexiones','docs','variables'];
-  return ['catalogo'];
+  return ['catalogo','facturas'];
 }
 const TAB_LABELS = {
   resumen:'Resumen',
@@ -2534,7 +2544,8 @@ const TAB_LABELS = {
   conexiones:'Conexiones',
   docs:'Docs',
   variables:'Variables',
-  catalogo:'Catálogo'
+  catalogo:'Catálogo',
+  facturas:'Facturas'
 };
 
 function applyAccent(type){
@@ -2572,6 +2583,7 @@ function selectProj(id){
 }
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
+function setProvFacturasTab(tab){ S.provFacturasTab=tab; render() }
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
 
 // ── Recordatorios ────────────────────────────────────────────────────────
@@ -3605,6 +3617,26 @@ async function loadSupplierDirectory(){
   setSupplierDirectory(directory.categories||[])
   render()
   return directory
+}
+async function loadProvOrders(){
+  if(S._ordersLoading) return
+  S._ordersLoading=true; render()
+  try{
+    const data=await supplierRequest('/orders')
+    S._orders=data.orders||[]
+  }catch(e){ S._orders=[] }
+  S._ordersLoading=false; render()
+}
+async function loadProvInvoicesEmitidas(){
+  if(S._invoicesEmitidasLoading) return
+  S._invoicesEmitidasLoading=true; render()
+  try{
+    const res=await fetch('/api/invoices',{credentials:'same-origin'})
+    if(res.status===503){ S._invoicesEmitidas='not_configured' }
+    else if(res.ok){ const d=await res.json(); S._invoicesEmitidas=d.invoices||[] }
+    else{ S._invoicesEmitidas=[] }
+  }catch(e){ S._invoicesEmitidas=[] }
+  S._invoicesEmitidasLoading=false; render()
 }
 async function ensureSupplierDirectory(){
   try{
@@ -6225,7 +6257,85 @@ function appVars(p){
 }
 
 // ─ PROVEEDOR ────────────────────────────────────────────────────────────────
+function provFacturasContent(p){
+  const tab=S.provFacturasTab||'recibidas'
+  const tabBar='<div class="k-subtabs-bar" style="margin-bottom:20px">'+
+    '<button class="k-subtab '+(tab==='recibidas'?'active':'')+'" onclick="setProvFacturasTab(\'recibidas\')">📥 Recibidas</button>'+
+    '<button class="k-subtab '+(tab==='emitidas'?'active':'')+'" onclick="setProvFacturasTab(\'emitidas\')">📤 Emitidas</button>'+
+  '</div>'
+  if(tab==='recibidas'){
+    if(S._orders===null&&!S._ordersLoading) loadProvOrders()
+    return '<div>'+tabBar+provFacturasRecibidas()+'</div>'
+  }else{
+    if(S._invoicesEmitidas===null&&!S._invoicesEmitidasLoading) loadProvInvoicesEmitidas()
+    return '<div>'+tabBar+provFacturasEmitidas()+'</div>'
+  }
+}
+function provFacturasRecibidas(){
+  if(S._ordersLoading||S._orders===null){
+    return '<div style="color:var(--text-3);font-size:13px;padding:24px 0">Cargando facturas…</div>'
+  }
+  const orders=S._orders||[]
+  const esc=escapeProviderHtml
+  const fmtAmt=n=>Number(n||0).toLocaleString('es-ES',{style:'currency',currency:'EUR'})
+  const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'
+  const statusClass=s=>({'Pagado':'pagado','Pendiente':'pendiente','Recibido':'recibido','En producción':'prod'}[s]||'pendiente')
+  if(!orders.length){
+    return '<div class="card" style="text-align:center;padding:36px;color:var(--text-3)">'+
+      '<div style="font-size:28px;margin-bottom:8px">📄</div>'+
+      '<div style="font-weight:600;margin-bottom:4px;color:var(--text-2)">Sin facturas recibidas</div>'+
+      '<div style="font-size:12px">Las facturas de proveedores aparecerán aquí</div></div>'
+  }
+  const rows=orders.map(o=>
+    '<tr>'+
+    '<td><strong style="font-size:12.5px">'+esc(o.supplierName||'')+'</strong><br><span style="font-size:10.5px;color:var(--text-3)">'+esc(o.categoryName||'')+'</span></td>'+
+    '<td style="max-width:200px"><span style="font-size:12.5px">'+esc(o.concept||'')+'</span></td>'+
+    '<td><code class="tc">'+esc(o.invoiceNumber||'—')+'</code></td>'+
+    '<td><span style="font-size:12px;color:var(--text-2)">'+fmtDate(o.orderDate)+'</span></td>'+
+    '<td style="text-align:right"><strong style="font-size:13px;font-variant-numeric:tabular-nums">'+fmtAmt(o.totalAmount)+'</strong></td>'+
+    '<td><span class="fact-status '+statusClass(o.status)+'">'+esc(o.status||'')+'</span></td>'+
+    '</tr>'
+  ).join('')
+  return '<table class="gtable"><thead><tr>'+
+    '<th>Proveedor</th><th>Concepto</th><th>Nº Factura</th><th>Fecha</th><th style="text-align:right">Importe</th><th>Estado</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table>'
+}
+function provFacturasEmitidas(){
+  if(S._invoicesEmitidasLoading||S._invoicesEmitidas===null){
+    return '<div style="color:var(--text-3);font-size:13px;padding:24px 0">Cargando facturas…</div>'
+  }
+  if(S._invoicesEmitidas==='not_configured'){
+    return '<div class="card" style="text-align:center;padding:36px;color:var(--text-3)">'+
+      '<div style="font-size:28px;margin-bottom:8px">⚙️</div>'+
+      '<div style="font-weight:600;margin-bottom:4px;color:var(--text-2)">Sección privada no configurada</div>'+
+      '<div style="font-size:12px;line-height:1.6">Configura <code style="font-family:monospace;background:var(--surface-2);padding:1px 4px;border-radius:3px">INVOICES_OWNER_USER_ID</code> en las variables de entorno para activar esta sección.</div></div>'
+  }
+  const invoices=S._invoicesEmitidas||[]
+  const esc=escapeProviderHtml
+  const fmtAmt=n=>Number(n||0).toLocaleString('es-ES',{style:'currency',currency:'EUR'})
+  const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'
+  if(!invoices.length){
+    return '<div class="card" style="text-align:center;padding:36px;color:var(--text-3)">'+
+      '<div style="font-size:28px;margin-bottom:8px">📤</div>'+
+      '<div style="font-weight:600;margin-bottom:4px;color:var(--text-2)">Sin facturas emitidas</div>'+
+      '<div style="font-size:12px">Las facturas que generes con tu plantilla aparecerán aquí</div></div>'
+  }
+  const rows=invoices.map(inv=>
+    '<tr>'+
+    '<td><code class="tc">'+esc(inv.invoice_number||'—')+'</code></td>'+
+    '<td><span style="font-size:12px;color:var(--text-2)">'+fmtDate(inv.issue_date)+'</span></td>'+
+    '<td><strong style="font-size:12.5px">'+esc(inv.counterparty||'')+'</strong></td>'+
+    '<td style="max-width:180px"><span style="font-size:12px">'+esc(inv.product||'')+'</span></td>'+
+    '<td style="text-align:right"><strong style="font-size:13px;font-variant-numeric:tabular-nums">'+fmtAmt(inv.total)+'</strong></td>'+
+    '<td><span class="fact-status '+(inv.payment_status==='paid'?'pagado':'pendiente')+'">'+(inv.payment_status==='paid'?'Pagado':'Pendiente')+'</span></td>'+
+    '</tr>'
+  ).join('')
+  return '<table class="gtable"><thead><tr>'+
+    '<th>Nº Factura</th><th>Fecha</th><th>Para</th><th>Concepto</th><th style="text-align:right">Importe</th><th>Estado</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table>'
+}
 function provContent(p){
+  if(S.view==='facturas') return provFacturasContent(p)
   const cats=p.cats||[]
   if(!S.provCat)S.provCat=cats[0]?.id||null
   const cat=cats.find(category=>category.id===S.provCat)||cats[0]
