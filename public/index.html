@@ -1240,6 +1240,25 @@ body{
 .fact-status.pendiente{background:rgba(245,158,11,.12);color:#b45309}
 .fact-status.recibido{background:rgba(59,130,246,.12);color:#1d4ed8}
 .fact-status.prod{background:rgba(139,92,246,.12);color:#6d28d9}
+.fact-status.cancelado{background:rgba(239,68,68,.12);color:#b91c1c}
+.ped-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.ped-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.ped-kpi-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:4px}
+.ped-kpi-value{font-size:19px;font-weight:800;color:var(--text-1);font-variant-numeric:tabular-nums;line-height:1.2}
+.ped-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border-2);cursor:pointer;transition:background .1s;user-select:none}
+.ped-row:hover,.ped-row.open{background:var(--surface-2)}
+.ped-prov{flex:0 0 148px;min-width:0;overflow:hidden}
+.ped-prov-name{font-size:12.5px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ped-prov-cat{font-size:10.5px;color:var(--text-3)}
+.ped-badges{display:flex;gap:5px;flex-shrink:0}
+.ped-concept{flex:1;min-width:0;font-size:12.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ped-meta{flex-shrink:0;text-align:right;min-width:88px}
+.ped-date{font-size:10.5px;color:var(--text-3)}
+.ped-ref{font-size:10px;color:var(--text-3);font-family:'DM Mono',monospace}
+.ped-amount{flex-shrink:0;font-size:13px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;min-width:68px;text-align:right}
+.ped-detail{padding:12px 14px 16px;background:var(--surface-2);border-bottom:1px solid var(--border-2)}
+.ped-status-btn{cursor:pointer;border:none;background:transparent;padding:0;font:inherit;line-height:1}
+.ped-status-btn:hover .fact-status{opacity:.8}
 .ptable{width:100%;border-collapse:collapse;font-size:12px}
 .ptable th{text-align:left;padding:4px 6px;color:var(--text-3);font-weight:600;border-bottom:1px solid var(--border-2)}
 .ptable td{padding:6px 6px;border-bottom:1px solid var(--border-2);color:var(--text-1)}
@@ -2437,11 +2456,10 @@ let S = {
   docFilter: 'Todos',
   docSearch: '',
   docViewMode: 'list',
-  provFacturasTab: 'recibidas', // 'recibidas' | 'emitidas'
+  provPedidosSearch: '',
+  _pedidosExpanded: {},
   _orders: null,
   _ordersLoading: false,
-  _invoicesEmitidas: null,
-  _invoicesEmitidasLoading: false,
 }
 
 // ── Theme management ─────────────────────────────────────────────────────────
@@ -2527,11 +2545,11 @@ function filtered(){
   if(S.filter==='proveedores')return DATA.filter(p=>p.type==='proveedor');
   return DATA;
 }
-function defaultView(p){ return p.type==='cliente'?'resumen': p.type==='app'?'overview':'catalogo' }
+function defaultView(p){ return p.type==='cliente'?'resumen': p.type==='app'?'overview':'pedidos' }
 function tabsFor(p){
   if(p.type==='cliente') return ['resumen','kanban','actividad'];
   if(p.type==='app')     return ['overview','conexiones','docs','variables'];
-  return ['catalogo','facturas'];
+  return ['pedidos','catalogo'];
 }
 const TAB_LABELS = {
   resumen:'Resumen',
@@ -2544,8 +2562,8 @@ const TAB_LABELS = {
   conexiones:'Conexiones',
   docs:'Docs',
   variables:'Variables',
-  catalogo:'Catálogo',
-  facturas:'Facturas'
+  pedidos:'Pedidos',
+  catalogo:'Catálogo'
 };
 
 function applyAccent(type){
@@ -2583,7 +2601,39 @@ function selectProj(id){
 }
 function setView(v){ S.view=v; render() }
 function setProvCat(id){ S.provCat=id; S.open={}; render() }
-function setProvFacturasTab(tab){ S.provFacturasTab=tab; render() }
+function setProvPedidosSearch(val){ S.provPedidosSearch=val; render() }
+function togglePedidoRow(id){ S._pedidosExpanded[id]=!S._pedidosExpanded[id]; render() }
+async function cyclePaymentStatus(id,event){
+  if(event) event.stopPropagation()
+  const order=S._orders?.find(o=>o.id===id); if(!order) return
+  const prev=order.paymentStatus
+  order.paymentStatus=prev==='pagado'?'pendiente':'pagado'
+  render()
+  try{ await supplierRequest('/orders/'+id+'/status',{method:'PATCH',body:JSON.stringify({paymentStatus:order.paymentStatus})}) }
+  catch(e){ order.paymentStatus=prev; render() }
+}
+async function cycleDeliveryStatus(id,event){
+  if(event) event.stopPropagation()
+  const order=S._orders?.find(o=>o.id===id); if(!order) return
+  const prev=order.deliveryStatus
+  const cycle={solicitado:'en_produccion',en_produccion:'recibido',recibido:'cancelado',cancelado:'solicitado'}
+  order.deliveryStatus=cycle[prev]||'en_produccion'
+  render()
+  try{ await supplierRequest('/orders/'+id+'/status',{method:'PATCH',body:JSON.stringify({deliveryStatus:order.deliveryStatus})}) }
+  catch(e){ order.deliveryStatus=prev; render() }
+}
+function openNewOrderModal(){
+  alert('Funcionalidad de nuevo pedido próximamente.')
+}
+async function deleteOrder(id,event){
+  if(event) event.stopPropagation()
+  if(!confirm('¿Eliminar este pedido?')) return
+  const idx=S._orders?S._orders.findIndex(o=>o.id===id):-1
+  const removed=idx!==-1?S._orders.splice(idx,1)[0]:null
+  render()
+  try{ await supplierRequest('/orders/'+id,{method:'DELETE'}) }
+  catch(e){ if(removed&&idx!==-1){ S._orders.splice(idx,0,removed); render() } }
+}
 function toggleCard(k){ S.open[k]=!S.open[k]; render() }
 
 // ── Recordatorios ────────────────────────────────────────────────────────
@@ -3626,17 +3676,6 @@ async function loadProvOrders(){
     S._orders=data.orders||[]
   }catch(e){ S._orders=[] }
   S._ordersLoading=false; render()
-}
-async function loadProvInvoicesEmitidas(){
-  if(S._invoicesEmitidasLoading) return
-  S._invoicesEmitidasLoading=true; render()
-  try{
-    const res=await fetch('/api/invoices',{credentials:'same-origin'})
-    if(res.status===503){ S._invoicesEmitidas='not_configured' }
-    else if(res.ok){ const d=await res.json(); S._invoicesEmitidas=d.invoices||[] }
-    else{ S._invoicesEmitidas=[] }
-  }catch(e){ S._invoicesEmitidas=[] }
-  S._invoicesEmitidasLoading=false; render()
 }
 async function ensureSupplierDirectory(){
   try{
@@ -6257,85 +6296,91 @@ function appVars(p){
 }
 
 // ─ PROVEEDOR ────────────────────────────────────────────────────────────────
-function provFacturasContent(p){
-  const tab=S.provFacturasTab||'recibidas'
-  const tabBar='<div class="k-subtabs-bar" style="margin-bottom:20px">'+
-    '<button class="k-subtab '+(tab==='recibidas'?'active':'')+'" onclick="setProvFacturasTab(\'recibidas\')">📥 Recibidas</button>'+
-    '<button class="k-subtab '+(tab==='emitidas'?'active':'')+'" onclick="setProvFacturasTab(\'emitidas\')">📤 Emitidas</button>'+
-  '</div>'
-  if(tab==='recibidas'){
-    if(S._orders===null&&!S._ordersLoading) loadProvOrders()
-    return '<div>'+tabBar+provFacturasRecibidas()+'</div>'
-  }else{
-    if(S._invoicesEmitidas===null&&!S._invoicesEmitidasLoading) loadProvInvoicesEmitidas()
-    return '<div>'+tabBar+provFacturasEmitidas()+'</div>'
-  }
-}
-function provFacturasRecibidas(){
-  if(S._ordersLoading||S._orders===null){
-    return '<div style="color:var(--text-3);font-size:13px;padding:24px 0">Cargando facturas…</div>'
-  }
+function provPedidosContent(){
+  if(S._orders===null&&!S._ordersLoading) loadProvOrders()
+  const esc=escapeProviderHtml
+  const fmtAmt=n=>Number(n||0).toLocaleString('es-ES',{style:'currency',currency:'EUR'})
+  const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'}):'—'
+
   const orders=S._orders||[]
-  const esc=escapeProviderHtml
-  const fmtAmt=n=>Number(n||0).toLocaleString('es-ES',{style:'currency',currency:'EUR'})
-  const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'
-  const statusClass=s=>({'Pagado':'pagado','Pendiente':'pendiente','Recibido':'recibido','En producción':'prod'}[s]||'pendiente')
-  if(!orders.length){
-    return '<div class="card" style="text-align:center;padding:36px;color:var(--text-3)">'+
-      '<div style="font-size:28px;margin-bottom:8px">📄</div>'+
-      '<div style="font-weight:600;margin-bottom:4px;color:var(--text-2)">Sin facturas recibidas</div>'+
-      '<div style="font-size:12px">Las facturas de proveedores aparecerán aquí</div></div>'
+  const q=(S.provPedidosSearch||'').toLowerCase()
+  const filtered=q?orders.filter(o=>(o.supplierName||'').toLowerCase().includes(q)||(o.concept||'').toLowerCase().includes(q)||(o.invoiceNumber||'').toLowerCase().includes(q)):orders
+
+  // KPIs
+  const totalInv=orders.reduce((s,o)=>s+Number(o.totalAmount||0),0)
+  const totalPaid=orders.filter(o=>o.paymentStatus==='pagado').reduce((s,o)=>s+Number(o.totalAmount||0),0)
+  const totalPend=totalInv-totalPaid
+  const kpis='<div class="ped-kpis">'+
+    '<div class="ped-kpi"><div class="ped-kpi-label">Inversión total</div><div class="ped-kpi-value">'+fmtAmt(totalInv)+'</div></div>'+
+    '<div class="ped-kpi"><div class="ped-kpi-label">Pagado</div><div class="ped-kpi-value" style="color:#16a34a">'+fmtAmt(totalPaid)+'</div></div>'+
+    '<div class="ped-kpi"><div class="ped-kpi-label">Pendiente</div><div class="ped-kpi-value" style="color:#d97706">'+fmtAmt(totalPend)+'</div></div>'+
+    '<div class="ped-kpi"><div class="ped-kpi-label">Nº Pedidos</div><div class="ped-kpi-value">'+orders.length+'</div></div>'+
+  '</div>'
+
+  if(S._ordersLoading&&!orders.length){
+    return kpis+'<div style="color:var(--text-3);font-size:13px;padding:24px 0">Cargando pedidos…</div>'
   }
-  const rows=orders.map(o=>
-    '<tr>'+
-    '<td><strong style="font-size:12.5px">'+esc(o.supplierName||'')+'</strong><br><span style="font-size:10.5px;color:var(--text-3)">'+esc(o.categoryName||'')+'</span></td>'+
-    '<td style="max-width:200px"><span style="font-size:12.5px">'+esc(o.concept||'')+'</span></td>'+
-    '<td><code class="tc">'+esc(o.invoiceNumber||'—')+'</code></td>'+
-    '<td><span style="font-size:12px;color:var(--text-2)">'+fmtDate(o.orderDate)+'</span></td>'+
-    '<td style="text-align:right"><strong style="font-size:13px;font-variant-numeric:tabular-nums">'+fmtAmt(o.totalAmount)+'</strong></td>'+
-    '<td><span class="fact-status '+statusClass(o.status)+'">'+esc(o.status||'')+'</span></td>'+
-    '</tr>'
-  ).join('')
-  return '<table class="gtable"><thead><tr>'+
-    '<th>Proveedor</th><th>Concepto</th><th>Nº Factura</th><th>Fecha</th><th style="text-align:right">Importe</th><th>Estado</th>'+
-    '</tr></thead><tbody>'+rows+'</tbody></table>'
-}
-function provFacturasEmitidas(){
-  if(S._invoicesEmitidasLoading||S._invoicesEmitidas===null){
-    return '<div style="color:var(--text-3);font-size:13px;padding:24px 0">Cargando facturas…</div>'
+
+  const searchBar='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'+
+    '<input class="search-input" style="flex:1;max-width:280px" placeholder="Buscar pedido…" value="'+esc(S.provPedidosSearch||'')+'" oninput="setProvPedidosSearch(this.value)"/>'+
+    '<button class="add-btn" type="button" style="flex-shrink:0" onclick="openNewOrderModal()">+ Nuevo pedido</button>'+
+  '</div>'
+
+  if(!filtered.length){
+    const empty=q?'Sin resultados para "'+esc(q)+'"':'Aún no hay pedidos'
+    return kpis+searchBar+'<div class="card" style="text-align:center;padding:36px;color:var(--text-3)">'+
+      '<div style="font-size:26px;margin-bottom:8px">📦</div>'+
+      '<div style="font-weight:600;margin-bottom:4px;color:var(--text-2)">'+empty+'</div>'+
+      '</div>'
   }
-  if(S._invoicesEmitidas==='not_configured'){
-    return '<div class="card" style="text-align:center;padding:36px;color:var(--text-3)">'+
-      '<div style="font-size:28px;margin-bottom:8px">⚙️</div>'+
-      '<div style="font-weight:600;margin-bottom:4px;color:var(--text-2)">Sección privada no configurada</div>'+
-      '<div style="font-size:12px;line-height:1.6">Configura <code style="font-family:monospace;background:var(--surface-2);padding:1px 4px;border-radius:3px">INVOICES_OWNER_USER_ID</code> en las variables de entorno para activar esta sección.</div></div>'
-  }
-  const invoices=S._invoicesEmitidas||[]
-  const esc=escapeProviderHtml
-  const fmtAmt=n=>Number(n||0).toLocaleString('es-ES',{style:'currency',currency:'EUR'})
-  const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'
-  if(!invoices.length){
-    return '<div class="card" style="text-align:center;padding:36px;color:var(--text-3)">'+
-      '<div style="font-size:28px;margin-bottom:8px">📤</div>'+
-      '<div style="font-weight:600;margin-bottom:4px;color:var(--text-2)">Sin facturas emitidas</div>'+
-      '<div style="font-size:12px">Las facturas que generes con tu plantilla aparecerán aquí</div></div>'
-  }
-  const rows=invoices.map(inv=>
-    '<tr>'+
-    '<td><code class="tc">'+esc(inv.invoice_number||'—')+'</code></td>'+
-    '<td><span style="font-size:12px;color:var(--text-2)">'+fmtDate(inv.issue_date)+'</span></td>'+
-    '<td><strong style="font-size:12.5px">'+esc(inv.counterparty||'')+'</strong></td>'+
-    '<td style="max-width:180px"><span style="font-size:12px">'+esc(inv.product||'')+'</span></td>'+
-    '<td style="text-align:right"><strong style="font-size:13px;font-variant-numeric:tabular-nums">'+fmtAmt(inv.total)+'</strong></td>'+
-    '<td><span class="fact-status '+(inv.payment_status==='paid'?'pagado':'pendiente')+'">'+(inv.payment_status==='paid'?'Pagado':'Pendiente')+'</span></td>'+
-    '</tr>'
-  ).join('')
-  return '<table class="gtable"><thead><tr>'+
-    '<th>Nº Factura</th><th>Fecha</th><th>Para</th><th>Concepto</th><th style="text-align:right">Importe</th><th>Estado</th>'+
-    '</tr></thead><tbody>'+rows+'</tbody></table>'
+
+  const PAY_LABEL={pagado:'Pagado',pendiente:'Pendiente'}
+  const DEL_LABEL={solicitado:'Solicitado',en_produccion:'En producción',recibido:'Recibido',cancelado:'Cancelado'}
+  const DEL_CLASS={solicitado:'pendiente',en_produccion:'prod',recibido:'recibido',cancelado:'cancelado'}
+
+  const rows=filtered.map(o=>{
+    const exp=!!S._pedidosExpanded[o.id]
+    const payStatus=o.paymentStatus||'pendiente'
+    const delStatus=o.deliveryStatus||'solicitado'
+    const hasInv=o.invoiceNumber&&o.invoiceNumber!=='—'
+    const files=o.files||[]
+    const pdfFiles=files.filter(f=>f.name&&f.name.toLowerCase().endsWith('.pdf'))
+
+    const payBadge='<button class="ped-status-btn" title="Cambiar estado de pago" onclick="cyclePaymentStatus(\''+esc(o.id)+'\',event)">'+
+      '<span class="fact-status '+(payStatus==='pagado'?'pagado':'pendiente')+'">'+PAY_LABEL[payStatus]+'</span></button>'
+    const delBadge='<button class="ped-status-btn" title="Cambiar estado de entrega" onclick="cycleDeliveryStatus(\''+esc(o.id)+'\',event)">'+
+      '<span class="fact-status '+(DEL_CLASS[delStatus]||'pendiente')+'">'+DEL_LABEL[delStatus]+'</span></button>'
+
+    let detail=''
+    if(exp){
+      const noteHtml=o.notes?'<div style="font-size:11.5px;color:var(--text-2);margin-bottom:10px;white-space:pre-wrap">'+esc(o.notes)+'</div>':''
+      const invHtml=hasInv?'<div style="font-size:11px;color:var(--text-3);margin-bottom:8px">Nº Factura: <code style="font-family:\'DM Mono\',monospace;font-size:10.5px">'+esc(o.invoiceNumber)+'</code></div>':''
+      const pdfHtml=pdfFiles.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+
+        pdfFiles.map(f=>'<a href="'+esc(f.url||'')+'" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);text-decoration:none;background:var(--surface);border:1px solid var(--border);padding:3px 8px;border-radius:5px">📄 '+esc(f.name)+'</a>').join('')+
+        '</div>':''
+      const otherFiles=files.filter(f=>!f.name||!f.name.toLowerCase().endsWith('.pdf'))
+      const otherHtml=otherFiles.length?'<div style="font-size:11px;color:var(--text-3)">'+(otherFiles.length)+' archivo'+(otherFiles.length>1?'s':'')+ ' adjunto'+(otherFiles.length>1?'s':'')+'</div>':''
+      const delBtn='<button class="prov-card-action delete" style="font-size:11px;padding:4px 10px" onclick="deleteOrder(\''+esc(o.id)+'\',event)">Eliminar</button>'
+      detail='<div class="ped-detail">'+noteHtml+invHtml+pdfHtml+otherHtml+
+        '<div style="display:flex;gap:6px;margin-top:8px">'+delBtn+'</div></div>'
+    }
+
+    return '<div>'+
+      '<div class="ped-row'+(exp?' open':'')+'" onclick="togglePedidoRow(\''+esc(o.id)+'\')">'+
+        '<div class="ped-prov"><div class="ped-prov-name">'+esc(o.supplierName||'—')+'</div><div class="ped-prov-cat">'+esc(o.categoryName||'')+'</div></div>'+
+        '<div class="ped-badges">'+payBadge+delBadge+'</div>'+
+        '<div class="ped-concept">'+esc(o.concept||'')+'</div>'+
+        '<div class="ped-meta"><div class="ped-date">'+fmtDate(o.orderDate)+'</div>'+(hasInv?'<div class="ped-ref">'+esc(o.invoiceNumber)+'</div>':'')+'</div>'+
+        '<div class="ped-amount">'+fmtAmt(o.totalAmount)+'</div>'+
+      '</div>'+
+      detail+
+    '</div>'
+  }).join('')
+
+  return kpis+searchBar+'<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">'+rows+'</div>'
 }
 function provContent(p){
-  if(S.view==='facturas') return provFacturasContent(p)
+  if(S.view==='pedidos') return provPedidosContent()
   const cats=p.cats||[]
   if(!S.provCat)S.provCat=cats[0]?.id||null
   const cat=cats.find(category=>category.id===S.provCat)||cats[0]

@@ -94,4 +94,17 @@ router.delete('/orders/:id', async (req, res, next) => {
   }
 });
 
+router.patch('/orders/:id/status', async (req, res, next) => {
+  try {
+    const { paymentStatus, deliveryStatus } = req.body || {};
+    if (paymentStatus === undefined && deliveryStatus === undefined) {
+      return res.status(400).json({ error: 'Se requiere paymentStatus o deliveryStatus.' });
+    }
+    const order = await supplierService.patchOrderStatus(req.params.id, { paymentStatus, deliveryStatus });
+    res.json({ order });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

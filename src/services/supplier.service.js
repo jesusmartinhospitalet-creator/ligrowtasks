@@ -150,7 +150,22 @@ async function removeSupplier(supplierId) {
   if (error) throw error;
 }
 
+function deriveStatuses(row) {
+  if (row.payment_status && row.delivery_status) {
+    return { paymentStatus: row.payment_status, deliveryStatus: row.delivery_status };
+  }
+  const legacy = row.status || 'Pagado';
+  const map = {
+    'Pagado':       { paymentStatus: 'pagado',    deliveryStatus: 'recibido' },
+    'Recibido':     { paymentStatus: 'pendiente',  deliveryStatus: 'recibido' },
+    'En producción':{ paymentStatus: 'pendiente',  deliveryStatus: 'en_produccion' },
+    'Pendiente':    { paymentStatus: 'pendiente',  deliveryStatus: 'solicitado' }
+  };
+  return map[legacy] || { paymentStatus: 'pendiente', deliveryStatus: 'solicitado' };
+}
+
 function mapOrder(row) {
+  const { paymentStatus, deliveryStatus } = deriveStatuses(row);
   return {
     id: row.id,
     supplierId: row.supplier_id || row.supplierId || null,
@@ -160,6 +175,8 @@ function mapOrder(row) {
     orderDate: row.order_date ? (typeof row.order_date === 'string' ? row.order_date.slice(0, 10) : new Date(row.order_date).toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10),
     totalAmount: Number(row.total_amount != null ? row.total_amount : (row.totalAmount || 0)),
     status: row.status || 'Pagado',
+    paymentStatus,
+    deliveryStatus,
     invoiceNumber: row.invoice_number || row.invoiceNumber || '',
     notes: row.notes || '',
     files: Array.isArray(row.files) ? row.files : [],
@@ -392,6 +409,48 @@ async function removeOrder(orderId) {
   await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
 }
 
+async function patchOrderStatus(orderId, { paymentStatus, deliveryStatus }) {
+  HAS_MODIFIED_ORDERS = true;
+  const VALID_PAY = ['pagado', 'pendiente'];
+  const VALID_DEL = ['solicitado', 'en_produccion', 'recibido', 'cancelado'];
+
+  const updateData = { updated_at: new Date().toISOString() };
+  if (paymentStatus !== undefined) {
+    if (!VALID_PAY.includes(paymentStatus)) throw new Error('Estado de pago inválido.');
+    updateData.payment_status = paymentStatus;
+  }
+  if (deliveryStatus !== undefined) {
+    if (!VALID_DEL.includes(deliveryStatus)) throw new Error('Estado de entrega inválido.');
+    updateData.delivery_status = deliveryStatus;
+  }
+
+  const existingIdx = FALLBACK_ORDERS.findIndex(o => o.id === orderId);
+
+  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    try {
+      const { data, error } = await supabase
+        .from('supplier_orders')
+        .update(updateData)
+        .eq('id', orderId)
+        .select()
+        .single();
+
+      if (!error && data) {
+        if (existingIdx !== -1) FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
+        return mapOrder(data);
+      }
+    } catch (e) {
+      console.warn('[supplier.service] patchOrderStatus Supabase update warning:', e.message);
+    }
+  }
+
+  if (existingIdx !== -1) {
+    FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
+    return mapOrder(FALLBACK_ORDERS[existingIdx]);
+  }
+  throw new Error('Pedido no encontrado.');
+}
+
 module.exports = {
   listSupplierDirectory,
   createCategory,
@@ -402,5 +461,6 @@ module.exports = {
   listOrders,
   createOrder,
   updateOrder,
-  removeOrder
+  removeOrder,
+  patchOrderStatus
 };
