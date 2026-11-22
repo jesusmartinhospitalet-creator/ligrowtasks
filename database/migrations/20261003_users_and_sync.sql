@@ -29,33 +29,6 @@ create table if not exists workspace_sync (
 create index if not exists app_users_email_idx on app_users (lower(email));
 create index if not exists workspace_sync_updated_at_idx on workspace_sync (updated_at desc);
 
--- 3. Semilla de usuarios iniciales:
--- Hash bcrypt para 'ligrow26': $2a$10$fV8g5iH0bH036vX4tD8h7OMM.LhB9R9KxT3uGjS9P5k5.8MsqoYtC
-insert into app_users (id, email, password_hash, name, role, allowed_clients, is_active) values
-  (
-    '00000000-0000-0000-0000-000000000001',
-    'jesus.martin.hospitalet@gmail.com',
-    '$2a$10$fV8g5iH0bH036vX4tD8h7OMM.LhB9R9KxT3uGjS9P5k5.8MsqoYtC',
-    'Jesús (Admin)',
-    'admin',
-    '["*"]'::jsonb,
-    true
-  ),
-  (
-    '00000000-0000-0000-0000-000000000002',
-    'blancaamartiin04@gmail.com',
-    '$2a$10$fV8g5iH0bH036vX4tD8h7OMM.LhB9R9KxT3uGjS9P5k5.8MsqoYtC',
-    'Blanca',
-    'member',
-    '["cpb"]'::jsonb,
-    true
-  )
-on conflict (email) do update set
-  password_hash = excluded.password_hash,
-  name = excluded.name,
-  role = excluded.role,
-  allowed_clients = excluded.allowed_clients,
-  is_active = excluded.is_active,
-  updated_at = now();
+-- Crear usuarios mediante el procedimiento administrativo seguro; no incluir credenciales aquí.
 
 commit;

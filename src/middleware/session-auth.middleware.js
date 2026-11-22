@@ -6,8 +6,8 @@ const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7 días de sesión
 
 function sessionSecret() {
   const secret = process.env.APP_SESSION_SECRET || env.jwtSecret;
-  if (!secret || secret === 'change-this-secret') {
-    return 'ligrow-tasks-secure-session-key-2026-prod';
+  if (!secret || secret === 'change-this-secret' || secret.length < 32) {
+    throw new Error('APP_SESSION_SECRET debe tener al menos 32 caracteres y ser privado.');
   }
   return secret;
 }
