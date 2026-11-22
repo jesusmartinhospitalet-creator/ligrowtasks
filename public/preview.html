@@ -2587,6 +2587,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 @media (max-width:768px){.tb-row1{flex-wrap:wrap}.proj-title-wrap{flex:1 1 calc(100% - 70px)}.tb-actions-group{margin-left:0;width:100%;flex-wrap:wrap}.tb-actions-group>*{flex:1 1 auto;justify-content:center}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}}
   </style>
+  <link rel="stylesheet" href="/assistant.css">
 </head>
 <body>
 <div id="app"></div>
@@ -4580,28 +4581,30 @@ function save(details = {}){
   }
 }
 
-async function syncSaveCurrentProject(details = {}){
-  if(!S.proj || !S.proj.id) return;
-  if(S.proj.type !== 'cliente' && S.proj.id !== 'pv') return;
-  const clientId = S.proj.id;
+// `target` permite guardar un proyecto distinto del abierto (lo usa el asistente de IA).
+async function syncSaveCurrentProject(details = {}, target = null){
+  const proj = target || S.proj;
+  if(!proj || !proj.id) return;
+  if(proj.type !== 'cliente' && proj.id !== 'pv') return;
+  const clientId = proj.id;
   const isLocalFile = window.location.protocol === 'file:';
   if(isLocalFile) return;
 
   try{
     let payload = {};
-    if(S.proj.type === 'cliente'){
+    if(proj.type === 'cliente'){
       payload = {
-        tasks: S.proj.tasks || [],
-        recordatorios: S.proj.recordatorios || [],
-        docs: S.proj.docs || [],
-        semaforo: S.proj.semaforo || 'verde',
-        sub: S.proj.sub || '',
-        responsable: S.proj.responsable || S.defaultUser || 'Jesús'
+        tasks: proj.tasks || [],
+        recordatorios: proj.recordatorios || [],
+        docs: proj.docs || [],
+        semaforo: proj.semaforo || 'verde',
+        sub: proj.sub || '',
+        responsable: proj.responsable || S.defaultUser || 'Jesús'
       };
-    } else if(S.proj.id === 'pv' || S.proj.type === 'proveedor'){
+    } else if(proj.id === 'pv' || proj.type === 'proveedor'){
       payload = {
-        orders: S.proj.orders || [],
-        cats: S.proj.cats || []
+        orders: proj.orders || [],
+        cats: proj.cats || []
       };
     }
 
@@ -4613,7 +4616,7 @@ async function syncSaveCurrentProject(details = {}){
         payload,
         details: {
           action: details.action || 'Actualización de datos',
-          summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${S.proj.name}`
+          summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${proj.name}`
         }
       })
     });
@@ -4621,13 +4624,13 @@ async function syncSaveCurrentProject(details = {}){
     if(res.ok){
       const data = await res.json();
       if(data.record && data.record.activityLog){
-        S.proj.activityLog = data.record.activityLog;
-        S.proj.lastModifiedBy = data.record.lastModifiedBy;
-        S.proj.lastModifiedEmail = data.record.lastModifiedEmail;
-        S.proj.lastModifiedAt = data.record.lastModifiedAt || new Date().toISOString();
-        S.proj.ultimaActividad = formatLastActivity(data.record.lastModifiedBy, S.proj.lastModifiedAt);
+        proj.activityLog = data.record.activityLog;
+        proj.lastModifiedBy = data.record.lastModifiedBy;
+        proj.lastModifiedEmail = data.record.lastModifiedEmail;
+        proj.lastModifiedAt = data.record.lastModifiedAt || new Date().toISOString();
+        proj.ultimaActividad = formatLastActivity(data.record.lastModifiedBy, proj.lastModifiedAt);
         const liveActEl = document.getElementById('proj-live-activity');
-        if(liveActEl) liveActEl.textContent = S.proj.ultimaActividad;
+        if(liveActEl) liveActEl.textContent = proj.ultimaActividad;
       }
     }
   }catch(err){}
@@ -8240,5 +8243,7 @@ window.addEventListener('focus', () => {
 loadSupplierDirectory().catch(()=>{})
 loadSupplierOrders().catch(()=>{})
 </script>
+<script src="/assistant-tools.js"></script>
+<script src="/assistant.js"></script>
 </body>
 </html>
