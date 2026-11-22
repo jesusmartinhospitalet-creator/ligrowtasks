@@ -38,9 +38,9 @@ router.post('/:id/pdf', async (req,res) => {
   if(error||!invoice)return res.status(404).json({error:'Factura no encontrada.'});
   if(invoice.pdf_path)return res.status(409).json({error:'La factura ya tiene un PDF original.'});
   const b64=req.body?.pdf;
-  if(typeof b64!=='string'||b64.length>14000000||!/^[A-Za-z0-9+/]+={0,2}$/.test(b64))return res.status(400).json({error:'PDF inválido o demasiado grande (máximo 10 MB).'});
+  if(typeof b64!=='string'||b64.length>4194304||!/^[A-Za-z0-9+/]+={0,2}$/.test(b64))return res.status(400).json({error:'PDF inválido o demasiado grande (máximo 3 MB).'});
   const bytes=Buffer.from(b64,'base64');
-  if(bytes.length>10485760||bytes.subarray(0,5).toString()!=='%PDF-')return res.status(400).json({error:'El archivo debe ser un PDF válido de hasta 10 MB.'});
+  if(bytes.length>3145728||bytes.subarray(0,5).toString()!=='%PDF-')return res.status(400).json({error:'El archivo debe ser un PDF válido de hasta 3 MB.'});
   const path=crypto.randomUUID()+'.pdf';
   const upload=await db.storage.from(BUCKET).upload(path,bytes,{contentType:'application/pdf',upsert:false});
   if(upload.error)return res.status(503).json({error:'No se ha podido guardar el PDF.'});
