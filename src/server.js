@@ -13,6 +13,7 @@ const taskRoutes      = require('./routes/tasks.routes');
 const templateRoutes  = require('./routes/templates.routes');
 const monthRoutes     = require('./routes/months.routes');
 const supplierRoutes  = require('./routes/suppliers.routes');
+const invoiceRoutes   = require('./routes/invoices.routes');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/tasks',     taskRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/months',    monthRoutes);
 app.use('/api/suppliers', supplierRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 app.get('/api', (req, res) => {
   res.json({ app: 'Ligrow Tasks API', status: 'running' });
