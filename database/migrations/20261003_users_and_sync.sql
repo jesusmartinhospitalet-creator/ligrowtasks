@@ -50,12 +50,8 @@ insert into app_users (id, email, password_hash, name, role, allowed_clients, is
     '["cpb"]'::jsonb,
     true
   )
-on conflict (email) do update set
-  password_hash = excluded.password_hash,
-  name = excluded.name,
-  role = excluded.role,
-  allowed_clients = excluded.allowed_clients,
-  is_active = excluded.is_active,
-  updated_at = now();
+-- No pisa usuarios existentes (ni sus contraseñas) si la migración se vuelve a ejecutar.
+-- IMPORTANTE: el hash de arriba NO corresponde a ninguna contraseña real. Define la tuya con el SQL de docs/AUTH.md.
+on conflict (email) do nothing;
 
 commit;

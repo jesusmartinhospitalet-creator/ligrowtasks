@@ -45,6 +45,15 @@ function sanitizeUser(u) {
   };
 }
 
+const dbConfigured = () => Boolean(supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+
+/**
+ * Los usuarios de respaldo (con la contraseña de ejemplo «ligrow26») solo existen para desarrollo local. En
+ * producción NUNCA se usan: si la base de datos falla, no está configurada o el usuario no existe, se rechaza el
+ * acceso en lugar de abrir una puerta con una contraseña conocida.
+ */
+const fallbackAllowed = () => process.env.NODE_ENV !== 'production';
+
 async function authenticate(email, password) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   const cleanPass = String(password || '');
@@ -54,7 +63,7 @@ async function authenticate(email, password) {
   }
 
   // 1. Intentar buscar en Supabase
-  if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+  if (dbConfigured()) {
     try {
       const { data, error } = await supabase
         .from('app_users')
@@ -62,6 +71,15 @@ async function authenticate(email, password) {
         .eq('email', cleanEmail)
         .maybeSingle();
 
+      if (error && !fallbackAllowed()) {
+        const missingTable = error.code === '42P01' || error.code === 'PGRST205' || /does not exist|schema cache/i.test(String(error.message));
+        throw new Error(missingTable
+          ? 'Falta la tabla de usuarios en Supabase (database/migrations/20261003_users_and_sync.sql).'
+          : 'No se ha podido comprobar tu usuario en la base de datos. Inténtalo de nuevo en unos segundos.');
+      }
+      if (!error && !data && !fallbackAllowed()) {
+        throw new Error('Usuario no encontrado.');
+      }
       if (!error && data) {
         if (!data.is_active) {
           throw new Error('Esta cuenta ha sido desactivada por el administrador.');
@@ -74,18 +92,19 @@ async function authenticate(email, password) {
         }
       }
     } catch (dbError) {
-      if (dbError.message === 'Contraseña incorrecta.' || dbError.message.includes('desactivada')) {
+      if (!fallbackAllowed() || dbError.message === 'Contraseña incorrecta.' || dbError.message.includes('desactivada')) {
         throw dbError;
       }
       console.warn('[user.service] Supabase no disponible o tabla no creada aún, usando fallback:', dbError.message);
     }
   }
 
-  // 2. Fallback local / en memoria
+  // 2. Fallback local / en memoria (solo desarrollo o sin base de datos)
+  if (!fallbackAllowed()) throw new Error(dbConfigured() ? 'Usuario no encontrado.' : 'El servidor no tiene Supabase configurado (SUPABASE_URL y SUPABASE_SERVICE_KEY).');
   const fallback = FALLBACK_USERS.find(u => u.email.toLowerCase() === cleanEmail);
   if (!fallback) {
     // Si es un admin intentando entrar con el email general o admin@
-    if (cleanEmail === 'admin@ligrow.com' && cleanPass === 'ligrow26') {
+    if (fallbackAllowed() && cleanEmail === 'admin@ligrow.com' && cleanPass === 'ligrow26') {
       return {
         id: 'admin-master',
         email: 'admin@ligrow.com',
