@@ -1,139 +1,45 @@
 /* Ligrow Tasks · Facturación emitida
  *
- * - Cálculo con precisión de céntimos (calc): línea → base, IVA y total; desglose por tipo de IVA; IRPF.
- * - Almacén (INV): facturas, clientes de facturación y ajustes del emisor. Se guarda en el navegador y se
- *   sincroniza con el servidor como espacio «facturacion» (mismo mecanismo que los demás espacios).
+ * - El cálculo (base, IVA, IRPF, total, numeración) vive en invoice-calc.js, el MISMO código que usa el servidor.
+ * - Almacén (INV): facturas, clientes de facturación y ajustes del emisor, guardados en SUPABASE a través de
+ *   /api/invoicing (tablas invoice_settings, invoice_customers e invoices). El navegador solo conserva una copia
+ *   local de apoyo. Cada cambio se envía por diferencias (solo lo modificado) y, si falla, se avisa: nunca se
+ *   da por guardado algo que el servidor ha rechazado.
  * - Vistas: Facturas, Clientes y Ajustes (sección «Facturas» del menú) + vista previa/PDF + editor.
  * - ops: operaciones con validación que usan tanto la interfaz como el asistente de IA.
- *
- * El módulo de cálculo es puro (sin DOM) y también se exporta para los tests de Node.
  */
 (function (root) {
   'use strict';
+  if (typeof window === 'undefined' || typeof document === 'undefined' || !window.LigrowInvoiceCalc) return;
 
-  // ══ Cálculo ═════════════════════════════════════════════════════════════════════════════════════
-  const r2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
-  const r4 = (n) => Math.round((Number(n) + Number.EPSILON) * 10000) / 10000;
+  const calc = window.LigrowInvoiceCalc;
+  const { r2, r4, buildLine, computeTotals, recomputeLine, nextNumber, validDate, addDays, todayISO } = calc;
   const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 
-  /**
-   * Construye una línea de factura. Admite el precio de UNA unidad (unitPrice) o el importe de TODA la línea
-   * (total). `includesVat` indica si esos importes ya llevan IVA. El IVA de una línea con importe bruto es
-   * «bruto − base», así el total facturado coincide exactamente con lo que pidió el usuario.
-   */
-  function buildLine(input, opts) {
-    const description = String((input && input.description) || '').trim();
-    if (!description) throw new Error('Falta la descripción de una línea.');
-    const quantity = input.quantity === undefined || input.quantity === null ? 1 : Number(input.quantity);
-    if (!isNum(quantity) || quantity <= 0) throw new Error('La cantidad de «' + description + '» no es válida.');
-    const rate = isNum(Number(input.vatRate)) && input.vatRate !== undefined && input.vatRate !== null && input.vatRate !== '' ? Number(input.vatRate) : opts.vatRate;
-    if (!isNum(rate) || rate < 0 || rate > 100) throw new Error('El tipo de IVA no es válido.');
-    const gross = !!opts.includesVat;
-    const hasTotal = input.total !== undefined && input.total !== null && input.total !== '';
-    const hasUnit = input.unitPrice !== undefined && input.unitPrice !== null && input.unitPrice !== '';
-    if (!hasTotal && !hasUnit) throw new Error('Falta el precio de «' + description + '».');
-    const amount = Number(hasTotal ? input.total : input.unitPrice);
-    if (!isNum(amount) || amount < 0) throw new Error('El importe de «' + description + '» no es válido.');
-    const factor = 1 + rate / 100;
-    let net;
-    let vat;
-    let unitPrice;
-    if (hasTotal) {
-      if (gross) { const total = r2(amount); net = r2(total / factor); vat = r2(total - net); }
-      else { net = r2(amount); vat = r2(net * rate / 100); }
-      unitPrice = r4(net / quantity);
-    } else if (gross) {
-      const total = r2(quantity * amount);
-      net = r2(total / factor); vat = r2(total - net);
-      unitPrice = r4(amount / factor);
-    } else {
-      net = r2(quantity * amount); vat = r2(net * rate / 100);
-      unitPrice = r4(amount);
-    }
-    return { description, quantity, unitPrice, vatRate: rate, net, vat, total: r2(net + vat) };
-  }
-
-  /** Totales: base, IVA por tipo, IRPF y total. */
-  function computeTotals(lines, irpfRate) {
-    const byRate = new Map();
-    let subtotal = 0;
-    let vatTotal = 0;
-    for (const line of lines) {
-      subtotal += line.net;
-      vatTotal += line.vat;
-      const entry = byRate.get(line.vatRate) || { rate: line.vatRate, base: 0, vat: 0 };
-      entry.base += line.net;
-      entry.vat += line.vat;
-      byRate.set(line.vatRate, entry);
-    }
-    const breakdown = [...byRate.values()].sort((a, b) => b.rate - a.rate).map((e) => ({ rate: e.rate, base: r2(e.base), vat: r2(e.vat) }));
-    const sub = r2(subtotal);
-    const vat = r2(vatTotal);
-    const irpfPct = isNum(Number(irpfRate)) ? Number(irpfRate) : 0;
-    const irpf = r2(sub * irpfPct / 100);
-    return { subtotal: sub, vatBreakdown: breakdown, vatTotal: vat, irpf, total: r2(sub + vat - irpf) };
-  }
-
-  /** Recalcula una línea editada a mano (precio unitario sin IVA × cantidad). */
-  function recomputeLine(line) {
-    const net = r2(Number(line.quantity) * Number(line.unitPrice));
-    const vat = r2(net * Number(line.vatRate) / 100);
-    return Object.assign({}, line, { net, vat, total: r2(net + vat) });
-  }
-
-  const pad = (n, w) => String(n).padStart(w || 2, '0');
-  const toISO = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  const todayISO = () => toISO(new Date());
-  function validDate(v) {
-    if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
-    const d = new Date(v + 'T00:00:00');
-    return !isNaN(d.getTime()) && toISO(d) === v;
-  }
-  function addDays(iso, days) {
-    const d = new Date(iso + 'T00:00:00');
-    d.setDate(d.getDate() + Number(days || 0));
-    return toISO(d);
-  }
-
-  /** Siguiente número correlativo de la serie y el año de la fecha: F-2026-0001. */
-  function nextNumber(invoices, series, dateISO) {
-    const year = String(dateISO).slice(0, 4);
-    const prefix = (series || 'F') + '-' + year + '-';
-    let max = 0;
-    for (const inv of invoices) {
-      if (typeof inv.number === 'string' && inv.number.startsWith(prefix)) {
-        const n = parseInt(inv.number.slice(prefix.length), 10);
-        if (Number.isFinite(n) && n > max) max = n;
-      }
-    }
-    return prefix + pad(max + 1, 4);
-  }
-
-  const calc = { r2, r4, buildLine, computeTotals, recomputeLine, nextNumber, validDate, addDays, todayISO };
-
-  if (typeof module !== 'undefined' && module.exports) module.exports = { calc };
-  if (typeof window === 'undefined' || typeof document === 'undefined') return;
-
   // ══ Almacén ═════════════════════════════════════════════════════════════════════════════════════
-  const STORE_KEY = 'ligrow_invoicing_v1';
-  const WS_ID = 'facturacion';
+  const STORE_KEY = 'ligrow_invoicing_v2';
+  const API = '/api/invoicing';
   const STATUSES = ['borrador', 'emitida', 'cobrada', 'anulada'];
   const STATUS_LABEL = { borrador: 'Borrador', emitida: 'Emitida', cobrada: 'Cobrada', anulada: 'Anulada' };
 
   const defaultSettings = () => ({
-    companyName: 'Ligrow', taxId: '', address: '', postalCode: '', city: '', country: 'España',
-    email: '', phone: '', website: '', iban: '', series: 'F', defaultVatRate: 21, defaultIrpfRate: 0,
-    paymentDays: 30, paymentMethod: 'Transferencia bancaria', footerNote: ''
+    companyName: '', taxId: '', taxIdLabel: 'NIF', address: '', postalCode: '', city: '', country: 'España',
+    email: '', phone: '', website: '', iban: '', bankName: '', series: '', startNumber: 1, defaultVatRate: 21,
+    defaultIrpfRate: 0, paymentDays: 30, paymentMethod: 'Transferencia bancaria', footerNote: '', invoiceLanguage: 'ca'
   });
 
-  const INV = { invoices: [], customers: [], settings: defaultSettings(), loaded: false };
-  let saveChain = Promise.resolve();
+  // storage: 'supabase' | 'memory' (solo desarrollo local) | '' (aún sin saber) · error: último fallo al guardar/cargar
+  const INV = { invoices: [], customers: [], settings: defaultSettings(), loaded: false, storage: '', error: '' };
+  let saveChain = Promise.resolve(true);
   let loadPromise = null;
+  // Lo último que se sabe que tiene el servidor (id → JSON) para enviar solo lo que cambia.
+  const synced = { invoices: new Map(), customers: new Map(), settings: '' };
 
   const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(String(v == null ? '' : v)) : String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])));
-  const norm = (v) => String(v == null ? '' : v).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const norm = (v) => String(v == null ? '' : v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   const uid = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const clone = (v) => JSON.parse(JSON.stringify(v));
+  const sig = (o) => JSON.stringify(o);
   const eur = (n) => (typeof fmtEUR === 'function' ? fmtEUR(n, true) : r2(n).toFixed(2).replace('.', ',') + ' €');
   const eurUnit = (n) => { const v = r4(n); const s = (Math.abs(v - r2(v)) < 1e-9 ? v.toFixed(2) : String(v)).replace('.', ','); return s + ' €'; };
   const fmtDate = (iso) => (validDate(iso) ? iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) : iso || '');
@@ -142,7 +48,6 @@
 
   function applyPayload(p) {
     if (!p || typeof p !== 'object') return false;
-    if (!Array.isArray(p.invoices) && !Array.isArray(p.customers) && !p.settings) return false;
     INV.invoices = Array.isArray(p.invoices) ? p.invoices : [];
     INV.customers = Array.isArray(p.customers) ? p.customers : [];
     INV.settings = Object.assign(defaultSettings(), p.settings || {});
@@ -150,49 +55,98 @@
   }
   const payload = () => ({ invoices: INV.invoices, customers: INV.customers, settings: INV.settings });
 
+  // Copia local de apoyo (para ver algo si el servidor no responde); la fuente de verdad es Supabase.
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) applyPayload(JSON.parse(raw));
-  } catch (e) { /* sin datos locales */ }
+  } catch (e) { /* sin copia local */ }
 
   function saveLocal() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(payload())); } catch (e) { /* almacenamiento lleno o bloqueado */ }
   }
 
-  /** Guarda en local y en el servidor (en orden). Devuelve una promesa que se resuelve al terminar. */
-  function save(details) {
-    saveLocal();
-    if (window.location.protocol === 'file:') return Promise.resolve(true);
-    const body = JSON.stringify({ payload: payload(), details: details || { action: 'Facturación', summary: 'Actualización de facturas' } });
-    saveChain = saveChain.then(() =>
-      fetch('/api/sync/client/' + WS_ID, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body })
-        .then((r) => r.ok)
-        .catch(() => false)
-    );
-    return saveChain;
+  function markSynced() {
+    synced.invoices = new Map(INV.invoices.map((i) => [i.id, sig(i)]));
+    synced.customers = new Map(INV.customers.map((c) => [c.id, sig(c)]));
+    synced.settings = sig(INV.settings);
   }
 
-  /** Lee del servidor (la fuente de verdad entre dispositivos). */
+  async function call(method, path, body) {
+    let res;
+    try {
+      res = await fetch(API + path, { method, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+    } catch (e) {
+      return { ok: false, status: 0, message: 'No se ha podido conectar con el servidor.' };
+    }
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { ok: false, status: res.status, code: data && data.error, message: (data && data.message) || 'Error ' + res.status + ' del servidor.' };
+    return { ok: true, status: res.status, data };
+  }
+
+  /** Envía a Supabase lo que haya cambiado (clientes → ajustes → facturas → borrados). Devuelve true si todo quedó guardado. */
+  async function flush() {
+    if (window.location.protocol === 'file:') return true;
+    const errors = [];
+    const run = async (promise, onOk) => { const r = await promise; if (r.ok) onOk(r); else errors.push(r.message); return r.ok; };
+    for (const c of INV.customers) {
+      const s = sig(c);
+      if (synced.customers.get(c.id) !== s) await run(call('PUT', '/customers/' + encodeURIComponent(c.id), c), () => synced.customers.set(c.id, s));
+    }
+    if (synced.settings !== sig(INV.settings)) {
+      const s = sig(INV.settings);
+      await run(call('PUT', '/settings', INV.settings), () => { synced.settings = s; });
+    }
+    for (const i of INV.invoices) {
+      const s = sig(i);
+      if (synced.invoices.get(i.id) !== s) await run(call('PUT', '/invoices/' + encodeURIComponent(i.id), i), () => synced.invoices.set(i.id, s));
+    }
+    for (const id of [...synced.invoices.keys()]) {
+      if (!INV.invoices.some((i) => i.id === id)) await run(call('DELETE', '/invoices/' + encodeURIComponent(id)), () => synced.invoices.delete(id));
+    }
+    for (const id of [...synced.customers.keys()]) {
+      if (!INV.customers.some((c) => c.id === id)) await run(call('DELETE', '/customers/' + encodeURIComponent(id)), () => synced.customers.delete(id));
+    }
+    INV.error = errors[0] || '';
+    return !errors.length;
+  }
+
+  /** Guarda (copia local + Supabase, en orden). Devuelve una promesa con true si quedó guardado en Supabase. */
+  function save() {
+    saveLocal();
+    saveChain = saveChain.then(flush, flush);
+    return saveChain.then((ok) => { if (!ok) refreshBanner(); return ok; });
+  }
+
+  /** Lee de Supabase (fuente de verdad entre dispositivos). Antes envía lo pendiente para no perderlo. */
   function load(force) {
     if (window.location.protocol === 'file:') { INV.loaded = true; return Promise.resolve(); }
     if (loadPromise && !force) return loadPromise;
-    loadPromise = fetch('/api/sync/client/' + WS_ID + '?_t=' + Date.now(), { credentials: 'same-origin' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        const ws = data && data.workspace;
-        const before = JSON.stringify(payload());
-        if (ws && applyPayload(ws.payload)) {
-          saveLocal();
-          if (JSON.stringify(payload()) !== before) refreshView();
-        }
-        INV.loaded = true;
-      })
-      .catch(() => { INV.loaded = true; })
-      .finally(() => { setTimeout(() => { loadPromise = null; }, 4000); });
+    loadPromise = (async () => {
+      await saveChain.catch(() => false);
+      const pending = INV.invoices.some((i) => synced.invoices.get(i.id) !== sig(i)) || INV.customers.some((c) => synced.customers.get(c.id) !== sig(c)) || synced.settings !== sig(INV.settings);
+      const r = await call('GET', '');
+      INV.loaded = true;
+      if (!r.ok) {
+        if (r.status !== 401 && r.status !== 403) INV.error = r.message;
+        refreshView();
+        return;
+      }
+      INV.storage = r.data.storage || '';
+      if (pending) { await flush(); refreshView(); return; } // hay cambios locales sin enviar: se conservan
+      const before = sig(payload());
+      applyPayload({ invoices: r.data.invoices, customers: r.data.customers, settings: r.data.settings });
+      markSynced();
+      saveLocal();
+      INV.error = '';
+      if (sig(payload()) !== before || INV.storage === 'memory') refreshView();
+    })().catch(() => { INV.loaded = true; }).finally(() => { setTimeout(() => { loadPromise = null; }, 4000); });
     return loadPromise;
   }
 
   function refreshView() {
+    if (typeof S !== 'undefined' && S.navView === 'facturas' && !overlay) render();
+  }
+  function refreshBanner() {
     if (typeof S !== 'undefined' && S.navView === 'facturas' && !overlay) render();
   }
 
@@ -227,7 +181,7 @@
   };
 
   const customerSnapshot = (c) => ({ id: c.id, name: c.name, taxId: c.taxId, address: c.address, postalCode: c.postalCode, city: c.city, province: c.province || '', country: c.country || 'España', email: c.email || '', phone: c.phone || '' });
-  const issuerSnapshot = () => ({ companyName: INV.settings.companyName, taxId: INV.settings.taxId, address: INV.settings.address, postalCode: INV.settings.postalCode, city: INV.settings.city, country: INV.settings.country, email: INV.settings.email, phone: INV.settings.phone, website: INV.settings.website });
+  const issuerSnapshot = () => ({ companyName: INV.settings.companyName, taxId: INV.settings.taxId, taxIdLabel: INV.settings.taxIdLabel || 'NIF', language: INV.settings.invoiceLanguage || 'ca', address: INV.settings.address, postalCode: INV.settings.postalCode, city: INV.settings.city, country: INV.settings.country, email: INV.settings.email, phone: INV.settings.phone, website: INV.settings.website });
 
   function recalc(inv) {
     const t = computeTotals(inv.lines, inv.irpfRate);
@@ -254,7 +208,7 @@
   function buildInvoice(input) {
     const faltanEmisor = missing(INV.settings, ISSUER_REQUIRED);
     if (faltanEmisor.length) {
-      const e = new Error('Faltan datos del emisor (Ligrow) para poder facturar: ' + faltanEmisor.join(', ') + '. Pídeselos al usuario y guárdalos con update_invoice_settings.');
+      const e = new Error('Faltan datos del emisor para poder facturar: ' + faltanEmisor.join(', ') + '. Pídeselos al usuario y guárdalos con update_invoice_settings.');
       e.code = 'issuer_incomplete';
       throw e;
     }
@@ -277,11 +231,19 @@
     const irpfRate = input.irpfRate !== undefined ? Number(input.irpfRate) : Number(INV.settings.defaultIrpfRate || 0);
     const lines = input.lines.map((l) => buildLine(l, { includesVat: input.includesVat, vatRate }));
     const status = input.status || 'emitida';
-    const series = INV.settings.series || 'F';
+    const series = String(INV.settings.series || '').trim();
     const now = new Date().toISOString();
+    // Número propio solo para registrar una factura ya emitida fuera de la app (p. ej. la 104); debe ser único.
+    let number = String(input.number == null ? '' : input.number).trim();
+    if (number) {
+      if (number.length > 40) throw new Error('El número de factura es demasiado largo.');
+      if (INV.invoices.some((i) => String(i.number) === number)) throw new Error('Ya existe una factura con el número ' + number + '.');
+    } else {
+      number = nextNumber(INV.invoices, series, date, INV.settings.startNumber);
+    }
     const inv = {
       id: uid('inv_'),
-      number: nextNumber(INV.invoices, series, date),
+      number,
       series,
       status,
       date,
@@ -295,6 +257,7 @@
       irpfRate,
       paymentMethod: input.paymentMethod || INV.settings.paymentMethod || '',
       iban: INV.settings.iban || '',
+      bankName: INV.settings.bankName || '',
       reference: input.reference || '',
       notes: input.notes || '',
       footerNote: INV.settings.footerNote || '',
@@ -328,94 +291,98 @@
   const ops = {
     findCustomer, findInvoice, buildInvoice, summary, recalc, missingIssuer: () => missing(INV.settings, ISSUER_REQUIRED), missingCustomer: (c) => missing(c, CUSTOMER_REQUIRED),
     snapshot: () => clone(payload()),
-    restore: (snap) => { applyPayload(snap); return save({ action: 'Facturación', summary: 'Cambio deshecho' }); },
-    addInvoice(inv, details) { INV.invoices.unshift(inv); return save(details || { action: 'Nueva factura', summary: 'Factura ' + inv.number + ' para ' + inv.customer.name + ' (' + eur(inv.total) + ')' }); },
-    removeInvoice(id, details) { INV.invoices = INV.invoices.filter((i) => i.id !== id); return save(details || { action: 'Eliminar factura', summary: 'Factura eliminada' }); },
+    restore: (snap) => { applyPayload(snap); return save(); },
+    addInvoice(inv) { INV.invoices.unshift(inv); return save(); },
+    removeInvoice(id) { INV.invoices = INV.invoices.filter((i) => i.id !== id); return save(); },
     addCustomer(data) {
       const c = Object.assign({ id: uid('cus_'), country: 'España', createdAt: new Date().toISOString() }, data);
       INV.customers.push(c);
       return c;
     },
     save,
-    load
+    load,
+    error: () => INV.error
   };
 
   // ══ Documento de factura (HTML) ════════════════════════════════════════════════════════════════════
-  const DOC_CSS = `
-.inv-doc{--ink:#171614;--mut:#6f6c64;--line:#e6e3dd;--brand:#F04E23;width:794px;max-width:100%;margin:0 auto;background:#fff;color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:12.5px;line-height:1.45;padding:44px 48px 36px;box-sizing:border-box;position:relative;min-height:1050px;display:flex;flex-direction:column}
-.inv-doc *{box-sizing:border-box}
-.inv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:22px;border-bottom:3px solid var(--brand)}
-.inv-logo{font-family:'Syne','DM Sans',sans-serif;font-weight:800;font-size:30px;letter-spacing:-.5px;color:var(--brand);line-height:1}
-.inv-brand-sub{margin-top:6px;color:var(--mut);font-size:12px}
-.inv-title{text-align:right}
-.inv-title h1{margin:0;font-family:'Syne','DM Sans',sans-serif;font-weight:800;font-size:28px;letter-spacing:1px;line-height:1}
-.inv-num{margin-top:6px;font-size:15px;font-weight:700}
-.inv-badge{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#f3f1ec;color:#57554e}
-.inv-badge.cobrada{background:#e6f6ee;color:#0c8a57}
-.inv-badge.anulada{background:#fdecec;color:#c53030}
-.inv-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0 4px}
-.inv-meta div span{display:block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-bottom:3px}
-.inv-meta div b{font-size:13px;font-weight:600}
-.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}
-.inv-party{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-.inv-party h4{margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand)}
-.inv-party strong{display:block;font-size:14px;margin-bottom:3px}
-.inv-party p{margin:0;color:#3d3b36}
-.inv-lines{width:100%;border-collapse:collapse;margin-top:6px}
-.inv-lines th{text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mut);padding:9px 10px;border-bottom:1.5px solid var(--ink)}
-.inv-lines td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-.inv-lines .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.inv-totals{display:flex;justify-content:flex-end;margin-top:20px}
-.inv-totals table{width:330px;border-collapse:collapse}
-.inv-totals td{padding:6px 10px;font-variant-numeric:tabular-nums}
-.inv-totals td:last-child{text-align:right}
-.inv-totals tr.grand td{border-top:2px solid var(--ink);padding-top:11px;font-size:17px;font-weight:800}
-.inv-totals tr.grand td:last-child{color:var(--brand)}
-.inv-info{margin-top:26px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.inv-box{background:#faf9f6;border-radius:12px;padding:13px 16px}
-.inv-box h4{margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut)}
-.inv-box p{margin:0}
-.inv-grow{flex:1}
-.inv-foot{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);color:var(--mut);font-size:11px;text-align:center}
-.inv-watermark{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%) rotate(-24deg);font-family:'Syne',sans-serif;font-weight:800;font-size:110px;letter-spacing:6px;color:rgba(197,48,48,.13);pointer-events:none}
-@media print{.inv-doc{box-shadow:none;margin:0;min-height:auto;padding:0}}
-`;
+  // Diseño de la plantilla de Ligrow: minimalista, tipografía espaciada, filas finas y etiquetas en catalán
+  // (o castellano, según los ajustes). Cifras como en la plantilla: «950», «199.50», «-142.50», «1007€».
+  const LABELS = {
+    ca: { to: 'FACTURA A:', no: 'FACTURA Nº', desc: 'DESCRIPCIÓ DELS SERVEIS PRESTATS', total: 'TOTAL', base: 'Base', vat: 'IVA', irpf: 'IRPF', billing: 'DADES DE FACTURACIÓ', account: 'Compte', taxId: 'NIF', ref: 'Ref.', cancelled: 'ANUL·LADA' },
+    es: { to: 'FACTURA A:', no: 'FACTURA Nº', desc: 'DESCRIPCIÓN DE LOS SERVICIOS PRESTADOS', total: 'TOTAL', base: 'Base', vat: 'IVA', irpf: 'IRPF', billing: 'DATOS DE FACTURACIÓN', account: 'Cuenta', taxId: 'NIF', ref: 'Ref.', cancelled: 'ANULADA' }
+  };
 
-  const addr = (p) => [p.address, [p.postalCode, p.city].filter(Boolean).join(' '), [p.province, p.country].filter(Boolean).join(', ')].filter(Boolean).map(esc).join('<br>');
+  const DOC_CSS = `
+.inv-doc{--ink:#3a3a3a;--rule:#4d4d4d;width:210mm;max-width:100%;min-height:297mm;margin:0 auto;background:#fff;color:var(--ink);font-family:'Montserrat','DM Sans',system-ui,sans-serif;font-size:3.55mm;line-height:1.7;letter-spacing:.14em;padding:58mm 17mm 16mm;box-sizing:border-box;position:relative;display:flex;flex-direction:column}
+.inv-doc *{box-sizing:border-box}
+.inv-doc h4{margin:0 0 3mm;font-size:3.5mm;font-weight:700;letter-spacing:.17em;text-transform:uppercase;line-height:1.4}
+.inv-doc p{margin:0}
+.inv-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10mm}
+.inv-to p{line-height:1.75}
+.inv-no{text-align:right;padding-top:5mm}
+.inv-no .n{font-size:3.6mm;font-weight:700;margin:2mm 0 3mm}
+.inv-no .d{margin-top:1mm}
+.inv-no .r{margin-top:1.5mm;font-size:3mm;letter-spacing:.1em}
+.inv-rule{border:0;border-top:.3mm solid var(--rule);margin:0}
+.inv-dhead{display:flex;justify-content:space-between;align-items:center;gap:8mm;font-weight:700;font-size:3.5mm;letter-spacing:.17em;padding:5.5mm 1mm 5.5mm 0;margin-top:9mm;border-top:.3mm solid var(--rule);border-bottom:.3mm solid var(--rule)}
+.inv-lines{padding:6mm 1mm 4mm 0;min-height:62mm}
+.inv-line{display:flex;justify-content:space-between;gap:8mm;margin-bottom:4mm}
+.inv-line-d{flex:1}
+.inv-line-d small{display:block;font-size:3mm;letter-spacing:.1em;opacity:.8}
+.inv-line-a{white-space:nowrap;text-align:right}
+.inv-totals{border-top:.3mm solid var(--rule);margin-top:8mm;padding-top:5mm;display:flex;flex-direction:column;align-items:flex-end}
+.inv-trow{display:flex;gap:7mm;justify-content:flex-end;width:100%;padding:1.6mm 0}
+.inv-trow span:first-child{flex:1;text-align:right}
+.inv-trow span:last-child{min-width:26mm;text-align:right}
+.inv-grand{border-top:.3mm solid var(--rule);margin-top:3.5mm;padding-top:4mm;font-weight:700;font-size:5.4mm;letter-spacing:.14em}
+.inv-bill{margin-top:15mm}
+.inv-notes{margin-top:9mm;font-size:3.1mm;letter-spacing:.08em;opacity:.85}
+.inv-grow{flex:1}
+.inv-foot{margin-top:10mm;font-size:2.8mm;letter-spacing:.08em;opacity:.7}
+.inv-watermark{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%) rotate(-24deg);font-weight:800;font-size:26mm;letter-spacing:.1em;color:rgba(197,48,48,.12);pointer-events:none;white-space:nowrap}
+@media print{.inv-doc{box-shadow:none;margin:0}}
+`;
+  const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap';
+
+  /** Cifras como en la plantilla: enteros sin decimales y decimales con punto. */
+  const amt = (n) => { const v = r2(n); return Number.isInteger(v) ? String(v) : v.toFixed(2); };
+  const dmy = (iso) => (validDate(iso) ? Number(iso.slice(8, 10)) + '/' + Number(iso.slice(5, 7)) + '/' + iso.slice(0, 4) : iso || '');
+  const fmtIban = (v) => String(v || '').replace(/\s+/g, '').replace(/(.{4})/g, '$1 ').trim();
+  const nl = (v) => esc(v).replace(/\n/g, '<br>');
 
   function invoiceHtml(inv) {
-    const b = inv.vatBreakdown || [];
-    const rows = inv.lines.map((l) => '<tr><td>' + esc(l.description) + '</td><td class="r">' + esc(String(l.quantity).replace('.', ',')) + '</td><td class="r">' + eurUnit(l.unitPrice) + '</td><td class="r">' + num(l.vatRate) + ' %</td><td class="r">' + eur(l.net) + '</td></tr>').join('');
-    const totals =
-      '<tr><td>Base imponible</td><td>' + eur(inv.subtotal) + '</td></tr>' +
-      b.map((x) => '<tr><td>IVA ' + num(x.rate) + ' % <small style="color:#6f6c64">(s/ ' + eur(x.base) + ')</small></td><td>' + eur(x.vat) + '</td></tr>').join('') +
-      (inv.irpf ? '<tr><td>Retención IRPF ' + num(inv.irpfRate) + ' %</td><td>−' + eur(inv.irpf) + '</td></tr>' : '') +
-      '<tr class="grand"><td>TOTAL</td><td>' + eur(inv.total) + '</td></tr>';
+    const lang = LABELS[(inv.issuer && inv.issuer.language) || INV.settings.invoiceLanguage] || LABELS.ca;
     const iss = inv.issuer || {};
     const cus = inv.customer || {};
+    const showAmounts = inv.lines.length > 1 || inv.lines.some((l) => Number(l.quantity) !== 1);
+    const lines = inv.lines.map((l) => '<div class="inv-line"><div class="inv-line-d">' + nl(l.description) +
+      (Number(l.quantity) !== 1 ? '<small>' + esc(String(l.quantity).replace('.', ',')) + ' × ' + esc(amt(l.unitPrice)) + ' €</small>' : '') + '</div>' +
+      (showAmounts ? '<div class="inv-line-a">' + amt(l.net) + '</div>' : '') + '</div>').join('');
+    const vatRows = (inv.vatBreakdown || []).map((b) => '<div class="inv-trow"><span>' + lang.vat + ' (' + amt(b.rate) + '%)</span><span>' + amt(b.vat) + '</span></div>').join('');
+    const toLines = [cus.name, cus.address, [cus.postalCode, cus.city].filter(Boolean).join(' '), cus.taxId ? lang.taxId + ': ' + cus.taxId : ''].filter(Boolean).map(esc).join('<br>');
+    const billLines = [iss.companyName || iss.name, iss.taxId ? (iss.taxIdLabel || 'NIF') + ' ' + iss.taxId : '', iss.address, [iss.city, iss.postalCode].filter(Boolean).join(' - '), inv.bankName ? lang.account + ' ' + inv.bankName : '', fmtIban(inv.iban)].filter(Boolean).map(esc).join('<br>');
     return '<div class="inv-doc">' +
-      (inv.status === 'anulada' ? '<div class="inv-watermark">ANULADA</div>' : '') +
-      '<header class="inv-head"><div><div class="inv-logo">LIGROW</div><div class="inv-brand-sub">' + esc(iss.companyName) + '</div></div>' +
-      '<div class="inv-title"><h1>FACTURA</h1><div class="inv-num">Nº ' + esc(inv.number) + '</div>' +
-      (inv.status === 'cobrada' || inv.status === 'anulada' ? '<span class="inv-badge ' + inv.status + '">' + STATUS_LABEL[inv.status] + '</span>' : '') + '</div></header>' +
-      '<section class="inv-meta"><div><span>Fecha de emisión</span><b>' + fmtDate(inv.date) + '</b></div><div><span>Vencimiento</span><b>' + fmtDate(inv.dueDate) + '</b></div><div><span>Forma de pago</span><b>' + esc(inv.paymentMethod || '—') + '</b></div><div><span>Referencia</span><b>' + esc(inv.reference || '—') + '</b></div></section>' +
-      '<section class="inv-parties"><div class="inv-party"><h4>Emisor</h4><strong>' + esc(iss.companyName) + '</strong><p>NIF/CIF: ' + esc(iss.taxId) + '<br>' + addr(iss) + (iss.email ? '<br>' + esc(iss.email) : '') + (iss.phone ? ' · ' + esc(iss.phone) : '') + '</p></div>' +
-      '<div class="inv-party"><h4>Facturar a</h4><strong>' + esc(cus.name) + '</strong><p>NIF/CIF: ' + esc(cus.taxId) + '<br>' + addr(cus) + (cus.email ? '<br>' + esc(cus.email) : '') + '</p></div></section>' +
-      '<table class="inv-lines"><thead><tr><th>Descripción</th><th class="r">Cant.</th><th class="r">Precio unit.</th><th class="r">IVA</th><th class="r">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<div class="inv-totals"><table>' + totals + '</table></div>' +
-      '<section class="inv-info"><div class="inv-box"><h4>Datos de pago</h4><p>' + esc(inv.paymentMethod || '') + (inv.iban ? '<br><b>IBAN:</b> ' + esc(inv.iban) : '') + '<br>Vence el ' + fmtDate(inv.dueDate) + '</p></div>' +
-      (inv.notes ? '<div class="inv-box"><h4>Observaciones</h4><p>' + esc(inv.notes).replace(/\n/g, '<br>') + '</p></div>' : '<div></div>') + '</section>' +
+      (inv.status === 'anulada' ? '<div class="inv-watermark">' + lang.cancelled + '</div>' : '') +
+      '<div class="inv-top"><div class="inv-to"><h4>' + lang.to + '</h4><p>' + toLines + '</p></div>' +
+      '<div class="inv-no"><h4>' + lang.no + '</h4><div class="n">' + esc(inv.number) + '</div><div class="d">' + dmy(inv.date) + '</div>' + (inv.reference ? '<div class="r">' + lang.ref + ' ' + esc(inv.reference) + '</div>' : '') + '</div></div>' +
+      '<div class="inv-dhead"><span>' + lang.desc + '</span><span>' + lang.total + '</span></div>' +
+      '<div class="inv-lines">' + lines + '</div>' +
+      '<div class="inv-totals"><div class="inv-trow"><span>' + lang.base + '</span><span>' + amt(inv.subtotal) + '</span></div>' + vatRows +
+      (inv.irpf ? '<div class="inv-trow"><span>' + lang.irpf + ' (' + amt(inv.irpfRate) + '%)</span><span>-' + amt(inv.irpf) + '</span></div>' : '') +
+      '<div class="inv-trow inv-grand"><span>' + lang.total + '</span><span>' + amt(inv.total) + '€</span></div></div>' +
+      '<div class="inv-bill"><h4>' + lang.billing + '</h4><p>' + billLines + '</p></div>' +
+      (inv.notes ? '<div class="inv-notes">' + nl(inv.notes) + '</div>' : '') +
       '<div class="inv-grow"></div>' +
-      '<footer class="inv-foot">' + esc(inv.footerNote || (iss.companyName + (iss.website ? ' · ' + iss.website : ''))) + '</footer></div>';
+      (inv.footerNote ? '<div class="inv-foot">' + esc(inv.footerNote) + '</div>' : '') + '</div>';
   }
 
   /** Imprime / guarda como PDF la factura sin abrir ventanas emergentes (iframe oculto). */
   function printInvoice(id) {
     const r = findInvoice(id);
     if (!r.ok) return;
-    const html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' + esc(r.value.number) + '</title>' +
-      '<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">' +
-      '<style>@page{size:A4;margin:14mm}html,body{margin:0;background:#fff}' + DOC_CSS + '</style></head><body>' + invoiceHtml(r.value) + '</body></html>';
+    const html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Factura ' + esc(r.value.number) + '</title>' +
+      '<link href="' + FONT_LINK + '" rel="stylesheet">' +
+      '<style>@page{size:A4;margin:0}html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}' + DOC_CSS + '</style></head><body>' + invoiceHtml(r.value) + '</body></html>';
     const frame = document.createElement('iframe');
     frame.setAttribute('aria-hidden', 'true');
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
@@ -425,7 +392,7 @@
     w.document.write(html);
     w.document.close();
     const go = () => { try { w.focus(); w.print(); } finally { setTimeout(() => frame.remove(), 60000); } };
-    const ready = w.document.fonts && w.document.fonts.ready ? Promise.race([w.document.fonts.ready, new Promise((x) => setTimeout(x, 1500))]) : Promise.resolve();
+    const ready = w.document.fonts && w.document.fonts.ready ? Promise.race([w.document.fonts.ready, new Promise((x) => setTimeout(x, 2000))]) : Promise.resolve();
     ready.then(() => setTimeout(go, 150));
   }
 
@@ -437,6 +404,12 @@
     style.id = 'inv-doc-css';
     style.textContent = DOC_CSS;
     document.head.appendChild(style);
+    if (!document.querySelector('link[href*="Montserrat"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = FONT_LINK;
+      document.head.appendChild(link);
+    }
   };
 
   const openOverlay = (inner, wide) => {
@@ -519,12 +492,25 @@
     const s = INV.settings;
     const miss = ops.missingIssuer();
     return (miss.length ? '<div class="ai-warn" style="display:block;margin:0 0 14px">Faltan datos del emisor para poder facturar: <b>' + miss.join(', ') + '</b>.</div>' : '') +
-      '<div class="card inv-settings" id="inv-settings-form"><div class="card-head">Datos del emisor</div><div class="inv-grid">' +
-      field('Razón social *', 'companyName', s.companyName) + field('NIF/CIF *', 'taxId', s.taxId) + field('Dirección *', 'address', s.address) + field('Código postal *', 'postalCode', s.postalCode) + field('Población *', 'city', s.city) + field('País', 'country', s.country) + field('Email', 'email', s.email) + field('Teléfono', 'phone', s.phone) + field('Web', 'website', s.website) + '</div>' +
-      '<div class="card-head" style="margin-top:18px">Facturación</div><div class="inv-grid">' +
-      field('IBAN para cobros', 'iban', s.iban) + field('Serie', 'series', s.series) + field('IVA por defecto (%)', 'defaultVatRate', s.defaultVatRate, 'type="number" step="0.01"') + field('IRPF por defecto (%)', 'defaultIrpfRate', s.defaultIrpfRate, 'type="number" step="0.01"') + field('Días de pago', 'paymentDays', s.paymentDays, 'type="number" min="0"') + field('Forma de pago', 'paymentMethod', s.paymentMethod) + '</div>' +
-      '<div class="modal-field" style="margin-top:6px"><div class="modal-lbl">Texto al pie de las facturas</div><input class="modal-in" data-f="footerNote" value="' + esc(s.footerNote) + '"></div>' +
+      '<div class="card inv-settings" id="inv-settings-form"><div class="card-head">Datos del emisor (aparecen en «Dades de facturació»)</div><div class="inv-grid">' +
+      field('Nombre o razón social *', 'companyName', s.companyName) + field('NIF/CIF/DNI *', 'taxId', s.taxId) + field('Se imprime como', 'taxIdLabel', s.taxIdLabel, 'placeholder="NIF, DNI, CIF…"') + field('Dirección *', 'address', s.address) + field('Código postal *', 'postalCode', s.postalCode) + field('Población *', 'city', s.city) + field('País', 'country', s.country) + field('Email', 'email', s.email) + field('Teléfono', 'phone', s.phone) + field('Web', 'website', s.website) + '</div>' +
+      '<div class="card-head" style="margin-top:18px">Cobro y numeración</div><div class="inv-grid">' +
+      field('Banco', 'bankName', s.bankName) + field('IBAN para cobros', 'iban', s.iban) +
+      field('Serie (vacía = 104, 105, 106…)', 'series', s.series, 'placeholder="vacía"') +
+      field('Numerar desde (mínimo)', 'startNumber', s.startNumber, 'type="number" min="1"') +
+      field('IVA por defecto (%)', 'defaultVatRate', s.defaultVatRate, 'type="number" step="0.01"') + field('IRPF por defecto (%)', 'defaultIrpfRate', s.defaultIrpfRate, 'type="number" step="0.01"') +
+      field('Días de pago', 'paymentDays', s.paymentDays, 'type="number" min="0"') + field('Forma de pago', 'paymentMethod', s.paymentMethod) +
+      '<div class="modal-field"><div class="modal-lbl">Idioma de la factura</div><select class="modal-in" data-f="invoiceLanguage"><option value="ca"' + (s.invoiceLanguage === 'ca' ? ' selected' : '') + '>Català</option><option value="es"' + (s.invoiceLanguage === 'es' ? ' selected' : '') + '>Castellano</option></select></div></div>' +
+      '<div class="modal-field" style="margin-top:6px"><div class="modal-lbl">Texto al pie de las facturas (opcional)</div><input class="modal-in" data-f="footerNote" value="' + esc(s.footerNote) + '"></div>' +
+      '<p style="font-size:12px;color:var(--text-3);margin:10px 0 0">Con la serie vacía, cada factura nueva usa el número siguiente al mayor que exista, sin bajar nunca del que indiques en «Numerar desde» (por ejemplo, 106).</p>' +
       '<div style="margin-top:14px"><button class="pedidos-btn-primary" onclick="LigrowInvoicing.ui.saveSettings()">Guardar ajustes</button></div></div>';
+  }
+
+  /** Aviso de estado del guardado (Supabase). */
+  function storageBanner() {
+    if (INV.error) return '<div class="inv-banner err"><b>No se ha guardado en Supabase.</b> ' + esc(INV.error) + '</div>';
+    if (INV.storage === 'memory') return '<div class="inv-banner warn"><b>Guardado temporal.</b> El servidor no tiene Supabase configurado: lo que hagas aquí se pierde al reiniciarlo.</div>';
+    return '';
   }
 
   function nav() {
@@ -534,7 +520,7 @@
     return '<div class="mn"><div class="tb"><div class="tb-row1"><div style="flex:1"><div class="proj-title-row"><h1 class="proj-title">Facturas</h1><span class="type-pill">Facturación</span></div><div class="proj-sub-text">Emite, guarda y descarga facturas para tus clientes</div></div>' +
       '<div class="tb-actions-group"><button type="button" class="tb-btn-pri" onclick="LigrowInvoicing.ui.edit()">' + ico(ICO.plus) + 'Nueva factura</button></div></div>' +
       '<div class="tb-tabs-bar"><div class="tabs">' + tabBtn('facturas', 'Facturas', INV.invoices.length) + tabBtn('clientes', 'Clientes', INV.customers.length) + tabBtn('ajustes', 'Ajustes') + '</div></div></div>' +
-      '<div class="ct"><div class="pedidos-layout">' + (tab === 'clientes' ? customersTab() : tab === 'ajustes' ? settingsTab() : listTab()) + '</div></div></div>';
+      '<div class="ct"><div class="pedidos-layout">' + storageBanner() + (tab === 'clientes' ? customersTab() : tab === 'ajustes' ? settingsTab() : listTab()) + '</div></div></div>';
   }
 
   // ── Vista previa ──────────────────────────────────────────────────────────────────────────────────
@@ -628,7 +614,7 @@
       if (inv.date.slice(0, 4) !== d.date.slice(0, 4)) return alert('No se puede cambiar el año de una factura ya numerada.');
       Object.assign(inv, { date: d.date, dueDate: d.dueDate || addDays(d.date, INV.settings.paymentDays), customerId: cust.id, customer: customerSnapshot(cust), lines: built, vatRate: parseFloat(d.vatRate) || 0, irpfRate: parseFloat(d.irpfRate) || 0, paymentMethod: d.paymentMethod, reference: d.reference, notes: d.notes, status: d.status, paidDate: d.status === 'cobrada' ? inv.paidDate || todayISO() : '', updatedAt: now });
       recalc(inv);
-      save({ action: 'Factura actualizada', summary: 'Factura ' + inv.number + ' actualizada' });
+      saveUI();
     } else {
       inv = buildInvoice({ customerObj: cust, includesVat: false, date: d.date, dueDate: d.dueDate, vatRate: parseFloat(d.vatRate) || 0, irpfRate: parseFloat(d.irpfRate) || 0, lines: lines.map((l) => ({ description: l.description, quantity: l.quantity, unitPrice: l.unitPrice, vatRate: l.vatRate })), paymentMethod: d.paymentMethod, reference: d.reference, notes: d.notes, status: d.status });
       ops.addInvoice(inv);
@@ -652,6 +638,11 @@
 
   const readForm = (id) => { const out = {}; document.querySelectorAll('#' + id + ' [data-f]').forEach((el) => { out[el.getAttribute('data-f')] = el.value.trim(); }); return out; };
 
+  /** Guarda desde la interfaz: si Supabase rechaza algo, se le dice al usuario (nunca en silencio). */
+  function saveUI() {
+    return save().then((ok) => { if (!ok && INV.error) alert('No se ha guardado en Supabase: ' + INV.error); return ok; });
+  }
+
   const ui = {
     tab(t) { S.facTab = t; render(); },
     search(el) { S.facSearch = el.value; const pos = el.selectionStart; render(); const n = document.getElementById('inv-search-in'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) { /* */ } } },
@@ -667,7 +658,7 @@
       r.value.status = status;
       r.value.paidDate = status === 'cobrada' ? todayISO() : '';
       r.value.updatedAt = new Date().toISOString();
-      save({ action: 'Factura actualizada', summary: 'Factura ' + r.value.number + ' → ' + STATUS_LABEL[status] });
+      saveUI();
       render();
       viewModal(id);
     },
@@ -675,7 +666,7 @@
       const r = findInvoice(id);
       if (!r.ok) return;
       if (!confirm('¿Eliminar la factura ' + r.value.number + '? Dejará un hueco en la numeración; para descartarla es mejor anularla.')) return;
-      ops.removeInvoice(id, { action: 'Eliminar factura', summary: 'Factura ' + r.value.number + ' eliminada' });
+      ops.removeInvoice(id).then((ok) => { if (!ok && INV.error) alert('No se ha podido eliminar en Supabase: ' + INV.error); });
       closeOverlay();
       render();
     },
@@ -689,7 +680,7 @@
       let c;
       if (id) { c = INV.customers.find((x) => x.id === id); Object.assign(c, data); }
       else c = ops.addCustomer(data);
-      save({ action: id ? 'Cliente actualizado' : 'Nuevo cliente de facturación', summary: c.name });
+      saveUI();
       const cb = customerCb;
       customerCb = null;
       closeOverlay();
@@ -700,15 +691,15 @@
       const c = INV.customers.find((x) => x.id === id);
       if (!c || !confirm('¿Eliminar al cliente «' + c.name + '»? Sus facturas se conservan.')) return;
       INV.customers = INV.customers.filter((x) => x.id !== id);
-      save({ action: 'Cliente eliminado', summary: c.name });
+      saveUI();
       closeOverlay();
       render();
     },
     saveSettings() {
       const f = readForm('inv-settings-form');
-      ['defaultVatRate', 'defaultIrpfRate', 'paymentDays'].forEach((k) => { f[k] = Number(f[k]); if (!Number.isFinite(f[k])) delete f[k]; });
+      ['defaultVatRate', 'defaultIrpfRate', 'paymentDays', 'startNumber'].forEach((k) => { f[k] = Number(f[k]); if (!Number.isFinite(f[k])) delete f[k]; });
       Object.assign(INV.settings, f);
-      save({ action: 'Ajustes de facturación', summary: 'Datos del emisor actualizados' });
+      saveUI().then(() => alert(INV.error ? '' : 'Ajustes guardados.'));
       render();
     }
   };

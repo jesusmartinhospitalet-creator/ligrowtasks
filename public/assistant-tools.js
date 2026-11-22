@@ -1044,8 +1044,8 @@
   };
   const cents = (n) => Math.round(Number(n) * 100) / 100;
   const customerView = (c) => ({ id: c.id, name: c.name, tax_id: c.taxId, address: c.address, postal_code: c.postalCode, city: c.city, province: c.province || null, country: c.country || null, email: c.email || null, phone: c.phone || null });
-  const settingsView = (s) => ({ company_name: s.companyName, tax_id: s.taxId, address: s.address, postal_code: s.postalCode, city: s.city, country: s.country, email: s.email, phone: s.phone, website: s.website, iban: s.iban, series: s.series, default_vat_rate: s.defaultVatRate, default_irpf_rate: s.defaultIrpfRate, payment_days: s.paymentDays, payment_method: s.paymentMethod, footer_note: s.footerNote });
-  const syncNote = (okSaved) => (okSaved === false ? { warning: 'Guardada en este dispositivo, pero no se pudo sincronizar con el servidor todavía.' } : {});
+  const settingsView = (s) => ({ company_name: s.companyName, tax_id: s.taxId, tax_id_label: s.taxIdLabel, address: s.address, postal_code: s.postalCode, city: s.city, country: s.country, email: s.email, phone: s.phone, website: s.website, iban: s.iban, bank_name: s.bankName, series: s.series, start_number: s.startNumber, default_vat_rate: s.defaultVatRate, default_irpf_rate: s.defaultIrpfRate, payment_days: s.paymentDays, payment_method: s.paymentMethod, footer_note: s.footerNote, invoice_language: s.invoiceLanguage });
+  const syncNote = (okSaved) => (okSaved === false ? { warning: 'NO se ha guardado en Supabase: ' + (FI().ops.error() || 'error desconocido') + ' Díselo al usuario; el cambio solo existe en este navegador.' } : {});
 
   /** Deshace restaurando una copia de todo el almacén de facturación. */
   const inverse = (snap, label) => ({ label, run: async () => { await FI().ops.restore(snap); render(); FI().refresh(); return { ok: true }; } });
@@ -1060,8 +1060,8 @@
   async function updateInvoiceSettings(input) {
     const bad = needInvoicing(); if (bad) return bad;
     await FI().ops.load(true);
-    const map = { company_name: 'companyName', tax_id: 'taxId', address: 'address', postal_code: 'postalCode', city: 'city', country: 'country', email: 'email', phone: 'phone', website: 'website', iban: 'iban', series: 'series', payment_method: 'paymentMethod', footer_note: 'footerNote' };
-    const numeric = { default_vat_rate: ['defaultVatRate', 0, 100], default_irpf_rate: ['defaultIrpfRate', 0, 60], payment_days: ['paymentDays', 0, 365] };
+    const map = { company_name: 'companyName', tax_id: 'taxId', tax_id_label: 'taxIdLabel', bank_name: 'bankName', address: 'address', postal_code: 'postalCode', city: 'city', country: 'country', email: 'email', phone: 'phone', website: 'website', iban: 'iban', series: 'series', payment_method: 'paymentMethod', footer_note: 'footerNote' };
+    const numeric = { default_vat_rate: ['defaultVatRate', 0, 100], default_irpf_rate: ['defaultIrpfRate', 0, 60], payment_days: ['paymentDays', 0, 365], start_number: ['startNumber', 1, 99999999] };
     const snap = FI().ops.snapshot();
     const changes = [];
     const s = FI().INV.settings;
@@ -1075,9 +1075,13 @@
         s[prop] = v; changes.push(prop);
       }
     }
+    if (input.invoice_language !== undefined) {
+      if (!['ca', 'es'].includes(input.invoice_language)) { FI().ops.restore(snap); return fail('Idioma no válido (ca o es).'); }
+      s.invoiceLanguage = input.invoice_language; changes.push('invoiceLanguage');
+    }
     if (!changes.length) return fail('No se ha indicado ningún dato.');
     if (s.series && !/^[A-Za-z0-9]{1,6}$/.test(s.series)) { await FI().ops.restore(snap); return fail('La serie debe tener 1-6 letras o números.'); }
-    const saved = await FI().ops.save({ action: 'Ajustes de facturación', summary: say('actualizó los datos del emisor') });
+    const saved = await FI().ops.save();
     render();
     const missing = FI().ops.missingIssuer();
     return ok({ settings: settingsView(s), missing_required: missing, ...syncNote(saved) }, { mutated: true, summary: 'Datos de facturación actualizados', undo: inverse(snap, 'actualizar los datos de facturación') });
@@ -1101,7 +1105,7 @@
     if (dup) return fail('Ya existe un cliente con ese NIF: «' + dup.name + '». Úsalo o edítalo con update_customer.');
     const snap = FI().ops.snapshot();
     const c = FI().ops.addCustomer(data);
-    const saved = await FI().ops.save({ action: 'Nuevo cliente de facturación', summary: say('creó el cliente "' + c.name + '"') });
+    const saved = await FI().ops.save();
     render();
     return ok({ customer: customerView(c), ...syncNote(saved) }, { mutated: true, summary: 'Cliente de facturación creado: ' + c.name, undo: inverse(snap, 'crear el cliente ' + c.name) });
   }
@@ -1116,7 +1120,7 @@
     const changes = [];
     for (const [k, prop] of Object.entries(map)) if (input[k] !== undefined) { f.value[prop] = (str(input[k]) || '').trim(); changes.push(prop); }
     if (!changes.length) return fail('No se ha indicado ningún cambio.');
-    const saved = await FI().ops.save({ action: 'Cliente actualizado', summary: say('actualizó el cliente "' + f.value.name + '"') });
+    const saved = await FI().ops.save();
     render();
     return ok({ customer: customerView(f.value), ...syncNote(saved) }, { mutated: true, summary: 'Cliente «' + f.value.name + '» actualizado', undo: inverse(snap, 'actualizar el cliente ' + f.value.name) });
   }
@@ -1127,7 +1131,7 @@
     const f = FI().ops.findCustomer(input.customer);
     if (!f.ok) return fail(f.error, f.candidates);
     FI().INV.customers = FI().INV.customers.filter((c) => c.id !== f.value.id);
-    await FI().ops.save({ action: 'Cliente eliminado', summary: say('eliminó el cliente "' + f.value.name + '"') });
+    await FI().ops.save();
     render();
     return ok({ deleted: f.value.name }, { mutated: true, summary: 'Cliente de facturación eliminado: ' + f.value.name });
   }
@@ -1162,17 +1166,17 @@
     const bad = needInvoicing(); if (bad) return bad;
     await FI().ops.load(true); // numeración correlativa: siempre sobre lo último guardado
     const faltanEmisor = FI().ops.missingIssuer();
-    if (faltanEmisor.length) return fail('Faltan datos del emisor (Ligrow) para poder facturar: ' + faltanEmisor.join(', ') + '. Pídeselos al usuario y guárdalos con update_invoice_settings.');
+    if (faltanEmisor.length) return fail('Faltan datos del emisor para poder facturar: ' + faltanEmisor.join(', ') + '. Pídeselos al usuario y guárdalos con update_invoice_settings.');
     const f = FI().ops.findCustomer(input.customer);
     if (!f.ok) return fail(f.error + ' Pide al usuario sus datos y créalo con create_customer.', f.candidates);
     let inv;
     try {
-      inv = FI().ops.buildInvoice({ customerObj: f.value, includesVat: input.amounts_include_vat, date: input.date, dueDate: input.due_date, vatRate: input.vat_rate, irpfRate: input.irpf_rate, lines: mapLines(input.lines), paymentMethod: txt(input.payment_method), reference: txt(input.reference), notes: txt(input.notes), status: input.status });
+      inv = FI().ops.buildInvoice({ customerObj: f.value, includesVat: input.amounts_include_vat, date: input.date, dueDate: input.due_date, vatRate: input.vat_rate, irpfRate: input.irpf_rate, number: txt(input.number), lines: mapLines(input.lines), paymentMethod: txt(input.payment_method), reference: txt(input.reference), notes: txt(input.notes), status: input.status });
     } catch (e) {
       return fail(e.message, e.candidates);
     }
     const snap = FI().ops.snapshot();
-    const saved = await FI().ops.addInvoice(inv, { action: 'Nueva factura', summary: say('creó la factura ' + inv.number + ' para ' + inv.customer.name + ' (' + FI().eur(inv.total) + ')') });
+    const saved = await FI().ops.addInvoice(inv);
     render();
     return ok(Object.assign(FI().ops.summary(inv), syncNote(saved)), { mutated: true, summary: 'Factura ' + inv.number + ' creada · ' + inv.customer.name + ' · ' + FI().eur(inv.total), undo: inverse(snap, 'crear la factura ' + inv.number) });
   }
@@ -1227,7 +1231,7 @@
     if (!changes.length) return fail('No se ha indicado ningún cambio.');
     FI().ops.recalc(inv);
     inv.updatedAt = new Date().toISOString();
-    const saved = await FI().ops.save({ action: 'Factura actualizada', summary: say('actualizó la factura ' + inv.number + ' (' + changes.join(', ') + ')') });
+    const saved = await FI().ops.save();
     render();
     return ok(Object.assign(FI().ops.summary(inv), syncNote(saved)), { mutated: true, summary: 'Factura ' + inv.number + ' actualizada (' + changes.join(', ') + ')', undo: inverse(snap, 'actualizar la factura ' + inv.number) });
   }
@@ -1237,9 +1241,9 @@
     await FI().ops.load(true);
     const f = FI().ops.findInvoice(input.invoice);
     if (!f.ok) return fail(f.error, f.candidates);
-    await FI().ops.removeInvoice(f.value.id, { action: 'Eliminar factura', summary: say('eliminó la factura ' + f.value.number) });
+    const gone = await FI().ops.removeInvoice(f.value.id);
     render();
-    return ok({ deleted: f.value.number }, { mutated: true, summary: 'Factura eliminada: ' + f.value.number });
+    return ok(Object.assign({ deleted: f.value.number }, syncNote(gone)), { mutated: true, summary: 'Factura eliminada: ' + f.value.number });
   }
 
   async function openInvoice(input) {

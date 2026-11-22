@@ -33,7 +33,11 @@ Cada mensaje lleva una línea de contexto: fecha real, usuario, pantalla actual 
 
 **Vista previa del producto:** localiza la página del producto en la web del proveedor con la búsqueda web de Anthropic (herramienta de servidor, `ANTHROPIC_WEB_SEARCH=0` la desactiva) y llama a `set_order_product`. El servidor (`GET /api/assistant/link-preview`) lee la página y extrae imagen, título y precio (Open Graph / JSON-LD) con protección SSRF: solo http(s) públicos en puertos estándar, direcciones privadas bloqueadas al conectar, redirecciones revalidadas y límites de tiempo y tamaño. La fila del pedido muestra la miniatura y el enlace «Ver producto».
 
-**Facturación emitida** (solo administradores; sección **Facturas** del menú): clientes de facturación, ajustes del emisor (razón social, NIF, dirección, IBAN, serie, IVA y días de pago por defecto) y facturas con número correlativo `F-AAAA-0001`. El asistente crea, edita, anula y consulta facturas; **todos los importes los calcula el código** con precisión de céntimos (`public/invoicing.js`, con tests): si el usuario da un total con IVA incluido, el IVA es «total − base», así que el total facturado coincide exactamente. Si faltan datos del emisor o del cliente (NIF, dirección, código postal, población), la herramienta lo rechaza y el asistente los pide. La factura se ve en pantalla con una plantilla A4 y se descarga con «PDF / Imprimir» (diálogo de impresión del navegador → Guardar como PDF). Se guarda en el navegador y se sincroniza con el servidor como espacio `facturacion`.
+**Facturación emitida** (solo administradores; sección **Facturas** del menú): clientes de facturación, ajustes del emisor y facturas. El asistente crea, edita, anula y consulta facturas (también puede registrar una ya emitida con su número original, p. ej. la 104). **Todos los importes los calcula el código** con precisión de céntimos (`public/invoice-calc.js`, con tests): si el usuario da un total con IVA incluido, el IVA es «total − base», así que el total facturado coincide exactamente; con IRPF, `total = base + IVA − IRPF`. Si faltan datos del emisor o del cliente (NIF, dirección, código postal, población) la herramienta lo rechaza y el asistente los pide. Numeración correlativa: con la serie vacía, 104, 105, 106… (sigue desde la mayor y nunca baja del «numerar desde» de los ajustes); con serie, `F-2026-0001`.
+
+La factura se muestra con la plantilla de Ligrow (A4, tipografía espaciada, etiquetas en catalán o castellano, cifras «950», «199.50», «-142.50», «1007€») y se descarga con «PDF / Imprimir» (diálogo de impresión → Guardar como PDF). El PDF no se almacena: se regenera siempre a partir del registro guardado.
+
+**Almacenamiento (Supabase).** Tres tablas propias (`database/migrations/20261124_invoicing.sql`): `invoice_settings`, `invoice_customers` e `invoices`, con RLS activado y accesibles solo desde el servidor (clave de servicio). Cada factura guarda una **copia** de los datos del emisor y del cliente al emitirla; `number` es único y la base de datos rechaza estados no válidos y facturas sin líneas. API: `GET /api/invoicing` y `PUT/DELETE` de `/settings`, `/customers/:id` e `/invoices/:id` (solo administradores). **El servidor valida y recalcula** los totales con el mismo módulo de cálculo antes de guardar. El navegador envía solo lo que cambia y, si Supabase rechaza algo (tablas sin crear, clave pública, número duplicado), se avisa en pantalla y el asistente lo dice: nunca se da por guardado algo que no lo está. Si el servidor no tiene Supabase (solo desarrollo local) usa memoria y la interfaz muestra «Guardado temporal».
 
 **No expuesto a propósito:** usuarios, contraseñas, sesiones y credenciales.
 
@@ -74,9 +78,11 @@ Cada acción reversible registra su inverso en memoria (solo durante la conversa
 La app funciona sin ellas (los datos se conservan en el espacio sincronizado), pero para guardar estos campos en la tabla `supplier_orders`:
 `database/migrations/20261122_supplier_orders_delivery.sql` (estado de entrega) y `database/migrations/20261123_supplier_orders_product.sql` (enlace y vista previa del producto).
 
+**Obligatoria para facturar:** `database/migrations/20261124_invoicing.sql`. Opcional, después: `database/migrations/20261124_invoicing_seed.sql` (emisor, cliente La3Cultural y la factura 104; siguiente número: 106).
+
 ## Pruebas
 
-`npm test` ejecuta los tests de Node: servicio del asistente (validación, límites, PDF, búsqueda web, errores del proveedor), cálculo de facturas (céntimos, IVA, IRPF, numeración) y vista previa de enlaces (SSRF y extracción de metadatos).
+`npm test` ejecuta los tests de Node: servicio del asistente (validación, límites, PDF, búsqueda web, errores del proveedor), cálculo de facturas (céntimos, IVA, IRPF, numeración), servicio de facturación contra un Supabase simulado y vista previa de enlaces (SSRF y extracción de metadatos).
 
 ## Límites conocidos
 

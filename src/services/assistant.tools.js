@@ -271,8 +271,9 @@ const defs = [
     risk: 'write',
     description: 'Guarda los datos del emisor y los valores por defecto de la facturación.',
     properties: {
-      company_name: text('Razón social o nombre del emisor'),
-      tax_id: text('NIF/CIF del emisor'),
+      company_name: text('Razón social o nombre y apellidos del emisor'),
+      tax_id: text('NIF/CIF/DNI del emisor'),
+      tax_id_label: text('Cómo se imprime el documento fiscal: NIF, DNI, CIF…'),
       address: text('Dirección'),
       postal_code: text('Código postal'),
       city: text('Población'),
@@ -281,7 +282,10 @@ const defs = [
       phone: text('Teléfono'),
       website: text('Web'),
       iban: text('IBAN para cobros'),
-      series: text('Serie de numeración (F por defecto)'),
+      bank_name: text('Banco (p. ej. BBVA)'),
+      series: text('Serie de numeración; cadena vacía = numeración simple (106, 107…)'),
+      start_number: num('Número mínimo desde el que numerar cuando no hay serie (p. ej. 106)'),
+      invoice_language: oneOf(['ca', 'es'], 'Idioma de las facturas: ca (català) o es (castellano)'),
       default_vat_rate: { type: 'number', description: 'IVA por defecto en % (21)' },
       default_irpf_rate: { type: 'number', description: 'Retención de IRPF por defecto en % (0)' },
       payment_days: num('Días de pago por defecto (30)'),
@@ -349,7 +353,8 @@ const defs = [
       payment_method: text('Forma de pago (por defecto la de los ajustes)'),
       reference: text('Referencia o nº de pedido del cliente'),
       notes: text('Observaciones que salen en la factura'),
-      status: oneOf(['borrador', 'emitida', 'cobrada'], 'Estado inicial (emitida por defecto)')
+      status: oneOf(['borrador', 'emitida', 'cobrada'], 'Estado inicial (emitida por defecto)'),
+      number: text('SOLO para registrar una factura ya emitida fuera de la app con su número original (p. ej. 104). Debe ser único. Normalmente se omite: el número se asigna solo.')
     },
     required: ['customer', 'amounts_include_vat', 'lines']
   },

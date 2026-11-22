@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { calc } = require('../public/invoicing.js');
+const calc = require('../public/invoice-calc.js');
 
 const line = (input, opts) => calc.buildLine(input, Object.assign({ includesVat: true, vatRate: 21 }, opts));
 
@@ -46,9 +46,22 @@ test('validaciones de línea', () => {
   assert.throws(() => line({ description: 'x', total: 5, vatRate: 200 }), /IVA/);
 });
 
+test('numeración simple (serie vacía): continúa desde la última y respeta el número inicial', () => {
+  assert.equal(calc.nextNumber([{ number: '104' }], '', '2026-11-23', 106), '106'); // llevas hasta la 105 → la siguiente es la 106
+  assert.equal(calc.nextNumber([{ number: '104' }, { number: '106' }], '', '2026-11-23', 106), '107');
+  assert.equal(calc.nextNumber([], '', '2026-01-01', 1), '1');
+  assert.equal(calc.nextNumber([{ number: 'F-2026-0007' }], '', '2026-01-01', 1), '1'); // los números con serie no cuentan
+});
+
+test('IRPF de la factura 104: 950 + 199,50 − 142,50 = 1007', () => {
+  const l = calc.buildLine({ description: 'Xarxes socials', quantity: 1, unitPrice: 950 }, { includesVat: false, vatRate: 21 });
+  const t = calc.computeTotals([l], 15);
+  assert.deepEqual([t.subtotal, t.vatTotal, t.irpf, t.total], [950, 199.5, 142.5, 1007]);
+});
+
 test('numeración correlativa por serie y año', () => {
   const inv = [{ number: 'F-2026-0007' }, { number: 'F-2026-0010' }, { number: 'F-2025-0099' }, { number: 'R-2026-0050' }];
-  assert.equal(calc.nextNumber(inv, 'F', '2026-11-23'), 'F-2026-0011');
+  assert.equal(calc.nextNumber(inv, 'F', '2026-11-23', 1), 'F-2026-0011');
   assert.equal(calc.nextNumber(inv, 'F', '2027-01-02'), 'F-2027-0001');
   assert.equal(calc.nextNumber([], 'F', '2026-01-01'), 'F-2026-0001');
 });

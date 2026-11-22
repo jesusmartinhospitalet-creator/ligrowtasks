@@ -58,3 +58,7 @@
 .inv-settings{padding:20px 22px}
 @media (max-width:700px){.inv-line{grid-template-columns:1fr 70px 90px 60px;}.inv-line-t,.inv-line-x{display:none}.inv-line-h span:nth-last-child(-n+2){display:none}}
 @media print{.inv-overlay{display:none !important}}
+
+.inv-banner{padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.45;margin:0 0 4px;border:1px solid}
+.inv-banner.err{background:var(--danger-bg,#FDECEC);border-color:rgba(220,38,38,.3);color:var(--danger-fg,#C53030)}
+.inv-banner.warn{background:var(--warn-bg,#FFF3DC);border-color:var(--warn-bd,#F4C57A);color:var(--warn-fg,#C26A00)}
