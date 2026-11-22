@@ -13,8 +13,6 @@ const taskRoutes      = require('./routes/tasks.routes');
 const templateRoutes  = require('./routes/templates.routes');
 const monthRoutes     = require('./routes/months.routes');
 const supplierRoutes  = require('./routes/suppliers.routes');
-const assistantRoutes = require('./routes/assistant.routes');
-const invoicingRoutes = require('./routes/invoicing.routes');
 
 const app = express();
 
@@ -32,11 +30,39 @@ app.use('/api/tasks',     taskRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/months',    monthRoutes);
 app.use('/api/suppliers', supplierRoutes);
-app.use('/api/assistant', assistantRoutes);
-app.use('/api/invoicing', invoicingRoutes);
+
+// Módulos nuevos: si alguno no se pudiera cargar (p. ej. un archivo que falta en el despliegue), el resto de la
+// API (login, tareas, pedidos…) sigue funcionando y ese módulo responde 503 con el motivo.
+const modules = {};
+function mountOptional(name, mountPath, file) {
+  try {
+    app.use(mountPath, require(file));
+    modules[name] = 'ok';
+  } catch (error) {
+    console.error('[server] no se pudo cargar el módulo ' + name + ':', error);
+    modules[name] = error.message;
+    app.use(mountPath, (req, res) => res.status(503).json({ error: 'module_unavailable', message: 'El módulo «' + name + '» no se ha podido cargar en el servidor: ' + error.message }));
+  }
+}
+mountOptional('assistant', '/api/assistant', './routes/assistant.routes');
+mountOptional('invoicing', '/api/invoicing', './routes/invoicing.routes');
 
 app.get('/api', (req, res) => {
   res.json({ app: 'Ligrow Tasks API', status: 'running' });
+});
+
+// Diagnóstico público (sin datos sensibles): qué versión está desplegada y qué está configurado.
+app.get('/api/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  let supabaseConfigured = false;
+  try { supabaseConfigured = Boolean(require('./config/database')); } catch (error) { supabaseConfigured = false; }
+  res.json({
+    ok: true,
+    commit: (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || null,
+    modules,
+    assistantConfigured: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY),
+    supabaseConfigured
+  });
 });
 
 // Serve frontend static files

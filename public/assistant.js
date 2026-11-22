@@ -81,15 +81,35 @@
 
   // ── Estado del servidor (¿hay clave? ¿qué riesgo tiene cada herramienta?) ─────────────────────────────────
   let statusPromise = null;
+  let statusFailure = null; // por qué falló la última lectura del estado (para explicárselo al usuario)
   function loadStatus() {
     if (A.risks) return Promise.resolve(true);
     if (!statusPromise) {
+      statusFailure = null;
       statusPromise = fetch('/api/assistant/status', { credentials: 'same-origin' })
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+        .then(async (r) => {
+          if (!r.ok) {
+            const body = await r.json().catch(() => null);
+            statusFailure = { status: r.status, message: body && (body.message || body.error) };
+            throw new Error(String(r.status));
+          }
+          return r.json();
+        })
         .then((d) => { A.configured = !!d.configured; A.risks = d.risks || null; paintWarn(); return !!A.risks; })
-        .catch(() => { statusPromise = null; return false; });
+        .catch(() => { if (!statusFailure) statusFailure = { status: 0 }; statusPromise = null; return false; });
     }
     return statusPromise;
+  }
+
+  /** Mensaje claro según el motivo por el que no se pudo leer el estado del asistente. */
+  function explainStatusFailure() {
+    const f = statusFailure || { status: 0 };
+    if (f.status === 401) return 'Tu sesión no es válida en el servidor (ha caducado o entraste sin sesión). Cierra sesión (icono de salida de arriba a la izquierda) y vuelve a entrar con tu email y contraseña.';
+    if (f.status === 403) return 'Tu usuario no tiene permiso para usar el asistente.';
+    if (f.status === 404) return 'El servidor no tiene el asistente: el despliegue activo es anterior a esta versión. Revisa en Vercel que el último despliegue de la rama main esté en «Ready» y recarga la página.';
+    if (f.status >= 500) return 'El servidor ha fallado (HTTP ' + f.status + ')' + (f.message ? ': ' + f.message : '') + '. Abre /api/health en tu dominio para ver qué módulo falla, o mira Vercel → Logs.';
+    if (f.status) return 'El servidor respondió con el error HTTP ' + f.status + (f.message ? ': ' + f.message : '') + '.';
+    return 'No se ha podido conectar con el servidor. Comprueba tu conexión a internet.';
   }
 
   // ── Contexto que acompaña a cada mensaje ───────────────────────────────────────────────────────────────────
@@ -196,7 +216,7 @@
       return;
     }
     if (!(await loadStatus())) {
-      push({ kind: 'notice', id: uid(), text: 'No se ha podido conectar con el servidor del asistente. Comprueba tu conexión y que has iniciado sesión.' });
+      push({ kind: 'notice', id: uid(), text: explainStatusFailure() });
       return;
     }
     if (!A.configured) { paintWarn(); return; }
