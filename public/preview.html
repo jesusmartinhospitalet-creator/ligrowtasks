@@ -1338,6 +1338,9 @@ body{
 .ord-thumb.empty{cursor:default;background:var(--accent-light);color:var(--accent-text);border-color:transparent}
 .ord-thumb.empty:hover{transform:none;box-shadow:none}
 .ord-title{font-size:13.5px;font-weight:700;color:var(--text-1);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ord-prodlink{display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11.5px;font-weight:600;color:var(--accent-text);text-decoration:none;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ord-prodlink:hover{text-decoration:underline}
+.ord-thumb.preview{background:#fff;text-decoration:none}
 .ord-notes{font-size:12px;color:var(--text-3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 .ord-amount{text-align:right;font-family:'Space Grotesk','DM Sans',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.3px;color:var(--text-1);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -2587,6 +2590,8 @@ input:focus-visible,textarea:focus-visible{outline:none}
 @media (max-width:768px){.tb-row1{flex-wrap:wrap}.proj-title-wrap{flex:1 1 calc(100% - 70px)}.tb-actions-group{margin-left:0;width:100%;flex-wrap:wrap}.tb-actions-group>*{flex:1 1 auto;justify-content:center}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}}
   </style>
+  <link rel="stylesheet" href="/invoicing.css">
+  <link rel="stylesheet" href="/assistant.css">
 </head>
 <body>
 <div id="app"></div>
@@ -2781,57 +2786,7 @@ let DATA = [
   {
     id:'pv', type:'proveedor', color:'#0F9460', initials:'PR',
     name:'Proveedores', sub:'Catálogo de servicios externos y control de pedidos',
-    orders:[
-      {
-        id:'4a1e9b20-cc8d-4e1a-92de-002000000001',
-        supplierId:'3d5c8b9e-cc8d-4e1a-92de-001000000101',
-        supplierName:'PrintOnDemand BCN',
-        categoryName:'Impresión',
-        concept:'500 Flyers A5 doble cara estucado mate 350g',
-        orderDate:'2026-03-24',
-        totalAmount:38.00,
-        status:'Pagado',
-        deliveryStatus:'Entregado',
-        invoiceNumber:'FAC-2026-0042',
-        notes:'Entrega completada en tiempo y forma. Excelente calidad de corte.',
-        files:[
-          {id:'f1',name:'Factura_FAC-2026-0042.pdf',type:'application/pdf',size:124500,url:''},
-          {id:'f2',name:'Muestra_Flyer_A5.jpg',type:'image/jpeg',size:248000,url:''}
-        ]
-      },
-      {
-        id:'4a1e9b20-cc8d-4e1a-92de-002000000002',
-        supplierId:'3d5c8b9e-cc8d-4e1a-92de-001000000102',
-        supplierName:'Grafisant',
-        categoryName:'Impresión',
-        concept:'2 Roll-ups 85×200 con estructura de aluminio y funda de transporte',
-        orderDate:'2026-03-15',
-        totalAmount:178.00,
-        status:'Pagado',
-        deliveryStatus:'Entregado',
-        invoiceNumber:'ALB-98124',
-        notes:'Material corporativo para ferias y stands de clientes.',
-        files:[
-          {id:'f3',name:'Diseno_Rollup_85x200.jpg',type:'image/jpeg',size:389000,url:''}
-        ]
-      },
-      {
-        id:'4a1e9b20-cc8d-4e1a-92de-002000000003',
-        supplierId:'3d5c8b9e-cc8d-4e1a-92de-001000000201',
-        supplierName:'Estudi Forma',
-        categoryName:'Diseño',
-        concept:'Manual de identidad corporativa y adaptaciones web',
-        orderDate:'2026-02-28',
-        totalAmount:1200.00,
-        status:'Recibido',
-        deliveryStatus:'En curso',
-        invoiceNumber:'EF-2026-08',
-        notes:'Incluye paleta cromática, tipografías corporativas y guía de estilo.',
-        files:[
-          {id:'f4',name:'Manual_Identidad_Ligrow.pdf',type:'application/pdf',size:450000,url:''}
-        ]
-      }
-    ],
+    orders:[],
     cats:[
       {
         id:'print', ico:'🖨️', name:'Impresión', n:3,
@@ -4580,28 +4535,30 @@ function save(details = {}){
   }
 }
 
-async function syncSaveCurrentProject(details = {}){
-  if(!S.proj || !S.proj.id) return;
-  if(S.proj.type !== 'cliente' && S.proj.id !== 'pv') return;
-  const clientId = S.proj.id;
+// `target` permite guardar un proyecto distinto del abierto (lo usa el asistente de IA).
+async function syncSaveCurrentProject(details = {}, target = null){
+  const proj = target || S.proj;
+  if(!proj || !proj.id) return;
+  if(proj.type !== 'cliente' && proj.id !== 'pv') return;
+  const clientId = proj.id;
   const isLocalFile = window.location.protocol === 'file:';
   if(isLocalFile) return;
 
   try{
     let payload = {};
-    if(S.proj.type === 'cliente'){
+    if(proj.type === 'cliente'){
       payload = {
-        tasks: S.proj.tasks || [],
-        recordatorios: S.proj.recordatorios || [],
-        docs: S.proj.docs || [],
-        semaforo: S.proj.semaforo || 'verde',
-        sub: S.proj.sub || '',
-        responsable: S.proj.responsable || S.defaultUser || 'Jesús'
+        tasks: proj.tasks || [],
+        recordatorios: proj.recordatorios || [],
+        docs: proj.docs || [],
+        semaforo: proj.semaforo || 'verde',
+        sub: proj.sub || '',
+        responsable: proj.responsable || S.defaultUser || 'Jesús'
       };
-    } else if(S.proj.id === 'pv' || S.proj.type === 'proveedor'){
+    } else if(proj.id === 'pv' || proj.type === 'proveedor'){
       payload = {
-        orders: S.proj.orders || [],
-        cats: S.proj.cats || []
+        orders: proj.orders || [],
+        cats: proj.cats || []
       };
     }
 
@@ -4613,7 +4570,7 @@ async function syncSaveCurrentProject(details = {}){
         payload,
         details: {
           action: details.action || 'Actualización de datos',
-          summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${S.proj.name}`
+          summary: details.summary || `${S.currentUser?.name || S.defaultUser || 'Usuario'} actualizó el espacio de ${proj.name}`
         }
       })
     });
@@ -4621,13 +4578,13 @@ async function syncSaveCurrentProject(details = {}){
     if(res.ok){
       const data = await res.json();
       if(data.record && data.record.activityLog){
-        S.proj.activityLog = data.record.activityLog;
-        S.proj.lastModifiedBy = data.record.lastModifiedBy;
-        S.proj.lastModifiedEmail = data.record.lastModifiedEmail;
-        S.proj.lastModifiedAt = data.record.lastModifiedAt || new Date().toISOString();
-        S.proj.ultimaActividad = formatLastActivity(data.record.lastModifiedBy, S.proj.lastModifiedAt);
+        proj.activityLog = data.record.activityLog;
+        proj.lastModifiedBy = data.record.lastModifiedBy;
+        proj.lastModifiedEmail = data.record.lastModifiedEmail;
+        proj.lastModifiedAt = data.record.lastModifiedAt || new Date().toISOString();
+        proj.ultimaActividad = formatLastActivity(data.record.lastModifiedBy, proj.lastModifiedAt);
         const liveActEl = document.getElementById('proj-live-activity');
-        if(liveActEl) liveActEl.textContent = S.proj.ultimaActividad;
+        if(liveActEl) liveActEl.textContent = proj.ultimaActividad;
       }
     }
   }catch(err){}
@@ -4671,7 +4628,7 @@ async function syncLoadCurrentProject(clientId){
           if(wp.responsable) p.responsable = wp.responsable;
         } else if(p.id === 'pv' || p.type === 'proveedor'){
           if(Array.isArray(wp.orders)){
-            p.orders = wp.orders;
+            p.orders = stripDemoOrders(wp.orders);
             if(typeof persistSupplierOrdersLocally === 'function'){
               persistSupplierOrdersLocally(p.orders);
             }
@@ -5676,6 +5633,10 @@ function sidebar(){
           <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2.667" width="12" height="12" rx="1.333"/><path d="M10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12"/></svg>
           Calendario <span class="nv-tail">3</span>
         </div>
+        <div class="nv ${S.navView==='facturas'?'on':''}" onclick="setNavView('facturas')">
+          <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M3.5 1.5h7l3 3v10h-10z"/><path d="M10.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/></svg>
+          Facturas ${typeof invoicingBadge==='function' && invoicingBadge() ? `<span class="nv-badge">${invoicingBadge()}</span>` : ''}
+        </div>
       </div>
     ` : ''}
 
@@ -5748,6 +5709,7 @@ function main(){
   if(S.navView==='kanbanGlobal')  return navKanbanGlobal()
   if(S.navView==='proyectos')     return navProyectos()
   if(S.navView==='calendario')    return navCalendario()
+  if(S.navView==='facturas')      return typeof navFacturas==='function' ? navFacturas() : '<div class="mn"><div class="ct"></div></div>'
   const p = S.proj
   if(!p) return `<div class="mn"><div class="ct"><p style="color:var(--text-3)">Selecciona un proyecto</p></div></div>`
   const tabs = tabsFor(p)
@@ -6826,6 +6788,13 @@ function provContent(p){
 
 const ORDERS_STORAGE_KEY = 'ligrow_supplier_orders_v1';
 
+// Pedidos de demostración que traía la app (datos inventados). Se descartan aunque queden copias antiguas
+// en el navegador, en el espacio sincronizado o en la base de datos.
+const DEMO_ORDER_IDS = ["4a1e9b20-cc8d-4e1a-92de-002000000001", "4a1e9b20-cc8d-4e1a-92de-002000000002", "4a1e9b20-cc8d-4e1a-92de-002000000003"];
+function stripDemoOrders(list) {
+  return Array.isArray(list) ? list.filter(o => !DEMO_ORDER_IDS.includes(o && o.id)) : list;
+}
+
 function persistSupplierOrdersLocally(orders) {
   if (!Array.isArray(orders)) return;
   try {
@@ -6833,7 +6802,7 @@ function persistSupplierOrdersLocally(orders) {
       const copy = { ...o };
       if (Array.isArray(copy.files)) {
         copy.files = copy.files.map(f => {
-          if (f.data && typeof f.data === 'string' && f.data.length > 500000) {
+          if (f.data && typeof f.data === 'string' && f.data.length > 1600000) {
             return { ...f, data: f.data.slice(0, 100) + '...truncated' };
           }
           return f;
@@ -6858,7 +6827,7 @@ function loadSupplierOrdersLocally() {
     const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) return stripDemoOrders(parsed);
     }
   } catch (e) {}
   return null;
@@ -6986,7 +6955,8 @@ const ORD_ICONS = {
   trash:'<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>',
   image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
   truck:'<path d="M5 18H3V6a1 1 0 0 1 1-1h10v13M14 9h4l3 3v6h-2"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/>',
-  filter:'<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>'
+  filter:'<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'
 };
 function oi(name, size = 16, extra = '') {
   return `<svg class="oi ${extra}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ORD_ICONS[name] || ''}</svg>`;
@@ -7144,7 +7114,12 @@ function pedidosContent(p) {
     const pay = orderPayStatus(order);
     const del = orderDeliveryStatus(order);
     const firstImgIdx = files.findIndex(f => !isPdfFile(f));
-    const thumbHtml = firstImgIdx >= 0
+    const safeUrl = (u) => /^https?:\/\/[^\s]+$/i.test(String(u || '')) ? String(u) : '';
+    const previewSrc = safeUrl(order.previewImage);
+    const productHref = safeUrl(order.productUrl);
+    const thumbHtml = previewSrc
+      ? `<a class="ord-thumb preview" href="${esc(productHref || previewSrc)}" target="_blank" rel="noopener noreferrer" title="${esc(order.productTitle || 'Ver el producto en la web del proveedor')}"><img src="${esc(previewSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('empty');this.remove()" /></a>`
+      : firstImgIdx >= 0
       ? `<div class="ord-thumb" onclick="openOrderGallery('${order.id}', ${firstImgIdx})" title="Ver imagen"><img src="${getFileRenderUrl(order, files[firstImgIdx])}" alt="" loading="lazy" /></div>`
       : `<div class="ord-thumb empty">${oi(supplierCategoryIcon(order.categoryName), 28)}</div>`;
 
@@ -7187,6 +7162,7 @@ function pedidosContent(p) {
           <div style="min-width:0">
             <div class="ord-title">${esc(order.concept)}</div>
             ${order.notes ? `<div class="ord-notes">${esc(order.notes)}</div>` : ''}
+            ${productHref ? `<a class="ord-prodlink" href="${esc(productHref)}" target="_blank" rel="noopener noreferrer">${oi('link', 12)}Ver producto${order.productTitle ? ' · ' + esc(order.productTitle.slice(0, 40)) : ''}</a>` : ''}
           </div>
         </div>
         <div class="ord-c ord-amount">${fmtEUR(order.totalAmount, true)}</div>
@@ -7295,8 +7271,8 @@ function pedidosContent(p) {
 
 function openNewOrder() {
   const p = DATA.find(item => item.type === 'proveedor');
-  const defaultSupplier = p?.cats?.[0]?.provs?.[0]?.name || 'PrintOnDemand BCN';
-  const defaultCat = p?.cats?.[0]?.name || 'Impresión';
+  const defaultSupplier = p?.cats?.[0]?.provs?.[0]?.name || '';
+  const defaultCat = p?.cats?.[0]?.name || '';
 
   S.modal = 'orderModal';
   S._orderDraft = {
@@ -7859,7 +7835,13 @@ async function loadSupplierOrders() {
       const data = await res.json();
       if (Array.isArray(data.orders)) {
         const localById = new Map((p.orders || []).map(o => [o.id, o]));
-        p.orders = data.orders.map(o => (o.deliveryStatus ? o : { ...o, deliveryStatus: localById.get(o.id)?.deliveryStatus || o.deliveryStatus }));
+        // Si el servidor aún no guarda algún campo (migración pendiente), se conserva el que hay en local.
+        p.orders = stripDemoOrders(data.orders).map(o => {
+          const local = localById.get(o.id) || {};
+          const out = { ...o };
+          ['deliveryStatus', 'productUrl', 'previewImage', 'productTitle'].forEach(k => { if (!out[k] && local[k]) out[k] = local[k]; });
+          return out;
+        });
         persistSupplierOrdersLocally(p.orders);
         save();
         render();
@@ -8240,5 +8222,9 @@ window.addEventListener('focus', () => {
 loadSupplierDirectory().catch(()=>{})
 loadSupplierOrders().catch(()=>{})
 </script>
+<script src="/invoice-calc.js"></script>
+<script src="/invoicing.js"></script>
+<script src="/assistant-tools.js"></script>
+<script src="/assistant.js"></script>
 </body>
 </html>
