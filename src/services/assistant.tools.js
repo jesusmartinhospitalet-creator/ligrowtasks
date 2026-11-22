@@ -25,6 +25,24 @@ const STATUS = oneOf(
 const CLIENT = text('Cliente (nombre, siglas o id). Por defecto el cliente abierto en pantalla');
 const PAY = oneOf(['Pagado', 'Recibido', 'Pendiente'], 'Estado de pago: Pagado, Recibido (factura recibida, pendiente de pagar) o Pendiente');
 const DELIVERY = oneOf(['Entregado', 'En curso', 'Pendiente'], 'Estado de entrega: Entregado, En curso o Pendiente');
+const REFS = { type: 'array', items: { type: 'string' }, description: 'Identificadores de los archivos adjuntos en el chat (adjunto_1…) que se guardan en el pedido' };
+const money = (description) => ({ type: 'number', description });
+const INVOICE_STATUS = oneOf(['borrador', 'emitida', 'cobrada', 'anulada'], 'Estado: borrador, emitida (enviada al cliente), cobrada o anulada');
+const LINES = {
+  type: 'array',
+  description: 'Líneas de la factura',
+  items: {
+    type: 'object',
+    properties: {
+      description: text('Descripción del producto o servicio'),
+      quantity: { type: 'number', description: 'Cantidad (1 por defecto)' },
+      unit_price: money('Precio de UNA unidad'),
+      total: money('Importe de TODA la línea (úsalo en lugar de unit_price cuando el usuario da el precio total; el precio unitario se calcula)'),
+      vat_rate: { type: 'number', description: 'Tipo de IVA de esta línea (si difiere del general)' }
+    },
+    required: ['description']
+  }
+};
 
 const defs = [
   // ---- Lectura ---------------------------------------------------------------------------------
@@ -187,7 +205,8 @@ const defs = [
       payment_status: PAY,
       delivery_status: DELIVERY,
       invoice_number: text('Nº de factura o referencia'),
-      notes: text('Notas')
+      notes: text('Notas (incluye aquí el desglose de base, IVA y tipo si lo conoces)'),
+      attachment_refs: REFS
     },
     required: ['supplier', 'concept']
   },
@@ -203,9 +222,28 @@ const defs = [
       payment_status: PAY,
       delivery_status: DELIVERY,
       invoice_number: text('Nueva referencia'),
-      notes: text('Nuevas notas')
+      notes: text('Nuevas notas'),
+      attachment_refs: REFS
     },
     required: ['order']
+  },
+  {
+    name: 'read_order_document',
+    risk: 'read',
+    description: 'Te muestra un archivo adjunto de un pedido (imagen o PDF de la factura/albarán) para que lo leas tú. Úsalo para extraer datos de facturas ya guardadas.',
+    properties: { order: text('Referencia, id o parte del concepto'), document: text('Nombre (o parte) del archivo; por defecto el primero') },
+    required: ['order']
+  },
+  {
+    name: 'set_order_product',
+    risk: 'write',
+    description: 'Guarda en un pedido el enlace a la página del producto en la web del proveedor y descarga su vista previa (imagen y título) para mostrarla en la fila del pedido. Usa solo URLs reales que hayas encontrado.',
+    properties: {
+      order: text('Referencia, id o parte del concepto'),
+      url: text('URL exacta de la página del producto (https://…)'),
+      image_url: text('URL de una imagen del producto, solo si ya la conoces con seguridad (opcional: normalmente se obtiene de la propia página)')
+    },
+    required: ['order', 'url']
   },
   {
     name: 'create_supplier',
@@ -226,13 +264,125 @@ const defs = [
   },
   { name: 'create_supplier_category', risk: 'write', description: 'Crea una categoría en el catálogo de proveedores.', properties: { name: text('Nombre') }, required: ['name'] },
 
+  // ---- Facturación emitida (reversibles) ---------------------------------------------------------------
+  { name: 'get_invoice_settings', risk: 'read', description: 'Datos del emisor (Ligrow) que salen en las facturas, serie, IVA por defecto, días de pago e IBAN. Indica qué datos obligatorios faltan.' },
+  {
+    name: 'update_invoice_settings',
+    risk: 'write',
+    description: 'Guarda los datos del emisor y los valores por defecto de la facturación.',
+    properties: {
+      company_name: text('Razón social o nombre del emisor'),
+      tax_id: text('NIF/CIF del emisor'),
+      address: text('Dirección'),
+      postal_code: text('Código postal'),
+      city: text('Población'),
+      country: text('País (España por defecto)'),
+      email: text('Email'),
+      phone: text('Teléfono'),
+      website: text('Web'),
+      iban: text('IBAN para cobros'),
+      series: text('Serie de numeración (F por defecto)'),
+      default_vat_rate: { type: 'number', description: 'IVA por defecto en % (21)' },
+      default_irpf_rate: { type: 'number', description: 'Retención de IRPF por defecto en % (0)' },
+      payment_days: num('Días de pago por defecto (30)'),
+      payment_method: text('Forma de pago por defecto'),
+      footer_note: text('Texto al pie de las facturas')
+    }
+  },
+  { name: 'list_customers', risk: 'read', description: 'Lista los clientes de facturación (personas o empresas a las que se factura) con sus datos fiscales.', properties: { query: text('Texto a buscar en nombre, NIF o población') } },
+  {
+    name: 'create_customer',
+    risk: 'write',
+    description: 'Crea un cliente de facturación. Necesita nombre completo o razón social, NIF/CIF/NIE y dirección completa: si el usuario no los ha dado, pídeselos antes.',
+    properties: {
+      name: text('Nombre completo o razón social'),
+      tax_id: text('NIF/CIF/NIE'),
+      address: text('Dirección (calle y número)'),
+      postal_code: text('Código postal'),
+      city: text('Población'),
+      province: text('Provincia'),
+      country: text('País (España por defecto)'),
+      email: text('Email'),
+      phone: text('Teléfono'),
+      notes: text('Notas internas')
+    },
+    required: ['name', 'tax_id', 'address', 'postal_code', 'city']
+  },
+  {
+    name: 'update_customer',
+    risk: 'write',
+    description: 'Modifica los datos de un cliente de facturación.',
+    properties: {
+      customer: text('Nombre, NIF o id'),
+      name: text('Nuevo nombre'),
+      tax_id: text('NIF/CIF/NIE'),
+      address: text('Dirección'),
+      postal_code: text('Código postal'),
+      city: text('Población'),
+      province: text('Provincia'),
+      country: text('País'),
+      email: text('Email'),
+      phone: text('Teléfono'),
+      notes: text('Notas')
+    },
+    required: ['customer']
+  },
+  {
+    name: 'list_invoices',
+    risk: 'read',
+    description: 'Lista las facturas emitidas con su número, cliente, importes y estado.',
+    properties: { query: text('Texto a buscar en número, cliente o concepto'), customer: text('Cliente'), status: INVOICE_STATUS, from: date('Desde'), to: date('Hasta') }
+  },
+  { name: 'get_invoice', risk: 'read', description: 'Detalle completo de una factura: líneas, base, IVA, total, vencimiento y estado.', properties: { invoice: text('Número (F-2026-0001) o id') }, required: ['invoice'] },
+  {
+    name: 'create_invoice',
+    risk: 'write',
+    description: 'Crea y guarda una factura emitida. TODOS los cálculos (base, IVA, total) los hace la herramienta con precisión de céntimos. El número es correlativo y lo asigna ella. Falla si faltan datos del emisor o del cliente (te dice cuáles).',
+    properties: {
+      customer: text('Cliente de facturación (nombre, NIF o id) ya existente'),
+      date: date('Fecha de la factura; por defecto hoy'),
+      due_date: date('Vencimiento; por defecto fecha + días de pago de los ajustes'),
+      amounts_include_vat: bool('true si los precios/totales que da el usuario YA incluyen IVA; false si son sin IVA. Obligatorio: decídelo (si no está claro, asume true y dilo).'),
+      vat_rate: { type: 'number', description: 'Tipo de IVA general en % (por defecto el de los ajustes, 21)' },
+      irpf_rate: { type: 'number', description: 'Retención de IRPF en % (0 por defecto)' },
+      lines: LINES,
+      payment_method: text('Forma de pago (por defecto la de los ajustes)'),
+      reference: text('Referencia o nº de pedido del cliente'),
+      notes: text('Observaciones que salen en la factura'),
+      status: oneOf(['borrador', 'emitida', 'cobrada'], 'Estado inicial (emitida por defecto)')
+    },
+    required: ['customer', 'amounts_include_vat', 'lines']
+  },
+  {
+    name: 'update_invoice',
+    risk: 'write',
+    description: 'Modifica una factura existente: cliente, fechas, líneas (se sustituyen todas), IVA, forma de pago, notas o estado (cobrada, anulada…). El número no se puede cambiar. Los importes se recalculan.',
+    properties: {
+      invoice: text('Número (F-2026-0001) o id'),
+      customer: text('Cambiar el cliente facturado'),
+      date: date('Nueva fecha'),
+      due_date: date('Nuevo vencimiento'),
+      amounts_include_vat: bool('Necesario si cambias las líneas: ¿los importes ya incluyen IVA?'),
+      vat_rate: { type: 'number', description: 'Tipo de IVA general en %' },
+      irpf_rate: { type: 'number', description: 'Retención de IRPF en %' },
+      lines: LINES,
+      payment_method: text('Forma de pago'),
+      reference: text('Referencia del cliente'),
+      notes: text('Observaciones'),
+      status: INVOICE_STATUS,
+      paid_date: date('Fecha de cobro (al marcarla como cobrada; por defecto hoy)')
+    },
+    required: ['invoice']
+  },
+  { name: 'open_invoice', risk: 'read', description: 'Abre la factura en pantalla con su vista previa, desde donde el usuario puede imprimirla o guardarla como PDF.', properties: { invoice: text('Número o id') }, required: ['invoice'] },
+
   // ---- Navegación y vista (no cambian datos) -----------------------------------------------------------
   {
     name: 'navigate_to',
     risk: 'read',
     description: 'Lleva al usuario a otra pantalla (no cambia datos). Para un cliente o una tarea concretos indica su nombre.',
     properties: {
-      screen: oneOf(['dashboard', 'kanban_global', 'projects', 'calendar', 'client', 'suppliers', 'orders', 'app', 'settings'], 'Pantalla'),
+      screen: oneOf(['dashboard', 'kanban_global', 'projects', 'calendar', 'client', 'suppliers', 'orders', 'invoices', 'customers', 'app', 'settings'], 'Pantalla'),
       client: text('Cliente a abrir (para screen = client)'),
       view: oneOf(['resumen', 'kanban', 'actividad'], 'Pestaña del cliente'),
       task: text('Abrir el detalle de esta tarea'),
@@ -247,6 +397,8 @@ const defs = [
   { name: 'delete_reminder', risk: 'confirm', description: 'Elimina un recordatorio. No se puede deshacer.', properties: { client: CLIENT, reminder: text('Título (o parte) del recordatorio') }, required: ['reminder'] },
   { name: 'delete_document', risk: 'confirm', description: 'Elimina un recurso de la biblioteca de un cliente. No se puede deshacer.', properties: { client: CLIENT, document: text('Nombre (o parte) del recurso') }, required: ['document'] },
   { name: 'delete_order', risk: 'confirm', description: 'Elimina un pedido a proveedor con sus documentos adjuntos. No se puede deshacer.', properties: { order: text('Referencia, id o parte del concepto') }, required: ['order'] },
+  { name: 'delete_invoice', risk: 'confirm', description: 'Elimina una factura. No se puede deshacer y deja un hueco en la numeración: para descartar una emitida es mejor anularla con update_invoice (status = anulada).', properties: { invoice: text('Número o id') }, required: ['invoice'] },
+  { name: 'delete_customer', risk: 'confirm', description: 'Elimina un cliente de facturación (sus facturas se conservan). No se puede deshacer.', properties: { customer: text('Nombre, NIF o id') }, required: ['customer'] },
   { name: 'delete_supplier', risk: 'confirm', description: 'Elimina un proveedor del catálogo. No se puede deshacer.', properties: { supplier: text('Nombre del proveedor') }, required: ['supplier'] },
 
   // ---- Deshacer --------------------------------------------------------------------------------------------

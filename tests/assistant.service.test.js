@@ -75,7 +75,8 @@ test('llama al modelo con herramientas, prompt, caché y devuelve el contenido t
   assert.deepEqual(res.body.content, reply.content);
   const sent = fakeClient.last;
   assert.equal(sent.model, 'claude-opus-5-5');
-  assert.equal(sent.tools.length, assistantTools.length);
+  assert.equal(sent.tools.length, assistantTools.length + 1);
+  assert.equal(sent.tools[sent.tools.length - 1].name, 'web_search'); // búsqueda web del servidor
   assert.match(sent.system, /Ligrow Tasks/);
   assert.deepEqual(sent.cache_control, { type: 'ephemeral' });
   assert.deepEqual(sent.messages, messages); // el razonamiento vuelve intacto
@@ -120,4 +121,49 @@ test('getAssistantStatus refleja si hay clave', () => {
   process.env.ANTHROPIC_KEY = 'k';
   assert.equal(service.getAssistantStatus().configured, true);
   assert.equal(service.getAssistantStatus().risks.delete_task, 'confirm');
+});
+
+test('si la búsqueda web no está disponible, reintenta sin ella', async () => {
+  const calls = [];
+  const client = { messages: { create: async (params) => { calls.push(params.tools.length); if (params.tools.some((t) => t.name === 'web_search')) { const e = new Error('web_search tool is not enabled for this organization'); e.status = 400; throw e; } return reply; } } };
+  const res = fakeRes();
+  await service.handleAssistantRequest({ sessionUser: user, body: { messages: [text('hola')] } }, res, { client });
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(calls, [assistantTools.length + 1, assistantTools.length]);
+});
+
+test('ANTHROPIC_WEB_SEARCH=0 desactiva la búsqueda web', async () => {
+  process.env.ANTHROPIC_WEB_SEARCH = '0';
+  try {
+    const res = fakeRes();
+    await service.handleAssistantRequest({ sessionUser: user, body: { messages: [text('hola')] } }, res, { client: fakeClient(reply) });
+    assert.equal(fakeClient.last.tools.length, assistantTools.length);
+  } finally { delete process.env.ANTHROPIC_WEB_SEARCH; }
+});
+
+test('acepta PDF, resultados de herramienta con archivos y bloques de búsqueda web', async () => {
+  const pdf = { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: 'JVBERi0=' }, title: 'f.pdf' };
+  const messages = [
+    { role: 'user', content: [pdf, { type: 'text', text: 'lee esto' }] },
+    { role: 'assistant', content: [{ type: 'server_tool_use', id: 'srvtoolu_1', name: 'web_search', input: { query: 'x' } }, { type: 'web_search_tool_result', tool_use_id: 'srvtoolu_1', content: [] }, { type: 'text', text: 'ok', citations: [{ type: 'web_search_result_location' }] }, { type: 'tool_use', id: 't1', name: 'read_order_document', input: {} }] },
+    { role: 'user', content: [{ type: 'tool_result', tool_use_id: 't1', content: [{ type: 'text', text: '{}' }, pdf] }] }
+  ];
+  const res = fakeRes();
+  await service.handleAssistantRequest({ sessionUser: user, body: { messages } }, res, { client: fakeClient(reply) });
+  assert.equal(res.statusCode, 200);
+});
+
+test('rechaza PDF no válidos o demasiados', async () => {
+  const doc = (data, media) => ({ type: 'document', source: { type: 'base64', media_type: media || 'application/pdf', data } });
+  const cases = [
+    [{ role: 'user', content: [doc('x'.repeat(2_000_001))] }, 400],
+    [{ role: 'user', content: [doc('AAAA', 'text/html')] }, 400],
+    [{ role: 'user', content: Array(5).fill(doc('AAAA')) }, 413]
+  ];
+  for (const [message, status] of cases) {
+    service.resetRateLimits();
+    const res = fakeRes();
+    await service.handleAssistantRequest({ sessionUser: user, body: { messages: [message] } }, res, { client: fakeClient(reply) });
+    assert.equal(res.statusCode, status);
+  }
 });

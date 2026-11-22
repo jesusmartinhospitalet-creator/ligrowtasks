@@ -29,6 +29,12 @@ Cada mensaje lleva una línea de contexto: fecha real, usuario, pantalla actual 
 
 **Con permiso del usuario (no reversible):** borrar tareas, clientes, recordatorios, documentos, pedidos y proveedores.
 
+**Facturas de proveedores:** lee facturas y albaranes adjuntos (imagen o PDF, hasta 4 PDF de ~1,4 MB por conversación) y los registra como pedidos: busca o crea el proveedor, extrae número, fecha, concepto y total, deja el desglose de IVA en las notas y **adjunta el propio archivo** al pedido (`attachment_refs`: cada adjunto del chat recibe un identificador `adjunto_1`…). Con `read_order_document` también puede releer los archivos ya guardados en un pedido.
+
+**Vista previa del producto:** localiza la página del producto en la web del proveedor con la búsqueda web de Anthropic (herramienta de servidor, `ANTHROPIC_WEB_SEARCH=0` la desactiva) y llama a `set_order_product`. El servidor (`GET /api/assistant/link-preview`) lee la página y extrae imagen, título y precio (Open Graph / JSON-LD) con protección SSRF: solo http(s) públicos en puertos estándar, direcciones privadas bloqueadas al conectar, redirecciones revalidadas y límites de tiempo y tamaño. La fila del pedido muestra la miniatura y el enlace «Ver producto».
+
+**Facturación emitida** (solo administradores; sección **Facturas** del menú): clientes de facturación, ajustes del emisor (razón social, NIF, dirección, IBAN, serie, IVA y días de pago por defecto) y facturas con número correlativo `F-AAAA-0001`. El asistente crea, edita, anula y consulta facturas; **todos los importes los calcula el código** con precisión de céntimos (`public/invoicing.js`, con tests): si el usuario da un total con IVA incluido, el IVA es «total − base», así que el total facturado coincide exactamente. Si faltan datos del emisor o del cliente (NIF, dirección, código postal, población), la herramienta lo rechaza y el asistente los pide. La factura se ve en pantalla con una plantilla A4 y se descarga con «PDF / Imprimir» (diálogo de impresión del navegador → Guardar como PDF). Se guarda en el navegador y se sincroniza con el servidor como espacio `facturacion`.
+
 **No expuesto a propósito:** usuarios, contraseñas, sesiones y credenciales.
 
 Los usuarios que no son administradores solo ven sus clientes y no tienen acceso a proveedores/pedidos ni a las pantallas globales, igual que en la app.
@@ -58,13 +64,19 @@ Cada acción reversible registra su inverso en memoria (solo durante la conversa
 | Variable | Uso |
 | --- | --- |
 | `ANTHROPIC_API_KEY` | Obligatoria. Secreto solo de servidor (Vercel → Settings → Environment Variables, Production y Preview). También se acepta `ANTHROPIC_KEY`. Sin ella el panel muestra «no activado». |
+| `ANTHROPIC_WEB_SEARCH` | Opcional. `0` desactiva la búsqueda web del asistente (si la organización no la tiene activada en la consola de Anthropic, el servidor continúa automáticamente sin ella). |
 | `ANTHROPIC_MODEL` | Opcional. Por defecto `claude-opus-5-5`; `claude-sonnet-5-5` cuesta aproximadamente la mitad. |
 
 `vercel.json` fija `maxDuration: 60` s para la función (un turno con herramientas puede tardar).
 
+## Migraciones opcionales (Supabase)
+
+La app funciona sin ellas (los datos se conservan en el espacio sincronizado), pero para guardar estos campos en la tabla `supplier_orders`:
+`database/migrations/20261122_supplier_orders_delivery.sql` (estado de entrega) y `database/migrations/20261123_supplier_orders_product.sql` (enlace y vista previa del producto).
+
 ## Pruebas
 
-`npm test` ejecuta `tests/assistant.service.test.js` (validación, límites, errores del proveedor, forma de la petición al modelo con un cliente simulado).
+`npm test` ejecuta los tests de Node: servicio del asistente (validación, límites, PDF, búsqueda web, errores del proveedor), cálculo de facturas (céntimos, IVA, IRPF, numeración) y vista previa de enlaces (SSRF y extracción de metadatos).
 
 ## Límites conocidos
 

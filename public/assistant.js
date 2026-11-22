@@ -16,6 +16,8 @@
   const BULK_LIMIT = 5; // a partir de este número de cambios en un turno, la app pide permiso para seguir
   const MAX_HISTORY_CHARS = 3400000;
   const MAX_IMAGES = 8;
+  const MAX_DOCS = 4;
+  const MAX_PDF_B64 = 2000000; // ~1,4 MB de PDF
   const MAX_SIDE = 1568;
   const MAX_B64 = 900000;
 
@@ -40,7 +42,8 @@
     alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/>',
     undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
     shield: '<path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
-    slash: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>'
+    slash: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+    file: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/>'
   };
   const svg = (name, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ' + (extra || '') + '>' + (ICON[name] || '') + '</svg>';
 
@@ -64,6 +67,8 @@
   let history = [];
   let historyChars = 0;
   let imagesInHistory = 0;
+  let docsInHistory = 0;
+  let attachCounter = 0;
   let runtime = { undoStack: [] };
   const confirmResolvers = new Map();
   let abortCtl = null;
@@ -147,7 +152,7 @@
   async function executeTool(block, turn) {
     const risk = A.risks && A.risks[block.name];
     const input = block.input || {};
-    const result = (payload, isError) => ({ type: 'tool_result', tool_use_id: block.id, content: limitText(JSON.stringify(payload)), ...(isError ? { is_error: true } : {}) });
+    const result = (payload, isError, extra) => ({ type: 'tool_result', tool_use_id: block.id, content: extra && extra.length ? [{ type: 'text', text: limitText(JSON.stringify(payload)) }, ...extra] : limitText(JSON.stringify(payload)), ...(isError ? { is_error: true } : {}) });
     if (!risk) return result({ error: 'Herramienta desconocida: ' + block.name + '.' }, true);
 
     const bulk = risk === 'write' && turn.mutations >= BULK_LIMIT;
@@ -176,7 +181,7 @@
       }
       if (outcome.mutated) turn.mutations += 1;
     }
-    return result(outcome.result, !!outcome.isError);
+    return result(outcome.result, !!outcome.isError, outcome.content);
   }
 
   // ── Conversación ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -184,7 +189,9 @@
     const text = (rawText || '').trim();
     images = images || [];
     if (A.busy || (!text && !images.length)) return;
-    if (historyChars > MAX_HISTORY_CHARS || imagesInHistory + images.length > MAX_IMAGES) {
+    const nDocs = images.filter((a) => a.kind === 'pdf').length;
+    const nImgs = images.length - nDocs;
+    if (historyChars > MAX_HISTORY_CHARS || imagesInHistory + nImgs > MAX_IMAGES || docsInHistory + nDocs > MAX_DOCS) {
       push({ kind: 'notice', id: uid(), text: 'La conversación ya es muy larga o lleva demasiadas imágenes. Pulsa «Nueva conversación» para seguir.' });
       return;
     }
@@ -198,14 +205,24 @@
     paintBusy();
     abortCtl = new AbortController();
     const controller = abortCtl;
-    push({ kind: 'user', id: uid(), text, images: images.map((i) => i.dataUrl) });
+    push({ kind: 'user', id: uid(), text, images: images.filter((a) => a.kind !== 'pdf').map((i) => i.dataUrl), files: images.filter((a) => a.kind === 'pdf').map((a) => a.name) });
 
-    const content = images.map((i) => ({ type: 'image', source: { type: 'base64', media_type: i.mediaType, data: i.base64 } }));
-    content.push({ type: 'text', text: messageContext() + '\n\n' + (text || 'Mira la imagen adjunta.') });
+    // Cada adjunto recibe un identificador (adjunto_1…) que el modelo puede usar en las herramientas.
+    const refs = images.map((a) => {
+      attachCounter += 1;
+      const ref = 'adjunto_' + attachCounter;
+      T().attachments.set(ref, { ref, name: a.name || (a.kind === 'pdf' ? 'documento.pdf' : 'imagen.jpg'), mediaType: a.mediaType, base64: a.base64, size: a.size });
+      return ref + ' = ' + (a.name || ref) + ' (' + (a.kind === 'pdf' ? 'PDF' : 'imagen') + ')';
+    });
+    const content = images.map((a) => (a.kind === 'pdf'
+      ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: a.base64 }, title: a.name }
+      : { type: 'image', source: { type: 'base64', media_type: a.mediaType, data: a.base64 } }));
+    content.push({ type: 'text', text: messageContext() + (refs.length ? '\n[Adjuntos de este mensaje: ' + refs.join('; ') + ']' : '') + '\n\n' + (text || 'Mira el archivo adjunto.') });
     const baseLength = history.length;
     const baseChars = historyChars;
     addHistory({ role: 'user', content });
-    imagesInHistory += images.length;
+    imagesInHistory += nImgs;
+    docsInHistory += nDocs;
 
     const turn = { mutations: 0 };
     try {
@@ -215,18 +232,21 @@
           if (reply.code === 'not_configured') { A.configured = false; paintWarn(); }
           push({ kind: 'notice', id: uid(), text: reply.code === 'aborted' ? 'He detenido la respuesta.' : reply.error });
           // Si ni siquiera hubo respuesta a este mensaje, se retira para que el historial siga siendo válido.
-          if (round === 0) { history.length = baseLength; historyChars = baseChars; imagesInHistory -= images.length; }
+          if (round === 0) { history.length = baseLength; historyChars = baseChars; imagesInHistory -= nImgs; docsInHistory -= nDocs; }
           return;
         }
         // Los bloques se devuelven al modelo tal cual llegaron (incluido el razonamiento).
         if (reply.content.length) addHistory({ role: 'assistant', content: reply.content });
         const spoken = reply.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
         if (spoken) push({ kind: 'assistant', id: uid(), text: spoken });
+        reply.content.filter((b) => b.type === 'server_tool_use' && b.name === 'web_search').forEach((b) => push({ kind: 'notice', id: uid(), text: 'Buscando en la web: «' + String((b.input && b.input.query) || '') + '»' }));
 
         if (reply.stop_reason === 'refusal') { push({ kind: 'notice', id: uid(), text: 'El modelo no ha podido ayudar con esa petición. Prueba a formularla de otra manera.' }); return; }
         if (reply.stop_reason === 'max_tokens') push({ kind: 'notice', id: uid(), text: 'La respuesta se ha cortado por longitud. Pídeme que continúe.' });
 
         const calls = reply.content.filter((b) => b.type === 'tool_use');
+        // Una búsqueda web larga pausa el turno: se reenvía el historial tal cual para que continúe.
+        if (reply.stop_reason === 'pause_turn') continue;
         if (reply.stop_reason !== 'tool_use' || !calls.length) return;
 
         const results = [];
@@ -260,6 +280,9 @@
     history = [];
     historyChars = 0;
     imagesInHistory = 0;
+    docsInHistory = 0;
+    attachCounter = 0;
+    if (T()) T().attachments.clear();
     runtime = { undoStack: [] };
     spokenCount = 0;
     A.items = [];
@@ -297,8 +320,23 @@
   }
 
   /** Reduce y comprime la imagen en el navegador: nunca se sube el original ni se guarda en la app. */
+  function readAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => { const url = String(r.result); resolve(url.slice(url.indexOf(',') + 1)); };
+      r.onerror = () => reject(new Error('No se ha podido leer el archivo.'));
+      r.readAsDataURL(file);
+    });
+  }
+
   async function fileToAttachment(file) {
-    if (!file.type.startsWith('image/')) throw new Error('Solo se pueden adjuntar imágenes.');
+    const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+    if (isPdf) {
+      const base64 = await readAsBase64(file);
+      if (base64.length > MAX_PDF_B64) throw new Error('El PDF «' + file.name + '» es demasiado grande (máximo ~1,4 MB). Prueba a comprimirlo o a adjuntar una foto.');
+      return { id: uid(), kind: 'pdf', name: file.name || 'documento.pdf', size: file.size, dataUrl: '', base64, mediaType: 'application/pdf' };
+    }
+    if (!file.type.startsWith('image/')) throw new Error('Solo se pueden adjuntar imágenes o PDF.');
     const image = await loadImage(file);
     let side = MAX_SIDE;
     let quality = 0.82;
@@ -314,7 +352,7 @@
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL('image/jpeg', quality);
       const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
-      if (base64.length <= MAX_B64) return { id: uid(), dataUrl, base64, mediaType: 'image/jpeg' };
+      if (base64.length <= MAX_B64) return { id: uid(), kind: 'image', name: (file.name || 'imagen').replace(/\.[^.]+$/, '') + '.jpg', size: Math.round(base64.length * 0.75), dataUrl, base64, mediaType: 'image/jpeg' };
       side = Math.round(side * 0.75);
       quality = Math.max(0.5, quality - 0.1);
     }
@@ -323,8 +361,10 @@
 
   async function addFiles(files) {
     A.error = '';
-    for (const file of files.filter((f) => f.type.startsWith('image/'))) {
-      if (imagesInHistory + A.images.length >= MAX_IMAGES) { A.error = 'Máximo de imágenes por conversación alcanzado. Empieza una conversación nueva.'; break; }
+    for (const file of files.filter((f) => f.type.startsWith('image/') || f.type === 'application/pdf' || /\.pdf$/i.test(f.name || ''))) {
+      const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+      const pdfs = A.images.filter((a) => a.kind === 'pdf').length;
+      if (isPdf ? docsInHistory + pdfs >= MAX_DOCS : imagesInHistory + (A.images.length - pdfs) >= MAX_IMAGES) { A.error = 'Máximo de archivos por conversación alcanzado. Empieza una conversación nueva.'; break; }
       try { A.images.push(await fileToAttachment(file)); } catch (e) { A.error = e && e.message ? e.message : 'No se ha podido adjuntar la imagen.'; }
     }
     paintFoot();
@@ -388,7 +428,9 @@
     '¿Cómo estamos hoy?',
     '¿Qué tareas están vencidas?',
     'Crea una tarea «Revisar textos» para el viernes',
-    '¿Cuánto tenemos pendiente de pagar a proveedores?'
+    'Crea una factura de hoy de 100 tarjetas, total 30 €',
+    'Registra la factura de proveedor que te adjunto',
+    '¿Cuánto tenemos pendiente de cobrar y de pagar?'
   ];
 
   const richText = (text) =>
@@ -399,6 +441,7 @@
       case 'user':
         return '<li class="ai-user">' +
           (it.images.length ? '<div class="ai-user-imgs">' + it.images.map((src, i) => '<img alt="Imagen adjunta ' + (i + 1) + '" src="' + src + '">').join('') + '</div>' : '') +
+          ((it.files && it.files.length) ? '<div class="ai-user-imgs">' + it.files.map((n) => '<span class="ai-pdfchip">' + svg('file') + esc(n) + '</span>').join('') + '</div>' : '') +
           (it.text ? '<p class="ai-bubble-user">' + esc(it.text) + '</p>' : '') + '</li>';
       case 'assistant':
         return '<li class="ai-bubble-ai">' + richText(it.text) + '</li>';
@@ -439,9 +482,9 @@
           '</div></header>' +
         '<div class="ai-body"><div class="ai-warn" hidden></div><div class="ai-intro"></div><ol class="ai-list" aria-live="polite"></ol><div class="ai-end"></div></div>' +
         '<footer class="ai-foot"><ul class="ai-thumbs" hidden></ul><p class="ai-err" role="alert" hidden></p><p class="ai-interim" hidden></p>' +
-          '<div class="ai-box"><input type="file" accept="image/*" multiple hidden>' +
-            '<button class="ai-icon-btn" type="button" data-act="attach" aria-label="Adjuntar imagen">' + svg('image') + '</button>' +
-            '<textarea rows="1" aria-label="Mensaje para el asistente" placeholder="Escribe, dicta o pega una imagen…"></textarea>' +
+          '<div class="ai-box"><input type="file" accept="image/*,application/pdf,.pdf" multiple hidden>' +
+            '<button class="ai-icon-btn" type="button" data-act="attach" aria-label="Adjuntar imagen o PDF" title="Adjuntar imagen o PDF">' + svg('image') + '</button>' +
+            '<textarea rows="1" aria-label="Mensaje para el asistente" placeholder="Escribe, dicta o adjunta una factura…"></textarea>' +
             (Recognition ? '<button class="ai-icon-btn ai-mic" type="button" data-act="mic" aria-label="Dictar por voz"></button>' : '') +
             '<button class="ai-send" type="button" data-act="send" aria-label="Enviar" disabled>' + svg('send') + '</button>' +
           '</div>' +
@@ -525,7 +568,7 @@
     const intro = root.querySelector('.ai-intro');
     intro.innerHTML = A.items.length
       ? ''
-      : '<p class="ai-hello">Dime qué quieres hacer: consulto y cambio clientes, tareas, recordatorios, documentos, proveedores y pedidos. Casi todo lo que hago se puede deshacer; lo que borra algo solo lo hago con tu permiso.</p>' +
+      : '<p class="ai-hello">Dime qué quieres hacer: consulto y cambio clientes, tareas, recordatorios, documentos, proveedores y pedidos; leo facturas (imagen o PDF) y las registro; y creo facturas para tus clientes. Casi todo lo que hago se puede deshacer; lo que borra algo solo lo hago con tu permiso.</p>' +
         '<ul class="ai-chips">' + SUGGESTIONS.map((s) => '<li><button class="ai-chip" type="button" data-chip="' + esc(s) + '">' + esc(s) + '</button></li>').join('') + '</ul>';
     list.innerHTML = A.items.map(itemHtml).join('') + (A.busy ? '<li class="ai-typing" role="status" aria-label="El asistente está trabajando"><i></i><i></i><i></i></li>' : '');
     const end = root.querySelector('.ai-end');
@@ -563,7 +606,7 @@
     const ta = root.querySelector('.ai-box textarea');
     const thumbs = root.querySelector('.ai-thumbs');
     thumbs.hidden = !A.images.length;
-    thumbs.innerHTML = A.images.map((i) => '<li><img alt="Imagen adjunta" src="' + i.dataUrl + '"><button type="button" data-rm="' + i.id + '" aria-label="Quitar imagen">' + svg('x') + '</button></li>').join('');
+    thumbs.innerHTML = A.images.map((i) => '<li>' + (i.kind === 'pdf' ? '<span class="ai-pdfchip">' + svg('file') + esc(i.name) + '</span>' : '<img alt="Imagen adjunta" src="' + i.dataUrl + '">') + '<button type="button" data-rm="' + i.id + '" aria-label="Quitar adjunto">' + svg('x') + '</button></li>').join('');
     const err = root.querySelector('.ai-err');
     err.hidden = !A.error;
     err.textContent = A.error;

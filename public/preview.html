@@ -1338,6 +1338,9 @@ body{
 .ord-thumb.empty{cursor:default;background:var(--accent-light);color:var(--accent-text);border-color:transparent}
 .ord-thumb.empty:hover{transform:none;box-shadow:none}
 .ord-title{font-size:13.5px;font-weight:700;color:var(--text-1);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ord-prodlink{display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11.5px;font-weight:600;color:var(--accent-text);text-decoration:none;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ord-prodlink:hover{text-decoration:underline}
+.ord-thumb.preview{background:#fff;text-decoration:none}
 .ord-notes{font-size:12px;color:var(--text-3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 .ord-amount{text-align:right;font-family:'Space Grotesk','DM Sans',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.3px;color:var(--text-1);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -2587,6 +2590,7 @@ input:focus-visible,textarea:focus-visible{outline:none}
 @media (max-width:768px){.tb-row1{flex-wrap:wrap}.proj-title-wrap{flex:1 1 calc(100% - 70px)}.tb-actions-group{margin-left:0;width:100%;flex-wrap:wrap}.tb-actions-group>*{flex:1 1 auto;justify-content:center}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}}
   </style>
+  <link rel="stylesheet" href="/invoicing.css">
   <link rel="stylesheet" href="/assistant.css">
 </head>
 <body>
@@ -5679,6 +5683,10 @@ function sidebar(){
           <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><rect x="2" y="2.667" width="12" height="12" rx="1.333"/><path d="M10.667 1.333v2.667M5.333 1.333v2.667M2 6.667h12"/></svg>
           Calendario <span class="nv-tail">3</span>
         </div>
+        <div class="nv ${S.navView==='facturas'?'on':''}" onclick="setNavView('facturas')">
+          <svg class="nv-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M3.5 1.5h7l3 3v10h-10z"/><path d="M10.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/></svg>
+          Facturas ${typeof invoicingBadge==='function' && invoicingBadge() ? `<span class="nv-badge">${invoicingBadge()}</span>` : ''}
+        </div>
       </div>
     ` : ''}
 
@@ -5751,6 +5759,7 @@ function main(){
   if(S.navView==='kanbanGlobal')  return navKanbanGlobal()
   if(S.navView==='proyectos')     return navProyectos()
   if(S.navView==='calendario')    return navCalendario()
+  if(S.navView==='facturas')      return typeof navFacturas==='function' ? navFacturas() : '<div class="mn"><div class="ct"></div></div>'
   const p = S.proj
   if(!p) return `<div class="mn"><div class="ct"><p style="color:var(--text-3)">Selecciona un proyecto</p></div></div>`
   const tabs = tabsFor(p)
@@ -6836,7 +6845,7 @@ function persistSupplierOrdersLocally(orders) {
       const copy = { ...o };
       if (Array.isArray(copy.files)) {
         copy.files = copy.files.map(f => {
-          if (f.data && typeof f.data === 'string' && f.data.length > 500000) {
+          if (f.data && typeof f.data === 'string' && f.data.length > 1600000) {
             return { ...f, data: f.data.slice(0, 100) + '...truncated' };
           }
           return f;
@@ -6989,7 +6998,8 @@ const ORD_ICONS = {
   trash:'<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>',
   image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
   truck:'<path d="M5 18H3V6a1 1 0 0 1 1-1h10v13M14 9h4l3 3v6h-2"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/>',
-  filter:'<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>'
+  filter:'<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'
 };
 function oi(name, size = 16, extra = '') {
   return `<svg class="oi ${extra}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ORD_ICONS[name] || ''}</svg>`;
@@ -7147,7 +7157,12 @@ function pedidosContent(p) {
     const pay = orderPayStatus(order);
     const del = orderDeliveryStatus(order);
     const firstImgIdx = files.findIndex(f => !isPdfFile(f));
-    const thumbHtml = firstImgIdx >= 0
+    const safeUrl = (u) => /^https?:\/\/[^\s]+$/i.test(String(u || '')) ? String(u) : '';
+    const previewSrc = safeUrl(order.previewImage);
+    const productHref = safeUrl(order.productUrl);
+    const thumbHtml = previewSrc
+      ? `<a class="ord-thumb preview" href="${esc(productHref || previewSrc)}" target="_blank" rel="noopener noreferrer" title="${esc(order.productTitle || 'Ver el producto en la web del proveedor')}"><img src="${esc(previewSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('empty');this.remove()" /></a>`
+      : firstImgIdx >= 0
       ? `<div class="ord-thumb" onclick="openOrderGallery('${order.id}', ${firstImgIdx})" title="Ver imagen"><img src="${getFileRenderUrl(order, files[firstImgIdx])}" alt="" loading="lazy" /></div>`
       : `<div class="ord-thumb empty">${oi(supplierCategoryIcon(order.categoryName), 28)}</div>`;
 
@@ -7190,6 +7205,7 @@ function pedidosContent(p) {
           <div style="min-width:0">
             <div class="ord-title">${esc(order.concept)}</div>
             ${order.notes ? `<div class="ord-notes">${esc(order.notes)}</div>` : ''}
+            ${productHref ? `<a class="ord-prodlink" href="${esc(productHref)}" target="_blank" rel="noopener noreferrer">${oi('link', 12)}Ver producto${order.productTitle ? ' · ' + esc(order.productTitle.slice(0, 40)) : ''}</a>` : ''}
           </div>
         </div>
         <div class="ord-c ord-amount">${fmtEUR(order.totalAmount, true)}</div>
@@ -7862,7 +7878,13 @@ async function loadSupplierOrders() {
       const data = await res.json();
       if (Array.isArray(data.orders)) {
         const localById = new Map((p.orders || []).map(o => [o.id, o]));
-        p.orders = data.orders.map(o => (o.deliveryStatus ? o : { ...o, deliveryStatus: localById.get(o.id)?.deliveryStatus || o.deliveryStatus }));
+        // Si el servidor aún no guarda algún campo (migración pendiente), se conserva el que hay en local.
+        p.orders = data.orders.map(o => {
+          const local = localById.get(o.id) || {};
+          const out = { ...o };
+          ['deliveryStatus', 'productUrl', 'previewImage', 'productTitle'].forEach(k => { if (!out[k] && local[k]) out[k] = local[k]; });
+          return out;
+        });
         persistSupplierOrdersLocally(p.orders);
         save();
         render();
@@ -8243,6 +8265,7 @@ window.addEventListener('focus', () => {
 loadSupplierDirectory().catch(()=>{})
 loadSupplierOrders().catch(()=>{})
 </script>
+<script src="/invoicing.js"></script>
 <script src="/assistant-tools.js"></script>
 <script src="/assistant.js"></script>
 </body>

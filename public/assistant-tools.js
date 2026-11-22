@@ -36,6 +36,19 @@
   const isAdmin = () => !S.currentUser || S.currentUser.role === 'admin';
   const trunc = (s, n) => (String(s || '').length > n ? String(s).slice(0, n) + '…' : String(s || ''));
 
+  // ── Adjuntos del chat (los registra assistant.js) ─────────────────────────────────────────────────────
+  const attachments = new Map();
+  const dataUrlOf = (a) => 'data:' + a.mediaType + ';base64,' + a.base64;
+  function filesFromRefs(refs) {
+    const files = [];
+    for (const ref of Array.isArray(refs) ? refs : []) {
+      const a = attachments.get(String(ref));
+      if (!a) return { error: 'No existe el adjunto «' + ref + '». Los disponibles: ' + ([...attachments.keys()].join(', ') || 'ninguno') + '.' };
+      files.push({ id: uid('f_'), name: a.name, type: a.mediaType, size: a.size || Math.round(a.base64.length * 0.75), data: dataUrlOf(a), createdAt: new Date().toISOString() });
+    }
+    return { files };
+  }
+
   // ── Fechas ────────────────────────────────────────────────────────────────────────────────────
   const pad = (n) => String(n).padStart(2, '0');
   const toISO = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
@@ -195,7 +208,9 @@
     delivery_status: orderDel(o),
     invoice_number: o.invoiceNumber || null,
     notes: o.notes || '',
-    documents: (o.files || []).map((f) => f.name)
+    documents: (o.files || []).map((f) => f.name),
+    product_url: o.productUrl || null,
+    product_preview: o.previewImage ? true : false
   });
 
   // ── Persistencia ───────────────────────────────────────────────────────────────────────────────────
@@ -241,6 +256,16 @@
       proximos_7_dias: groups.next7,
       recordatorios_pendientes: clients.reduce((n, c) => n + (c.recordatorios || []).filter((r) => !r.done).length, 0)
     };
+    if (isAdmin() && window.LigrowInvoicing) {
+      const inv = window.LigrowInvoicing.INV.invoices.filter((i) => i.status !== 'anulada' && i.status !== 'borrador');
+      const pend = inv.filter((i) => i.status === 'emitida');
+      summary.facturas_emitidas = {
+        total: inv.length,
+        facturado_eur: Math.round(inv.reduce((n, i) => n + i.total, 0) * 100) / 100,
+        pendiente_de_cobro_eur: Math.round(pend.reduce((n, i) => n + i.total, 0) * 100) / 100,
+        vencidas_sin_cobrar: pend.filter((i) => i.dueDate && i.dueDate < todayISO()).length
+      };
+    }
     if (orders) {
       summary.pedidos = {
         total: orders.length,
@@ -286,6 +311,10 @@
       }
     } else if (S.navView === 'kanbanGlobal') {
       view.kanban_owner_filter = S.kanbanOwnerFilter || 'all';
+    } else if (S.navView === 'facturas' && window.LigrowInvoicing) {
+      const I = window.LigrowInvoicing.INV;
+      view.tab = S.facTab || 'facturas';
+      view.invoices = { total: I.invoices.length, customers: I.customers.length, filters: { search: S.facSearch || '', status: S.facStatus || '' } };
     }
     if (S.modal === 'taskDetail' && S._taskDetail) {
       const c = DATA.find((p) => p.id === (S._taskDetail.clientId || S._taskDetail.clientid));
@@ -296,7 +325,7 @@
   }
 
   function describeScreen() {
-    const names = { dashboard: 'Dashboard', kanbanGlobal: 'Kanban Global', proyectos: 'Todos los proyectos', calendario: 'Calendario' };
+    const names = { dashboard: 'Dashboard', kanbanGlobal: 'Kanban Global', proyectos: 'Todos los proyectos', calendario: 'Calendario', facturas: 'Facturas › ' + ({ clientes: 'Clientes', ajustes: 'Ajustes' }[S.facTab] || 'Facturas') };
     if (S.navView) return names[S.navView] || S.navView;
     const p = S.proj;
     if (!p) return 'Sin proyecto abierto';
@@ -771,6 +800,8 @@
     if (input.payment_status && !PAYS.includes(input.payment_status)) return fail('Estado de pago no válido. Valores: ' + PAYS.join(', ') + '.');
     if (input.delivery_status && !DELIVERIES.includes(input.delivery_status)) return fail('Estado de entrega no válido. Valores: ' + DELIVERIES.join(', ') + '.');
     const amount = typeof input.amount === 'number' && Number.isFinite(input.amount) && input.amount >= 0 ? Math.round(input.amount * 100) / 100 : 0;
+    const att = filesFromRefs(input.attachment_refs);
+    if (att.error) return fail(att.error);
     const now = new Date().toISOString();
     const order = {
       id: uid('ord_'),
@@ -784,7 +815,7 @@
       deliveryStatus: input.delivery_status || 'En curso',
       invoiceNumber: txt(input.invoice_number) || '',
       notes: txt(input.notes) || '',
-      files: [],
+      files: att.files,
       createdAt: now,
       updatedAt: now
     };
@@ -824,6 +855,12 @@
     if (input.delivery_status !== undefined) { if (!DELIVERIES.includes(input.delivery_status)) return fail('Estado de entrega no válido. Valores: ' + DELIVERIES.join(', ') + '.'); order.deliveryStatus = input.delivery_status; changes.push('entrega ' + input.delivery_status); }
     if (input.invoice_number !== undefined) { order.invoiceNumber = str(input.invoice_number) || ''; changes.push('referencia'); }
     if (input.notes !== undefined) { order.notes = str(input.notes) || ''; changes.push('notas'); }
+    if (Array.isArray(input.attachment_refs) && input.attachment_refs.length) {
+      const att = filesFromRefs(input.attachment_refs);
+      if (att.error) return fail(att.error);
+      order.files = (order.files || []).concat(att.files);
+      changes.push(att.files.length + ' archivo(s)');
+    }
     if (!changes.length) return fail('No se ha indicado ningún cambio.');
     order.updatedAt = new Date().toISOString();
     commitOrders(pv, { action: 'Pedido actualizado', summary: say('actualizó el pedido "' + order.concept + '" (' + changes.join(', ') + ')') });
@@ -924,6 +961,298 @@
     }
   }
 
+  // ── Leer documentos de pedidos y vista previa del producto ────────────────────────────────────────────
+  const parseDataUrl = (d) => {
+    const m = /^data:([^;,]+);base64,([A-Za-z0-9+/=]+)$/.exec(String(d || ''));
+    return m ? { mediaType: m[1], data: m[2] } : null;
+  };
+
+  function readOrderDocument(input) {
+    const r = findOrder(input.order);
+    if (!r.ok) return failed(r);
+    const order = r.value;
+    const files = order.files || [];
+    if (!files.length) return fail('Este pedido no tiene archivos adjuntos.');
+    let file = files[0];
+    if (txt(input.document)) {
+      const f = resolve(files, input.document, { ids: (x) => [x.id || ''], names: (x) => [x.name || ''], label: (x) => x.name, noun: 'el archivo' });
+      if (!f.ok) return failed(f);
+      file = f.value;
+    }
+    const parsed = parseDataUrl(file.data);
+    if (!parsed) return fail('El archivo «' + file.name + '» no tiene el contenido guardado (solo se conservó su nombre), así que no puedo leerlo. Pídele al usuario que lo vuelva a adjuntar.');
+    let block;
+    if (parsed.mediaType === 'application/pdf') {
+      if (parsed.data.length > 2000000) return fail('El PDF es demasiado grande para leerlo (máx. ~1,4 MB).');
+      block = { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: parsed.data } };
+    } else if (/^image\/(jpeg|png|webp|gif)$/.test(parsed.mediaType)) {
+      if (parsed.data.length > 1500000) return fail('La imagen es demasiado grande para leerla.');
+      block = { type: 'image', source: { type: 'base64', media_type: parsed.mediaType, data: parsed.data } };
+    } else {
+      return fail('Formato no legible: ' + parsed.mediaType + '.');
+    }
+    return { result: { order: order.concept, file: file.name, note: 'El contenido del archivo va a continuación.' }, content: [block] };
+  }
+
+  async function setOrderProduct(input) {
+    const r = findOrder(input.order);
+    if (!r.ok) return failed(r);
+    const order = r.value;
+    const pv = supplierProject();
+    const url = txt(input.url);
+    if (!url || !safeUrl(url)) return fail('La URL debe empezar por http:// o https://.');
+    let preview = null;
+    let previewError = '';
+    try {
+      const res = await fetch('/api/assistant/link-preview?url=' + encodeURIComponent(url), { credentials: 'same-origin' });
+      const body = await res.json().catch(() => null);
+      if (res.ok && body && body.preview) preview = body.preview;
+      else previewError = (body && body.error) || 'No se pudo leer la página.';
+    } catch (e) { previewError = 'No se pudo conectar para leer la página.'; }
+    const given = txt(input.image_url);
+    const image = (given && safeUrl(given) ? given : '') || (preview && preview.image) || '';
+    if (!preview && !image) return fail('No he podido leer la página del producto (' + previewError + '). Comprueba que la URL es correcta y pública, o prueba con otra.');
+    const before = clone(order);
+    order.productUrl = (preview && preview.url) || url;
+    order.productTitle = (preview && preview.title) || '';
+    order.previewImage = image;
+    order.updatedAt = new Date().toISOString();
+    commitOrders(pv, { action: 'Pedido actualizado', summary: say('añadió el enlace del producto al pedido "' + order.concept + '"') });
+    syncOrder('PUT', order);
+    return ok({ order: order.concept, product_url: order.productUrl, title: order.productTitle || null, image_found: !!image, price: preview && preview.price ? preview.price + ' ' + (preview.currency || '') : null, description: preview ? preview.description : null }, {
+      mutated: true,
+      summary: image ? 'Vista previa del producto añadida a «' + trunc(order.concept, 44) + '»' : 'Enlace del producto guardado en «' + trunc(order.concept, 44) + '» (sin imagen)',
+      undo: {
+        label: 'añadir el producto a «' + trunc(order.concept, 40) + '»',
+        run: async () => {
+          const idx = pv.orders.findIndex((o) => o.id === before.id);
+          if (idx >= 0) pv.orders[idx] = before;
+          commitOrders(pv, { action: 'Pedido actualizado', summary: say('deshizo el enlace del producto de "' + before.concept + '"') });
+          await syncOrder('PUT', before);
+          return { ok: true };
+        }
+      }
+    });
+  }
+
+  // ── Facturación emitida ─────────────────────────────────────────────────────────────────────────────────
+  const FI = () => window.LigrowInvoicing;
+  const needInvoicing = () => {
+    if (!isAdmin()) return fail('Solo los administradores pueden gestionar la facturación.');
+    if (!FI()) return fail('El módulo de facturación no está disponible.');
+    return null;
+  };
+  const cents = (n) => Math.round(Number(n) * 100) / 100;
+  const customerView = (c) => ({ id: c.id, name: c.name, tax_id: c.taxId, address: c.address, postal_code: c.postalCode, city: c.city, province: c.province || null, country: c.country || null, email: c.email || null, phone: c.phone || null });
+  const settingsView = (s) => ({ company_name: s.companyName, tax_id: s.taxId, address: s.address, postal_code: s.postalCode, city: s.city, country: s.country, email: s.email, phone: s.phone, website: s.website, iban: s.iban, series: s.series, default_vat_rate: s.defaultVatRate, default_irpf_rate: s.defaultIrpfRate, payment_days: s.paymentDays, payment_method: s.paymentMethod, footer_note: s.footerNote });
+  const syncNote = (okSaved) => (okSaved === false ? { warning: 'Guardada en este dispositivo, pero no se pudo sincronizar con el servidor todavía.' } : {});
+
+  /** Deshace restaurando una copia de todo el almacén de facturación. */
+  const inverse = (snap, label) => ({ label, run: async () => { await FI().ops.restore(snap); render(); FI().refresh(); return { ok: true }; } });
+
+  async function getInvoiceSettings() {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load();
+    const missing = FI().ops.missingIssuer();
+    return ok({ settings: settingsView(FI().INV.settings), missing_required: missing, ready_to_invoice: !missing.length });
+  }
+
+  async function updateInvoiceSettings(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load(true);
+    const map = { company_name: 'companyName', tax_id: 'taxId', address: 'address', postal_code: 'postalCode', city: 'city', country: 'country', email: 'email', phone: 'phone', website: 'website', iban: 'iban', series: 'series', payment_method: 'paymentMethod', footer_note: 'footerNote' };
+    const numeric = { default_vat_rate: ['defaultVatRate', 0, 100], default_irpf_rate: ['defaultIrpfRate', 0, 60], payment_days: ['paymentDays', 0, 365] };
+    const snap = FI().ops.snapshot();
+    const changes = [];
+    const s = FI().INV.settings;
+    for (const [k, prop] of Object.entries(map)) {
+      if (input[k] !== undefined) { s[prop] = (str(input[k]) || '').trim(); changes.push(prop); }
+    }
+    for (const [k, [prop, lo, hi]] of Object.entries(numeric)) {
+      if (input[k] !== undefined) {
+        const v = Number(input[k]);
+        if (!Number.isFinite(v) || v < lo || v > hi) { FI().ops.restore(snap); return fail('Valor no válido para ' + k + '.'); }
+        s[prop] = v; changes.push(prop);
+      }
+    }
+    if (!changes.length) return fail('No se ha indicado ningún dato.');
+    if (s.series && !/^[A-Za-z0-9]{1,6}$/.test(s.series)) { await FI().ops.restore(snap); return fail('La serie debe tener 1-6 letras o números.'); }
+    const saved = await FI().ops.save({ action: 'Ajustes de facturación', summary: say('actualizó los datos del emisor') });
+    render();
+    const missing = FI().ops.missingIssuer();
+    return ok({ settings: settingsView(s), missing_required: missing, ...syncNote(saved) }, { mutated: true, summary: 'Datos de facturación actualizados', undo: inverse(snap, 'actualizar los datos de facturación') });
+  }
+
+  async function listCustomers(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load();
+    const q = norm(input.query);
+    const list = FI().INV.customers.filter((c) => !q || norm([c.name, c.taxId, c.city].join(' ')).includes(q));
+    return ok({ total: list.length, customers: list.map(customerView) });
+  }
+
+  async function createCustomer(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load(true);
+    const data = { name: txt(input.name), taxId: txt(input.tax_id), address: txt(input.address), postalCode: txt(input.postal_code), city: txt(input.city), province: txt(input.province) || '', country: txt(input.country) || 'España', email: txt(input.email) || '', phone: txt(input.phone) || '', notes: txt(input.notes) || '' };
+    const faltan = FI().ops.missingCustomer(data);
+    if (faltan.length) return fail('Faltan datos del cliente: ' + faltan.join(', ') + '. Pídeselos al usuario.');
+    const dup = FI().INV.customers.find((c) => norm(c.taxId) === norm(data.taxId));
+    if (dup) return fail('Ya existe un cliente con ese NIF: «' + dup.name + '». Úsalo o edítalo con update_customer.');
+    const snap = FI().ops.snapshot();
+    const c = FI().ops.addCustomer(data);
+    const saved = await FI().ops.save({ action: 'Nuevo cliente de facturación', summary: say('creó el cliente "' + c.name + '"') });
+    render();
+    return ok({ customer: customerView(c), ...syncNote(saved) }, { mutated: true, summary: 'Cliente de facturación creado: ' + c.name, undo: inverse(snap, 'crear el cliente ' + c.name) });
+  }
+
+  async function updateCustomer(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load(true);
+    const f = FI().ops.findCustomer(input.customer);
+    if (!f.ok) return fail(f.error, f.candidates);
+    const map = { name: 'name', tax_id: 'taxId', address: 'address', postal_code: 'postalCode', city: 'city', province: 'province', country: 'country', email: 'email', phone: 'phone', notes: 'notes' };
+    const snap = FI().ops.snapshot();
+    const changes = [];
+    for (const [k, prop] of Object.entries(map)) if (input[k] !== undefined) { f.value[prop] = (str(input[k]) || '').trim(); changes.push(prop); }
+    if (!changes.length) return fail('No se ha indicado ningún cambio.');
+    const saved = await FI().ops.save({ action: 'Cliente actualizado', summary: say('actualizó el cliente "' + f.value.name + '"') });
+    render();
+    return ok({ customer: customerView(f.value), ...syncNote(saved) }, { mutated: true, summary: 'Cliente «' + f.value.name + '» actualizado', undo: inverse(snap, 'actualizar el cliente ' + f.value.name) });
+  }
+
+  async function deleteCustomer(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load(true);
+    const f = FI().ops.findCustomer(input.customer);
+    if (!f.ok) return fail(f.error, f.candidates);
+    FI().INV.customers = FI().INV.customers.filter((c) => c.id !== f.value.id);
+    await FI().ops.save({ action: 'Cliente eliminado', summary: say('eliminó el cliente "' + f.value.name + '"') });
+    render();
+    return ok({ deleted: f.value.name }, { mutated: true, summary: 'Cliente de facturación eliminado: ' + f.value.name });
+  }
+
+  async function listInvoices(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load();
+    const q = norm(input.query);
+    const cu = norm(input.customer);
+    const rows = FI().INV.invoices.filter((i) => {
+      if (input.status && i.status !== input.status) return false;
+      if (cu && !norm(i.customer.name + ' ' + i.customer.taxId).includes(cu)) return false;
+      if (input.from && i.date < input.from) return false;
+      if (input.to && i.date > input.to) return false;
+      if (q && !norm([i.number, i.customer.name, i.lines.map((l) => l.description).join(' ')].join(' ')).includes(q)) return false;
+      return true;
+    }).sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.number).localeCompare(String(a.number)));
+    const live = rows.filter((i) => i.status !== 'anulada' && i.status !== 'borrador');
+    return ok({ total: rows.length, total_billed: cents(live.reduce((n, i) => n + i.total, 0)), pending_collection: cents(rows.filter((i) => i.status === 'emitida').reduce((n, i) => n + i.total, 0)), invoices: rows.slice(0, 40).map((i) => ({ number: i.number, status: i.status, date: i.date, due_date: i.dueDate, customer: i.customer.name, subtotal: i.subtotal, vat: i.vatTotal, total: i.total })) });
+  }
+
+  async function getInvoice(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load();
+    const f = FI().ops.findInvoice(input.invoice);
+    return f.ok ? ok(FI().ops.summary(f.value)) : fail(f.error, f.candidates);
+  }
+
+  const mapLines = (lines) => (Array.isArray(lines) ? lines : []).map((l) => ({ description: l.description, quantity: l.quantity, unitPrice: l.unit_price, total: l.total, vatRate: l.vat_rate }));
+
+  async function createInvoice(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load(true); // numeración correlativa: siempre sobre lo último guardado
+    const faltanEmisor = FI().ops.missingIssuer();
+    if (faltanEmisor.length) return fail('Faltan datos del emisor (Ligrow) para poder facturar: ' + faltanEmisor.join(', ') + '. Pídeselos al usuario y guárdalos con update_invoice_settings.');
+    const f = FI().ops.findCustomer(input.customer);
+    if (!f.ok) return fail(f.error + ' Pide al usuario sus datos y créalo con create_customer.', f.candidates);
+    let inv;
+    try {
+      inv = FI().ops.buildInvoice({ customerObj: f.value, includesVat: input.amounts_include_vat, date: input.date, dueDate: input.due_date, vatRate: input.vat_rate, irpfRate: input.irpf_rate, lines: mapLines(input.lines), paymentMethod: txt(input.payment_method), reference: txt(input.reference), notes: txt(input.notes), status: input.status });
+    } catch (e) {
+      return fail(e.message, e.candidates);
+    }
+    const snap = FI().ops.snapshot();
+    const saved = await FI().ops.addInvoice(inv, { action: 'Nueva factura', summary: say('creó la factura ' + inv.number + ' para ' + inv.customer.name + ' (' + FI().eur(inv.total) + ')') });
+    render();
+    return ok(Object.assign(FI().ops.summary(inv), syncNote(saved)), { mutated: true, summary: 'Factura ' + inv.number + ' creada · ' + inv.customer.name + ' · ' + FI().eur(inv.total), undo: inverse(snap, 'crear la factura ' + inv.number) });
+  }
+
+  async function updateInvoice(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load(true);
+    const f = FI().ops.findInvoice(input.invoice);
+    if (!f.ok) return fail(f.error, f.candidates);
+    const inv = f.value;
+    const snap = FI().ops.snapshot();
+    const changes = [];
+    try {
+      if (input.customer !== undefined) {
+        const c = FI().ops.findCustomer(input.customer);
+        if (!c.ok) return fail(c.error, c.candidates);
+        const faltan = FI().ops.missingCustomer(c.value);
+        if (faltan.length) return fail('Al cliente «' + c.value.name + '» le faltan datos: ' + faltan.join(', ') + '.');
+        inv.customerId = c.value.id;
+        inv.customer = { id: c.value.id, name: c.value.name, taxId: c.value.taxId, address: c.value.address, postalCode: c.value.postalCode, city: c.value.city, province: c.value.province || '', country: c.value.country || 'España', email: c.value.email || '', phone: c.value.phone || '' };
+        changes.push('cliente');
+      }
+      if (input.date !== undefined) {
+        if (!FI().calc.validDate(input.date)) return fail('Fecha no válida. Usa AAAA-MM-DD.');
+        if (input.date.slice(0, 4) !== inv.date.slice(0, 4)) return fail('No se puede cambiar el año de una factura ya numerada: anúlala y crea otra.');
+        inv.date = input.date; changes.push('fecha');
+      }
+      if (input.due_date !== undefined) { if (!FI().calc.validDate(input.due_date)) return fail('Vencimiento no válido.'); inv.dueDate = input.due_date; changes.push('vencimiento'); }
+      if (input.vat_rate !== undefined) { const v = Number(input.vat_rate); if (!Number.isFinite(v) || v < 0 || v > 100) return fail('IVA no válido.'); inv.vatRate = v; changes.push('IVA'); }
+      if (input.irpf_rate !== undefined) { const v = Number(input.irpf_rate); if (!Number.isFinite(v) || v < 0 || v > 60) return fail('IRPF no válido.'); inv.irpfRate = v; changes.push('IRPF'); }
+      if (input.lines !== undefined) {
+        if (typeof input.amounts_include_vat !== 'boolean') return fail('Al cambiar las líneas indica si los importes incluyen IVA (amounts_include_vat).');
+        if (!Array.isArray(input.lines) || !input.lines.length) return fail('La factura necesita al menos una línea.');
+        inv.lines = mapLines(input.lines).map((l) => FI().calc.buildLine(l, { includesVat: input.amounts_include_vat, vatRate: inv.vatRate }));
+        changes.push('líneas');
+      } else if (input.vat_rate !== undefined) {
+        return fail('Para cambiar el tipo de IVA vuelve a indicar las líneas (lines) con amounts_include_vat.');
+      }
+      if (input.payment_method !== undefined) { inv.paymentMethod = str(input.payment_method) || ''; changes.push('forma de pago'); }
+      if (input.reference !== undefined) { inv.reference = str(input.reference) || ''; changes.push('referencia'); }
+      if (input.notes !== undefined) { inv.notes = str(input.notes) || ''; changes.push('observaciones'); }
+      if (input.status !== undefined) {
+        if (!FI().STATUSES.includes(input.status)) return fail('Estado no válido.');
+        inv.status = input.status;
+        inv.paidDate = input.status === 'cobrada' ? (input.paid_date && FI().calc.validDate(input.paid_date) ? input.paid_date : inv.paidDate || todayISO()) : '';
+        changes.push('estado ' + input.status);
+      }
+    } catch (e) {
+      await FI().ops.restore(snap);
+      return fail(e.message);
+    }
+    if (!changes.length) return fail('No se ha indicado ningún cambio.');
+    FI().ops.recalc(inv);
+    inv.updatedAt = new Date().toISOString();
+    const saved = await FI().ops.save({ action: 'Factura actualizada', summary: say('actualizó la factura ' + inv.number + ' (' + changes.join(', ') + ')') });
+    render();
+    return ok(Object.assign(FI().ops.summary(inv), syncNote(saved)), { mutated: true, summary: 'Factura ' + inv.number + ' actualizada (' + changes.join(', ') + ')', undo: inverse(snap, 'actualizar la factura ' + inv.number) });
+  }
+
+  async function deleteInvoice(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load(true);
+    const f = FI().ops.findInvoice(input.invoice);
+    if (!f.ok) return fail(f.error, f.candidates);
+    await FI().ops.removeInvoice(f.value.id, { action: 'Eliminar factura', summary: say('eliminó la factura ' + f.value.number) });
+    render();
+    return ok({ deleted: f.value.number }, { mutated: true, summary: 'Factura eliminada: ' + f.value.number });
+  }
+
+  async function openInvoice(input) {
+    const bad = needInvoicing(); if (bad) return bad;
+    await FI().ops.load();
+    const f = FI().ops.findInvoice(input.invoice);
+    if (!f.ok) return fail(f.error, f.candidates);
+    S.facTab = 'facturas';
+    setNavView('facturas');
+    FI().view(f.value.id);
+    return ok({ opened: f.value.number, note: 'La factura está abierta en pantalla: el usuario puede pulsar «PDF / Imprimir» para guardarla como PDF.' });
+  }
+
   // ── Navegación ──────────────────────────────────────────────────────────────────────────────────────────
   function navigateTo(input) {
     const screen = input.screen;
@@ -933,6 +1262,12 @@
     const nav = { dashboard: 'dashboard', kanban_global: 'kanbanGlobal', projects: 'proyectos', calendar: 'calendario' };
     if (nav[screen]) { setNavView(nav[screen]); return ok({ navigated: describeScreen() }); }
     if (screen === 'settings') { openConfigModal(); return ok({ navigated: 'Ajustes' }); }
+    if (screen === 'invoices' || screen === 'customers') {
+      if (!isAdmin()) return fail('Solo los administradores pueden acceder a la facturación.');
+      S.facTab = screen === 'customers' ? 'clientes' : 'facturas';
+      setNavView('facturas');
+      return ok({ navigated: describeScreen() });
+    }
     if (screen === 'suppliers' || screen === 'orders') {
       const pv = supplierProject();
       if (!pv) return fail('No tienes acceso al espacio de proveedores.');
@@ -1007,6 +1342,8 @@
       case 'delete_reminder': { const c = clientFrom(input.client); return c.ok ? '¿Eliminar el recordatorio «' + trunc(input.reminder, 60) + '» de ' + c.value.name + '?' : null; }
       case 'delete_document': { const c = clientFrom(input.client); return c.ok ? '¿Eliminar el recurso «' + trunc(input.document, 60) + '» de ' + c.value.name + '?' : null; }
       case 'delete_order': return label(findOrder(input.order), (o) => '¿Eliminar el pedido «' + trunc(o.concept, 60) + '» de ' + o.supplierName + ' (' + (typeof fmtEUR === 'function' ? fmtEUR(o.totalAmount, true) : o.totalAmount) + ') con sus documentos? No se podrá deshacer.');
+      case 'delete_invoice': { const I = window.LigrowInvoicing; const f = I && I.ops.findInvoice(input.invoice); return f && f.ok ? '¿Eliminar la factura «' + f.value.number + '» de ' + f.value.customer.name + ' (' + I.eur(f.value.total) + ')? Dejará un hueco en la numeración y no se podrá deshacer.' : null; }
+      case 'delete_customer': { const I = window.LigrowInvoicing; const f = I && I.ops.findCustomer(input.customer); return f && f.ok ? '¿Eliminar al cliente de facturación «' + f.value.name + '»? Sus facturas se conservan.' : null; }
       case 'delete_supplier': { const pv = supplierProject(); return pv ? label(findSupplier(pv, input.supplier), (e) => '¿Eliminar el proveedor «' + e.p.name + '» del catálogo?') : null; }
       default: return null;
     }
@@ -1046,6 +1383,20 @@
     list_apps: () => ok({ apps: appsScope().map((a) => ({ name: a.name, description: a.sub || '', connections: (a.conns || []).map((x) => x.name + ' — ' + x.detail) })) }),
     list_suppliers: listSuppliers,
     list_orders: listOrders,
+    read_order_document: readOrderDocument,
+    set_order_product: setOrderProduct,
+    get_invoice_settings: getInvoiceSettings,
+    update_invoice_settings: updateInvoiceSettings,
+    list_customers: listCustomers,
+    create_customer: createCustomer,
+    update_customer: updateCustomer,
+    delete_customer: deleteCustomer,
+    list_invoices: listInvoices,
+    get_invoice: getInvoice,
+    create_invoice: createInvoice,
+    update_invoice: updateInvoice,
+    delete_invoice: deleteInvoice,
+    open_invoice: openInvoice,
     create_task: createTask,
     update_task: updateTask,
     add_checklist_item: addChecklistItem,
@@ -1087,5 +1438,5 @@
     }
   }
 
-  window.LigrowAITools = { runTool, describeConfirmation, describeScreen, currentSnapshot, todayISO };
+  window.LigrowAITools = { runTool, describeConfirmation, describeScreen, currentSnapshot, todayISO, attachments };
 })();

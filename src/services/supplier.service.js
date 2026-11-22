@@ -161,6 +161,9 @@ function mapOrder(row) {
     totalAmount: Number(row.total_amount != null ? row.total_amount : (row.totalAmount || 0)),
     status: row.status || 'Pagado',
     deliveryStatus: row.delivery_status || row.deliveryStatus || '',
+    productUrl: row.product_url || row.productUrl || '',
+    previewImage: row.preview_image || row.previewImage || '',
+    productTitle: row.product_title || row.productTitle || '',
     invoiceNumber: row.invoice_number || row.invoiceNumber || '',
     notes: row.notes || '',
     files: Array.isArray(row.files) ? row.files : [],
@@ -293,14 +296,24 @@ async function listOrders() {
 // La columna delivery_status se añade con la migración 20261122_supplier_orders_delivery.sql.
 // Si todavía no existe, se reintenta sin ella para no perder el pedido (el estado de entrega
 // sigue guardándose en el espacio de trabajo sincronizado).
+const OPTIONAL_COLUMNS = ['delivery_status', 'product_url', 'preview_image', 'product_title'];
+
 function isMissingDeliveryColumn(error) {
-  return Boolean(error) && /delivery_status/i.test(String(error.message || error.details || ''));
+  const text = String((error && (error.message || error.details)) || '');
+  return Boolean(error) && OPTIONAL_COLUMNS.some((col) => text.includes(col));
 }
 
 function withoutDeliveryStatus(row) {
-  const { delivery_status, ...rest } = row;
+  const rest = { ...row };
+  OPTIONAL_COLUMNS.forEach((col) => delete rest[col]);
   return rest;
 }
+
+const productFields = (input) => ({
+  product_url: cleanText(input?.productUrl !== undefined ? input.productUrl : input?.product_url, 800),
+  preview_image: cleanText(input?.previewImage !== undefined ? input.previewImage : input?.preview_image, 1500),
+  product_title: cleanText(input?.productTitle !== undefined ? input.productTitle : input?.product_title, 300)
+});
 
 async function createOrder(input) {
   HAS_MODIFIED_ORDERS = true;
@@ -319,6 +332,7 @@ async function createOrder(input) {
     total_amount: Number(input?.totalAmount != null ? input.totalAmount : (input?.total_amount || 0)),
     status: cleanText(input?.status, 50) || 'Pagado',
     delivery_status: cleanText(input?.deliveryStatus || input?.delivery_status, 30),
+    ...productFields(input),
     invoice_number: cleanText(input?.invoiceNumber || input?.invoice_number, 100),
     notes: cleanText(input?.notes, 5000),
     files: Array.isArray(input?.files) ? input.files : [],
@@ -335,7 +349,7 @@ async function createOrder(input) {
       if (!error && data) {
         FALLBACK_ORDERS.unshift(row);
         await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
-        return mapOrder({ delivery_status: row.delivery_status, ...data });
+        return mapOrder({ delivery_status: row.delivery_status, product_url: row.product_url, preview_image: row.preview_image, product_title: row.product_title, ...data });
       }
     } catch (e) {
       console.warn('[supplier.service] createOrder Supabase insert warning:', e.message);
@@ -366,6 +380,9 @@ async function updateOrder(orderId, input) {
   if (input?.deliveryStatus !== undefined || input?.delivery_status !== undefined) {
     updateData.delivery_status = cleanText(input.deliveryStatus !== undefined ? input.deliveryStatus : input.delivery_status, 30);
   }
+  if (['productUrl', 'product_url', 'previewImage', 'preview_image', 'productTitle', 'product_title'].some((k) => input?.[k] !== undefined)) {
+    Object.assign(updateData, productFields(input));
+  }
 
   if (supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
     try {
@@ -383,7 +400,7 @@ async function updateOrder(orderId, input) {
       if (!error && data) {
         if (existingIdx !== -1) FALLBACK_ORDERS[existingIdx] = { ...FALLBACK_ORDERS[existingIdx], ...updateData };
         await syncOrdersToWorkspaceSync(FALLBACK_ORDERS);
-        return mapOrder({ delivery_status: updateData.delivery_status, ...data });
+        return mapOrder({ delivery_status: updateData.delivery_status, product_url: updateData.product_url, preview_image: updateData.preview_image, product_title: updateData.product_title, ...data });
       }
     } catch (e) {
       console.warn('[supplier.service] updateOrder Supabase update warning:', e.message);
